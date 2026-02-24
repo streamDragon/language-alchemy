@@ -898,6 +898,128 @@ button:hover {
   display: none;
 }
 
+.beyond-launcher {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.beyond-launcher__footer {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.beyond-launcher__summary {
+  border-radius: 12px;
+  border: 1px solid #e2eaf2;
+  background: #fff;
+  padding: 0.65rem 0.75rem;
+  color: #2a4458;
+  line-height: 1.55;
+}
+
+.beyond-launcher__summary strong {
+  color: #6d1835;
+}
+
+.inline-toggle-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 0.2rem;
+}
+
+.ghost-button {
+  border-radius: 999px;
+  border: 1px dashed #cfdce7;
+  background: #f8fbfe;
+  color: #405f76;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+}
+
+.ghost-button:hover {
+  background: #f1f7fc;
+}
+
+.focus-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 0.85rem;
+}
+
+.focus-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  background: rgba(10, 18, 29, 0.52);
+  backdrop-filter: blur(3px);
+}
+
+.focus-modal__dialog {
+  position: relative;
+  z-index: 1;
+  width: min(1200px, 100%);
+  max-height: calc(100vh - 1.7rem);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  border-radius: 18px;
+  border: 1px solid rgba(221, 230, 239, 0.9);
+  background:
+    radial-gradient(circle at 88% 6%, rgba(211, 165, 74, 0.1), transparent 35%),
+    linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow: 0 24px 80px rgba(10, 20, 33, 0.22);
+  overflow: hidden;
+}
+
+.focus-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 0.95rem;
+  border-bottom: 1px solid #e5edf4;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(6px);
+}
+
+.focus-modal__headerText {
+  min-width: 0;
+}
+
+.focus-modal__eyebrow {
+  color: #6d1835;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.focus-modal__headerText h3 {
+  margin: 0.15rem 0 0;
+  color: #16324a;
+}
+
+.focus-modal__headerText p {
+  margin: 0.2rem 0 0;
+  color: #6c8395;
+  font-size: 0.86rem;
+}
+
+.focus-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.focus-modal__body {
+  min-height: 0;
+  overflow: auto;
+  padding: 0.85rem;
+}
+
 .timer-panel {
   border: 1px solid #e2eaf2;
   border-radius: 12px;
@@ -1148,6 +1270,19 @@ textarea {
   .beyond-focus-strip {
     position: static;
   }
+
+  .focus-modal {
+    padding: 0.55rem;
+  }
+
+  .focus-modal__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .focus-modal__actions {
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 620px) {
@@ -1214,6 +1349,28 @@ textarea {
 
   .beyond-rail .status-line {
     display: none;
+  }
+
+  .focus-modal__dialog {
+    width: 100%;
+    max-height: calc(100vh - 1.1rem);
+    border-radius: 14px;
+  }
+
+  .focus-modal__header {
+    padding: 0.7rem;
+  }
+
+  .focus-modal__body {
+    padding: 0.55rem;
+  }
+
+  .focus-modal__actions {
+    width: 100%;
+  }
+
+  .focus-modal__actions button {
+    flex: 1 1 auto;
   }
 }
 

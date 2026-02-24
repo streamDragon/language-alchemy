@@ -25,6 +25,18 @@ function createEmptySomatic() {
 
 function BodyMap({ zones, selectedZoneIds, onToggleZone }) {
   const selected = new Set(selectedZoneIds)
+  const zoneToggleProps = (id, label) => ({
+    role: 'button',
+    tabIndex: 0,
+    'aria-label': label,
+    onClick: () => onToggleZone(id),
+    onKeyDown: (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault()
+        onToggleZone(id)
+      }
+    },
+  })
 
   const zoneShape = (id, label, shapeProps) => {
     const active = selected.has(id)
@@ -33,16 +45,7 @@ function BodyMap({ zones, selectedZoneIds, onToggleZone }) {
       <g
         key={`${id}-${label}`}
         className={className}
-        role="button"
-        tabIndex={0}
-        aria-label={label}
-        onClick={() => onToggleZone(id)}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault()
-            onToggleZone(id)
-          }
-        }}
+        {...zoneToggleProps(id, label)}
       >
         {shapeProps.type === 'ellipse' ? (
           <ellipse {...shapeProps.props} />
@@ -112,12 +115,18 @@ function BodyMap({ zones, selectedZoneIds, onToggleZone }) {
           labelX: 140,
           labelY: 291,
         })}
-        {zoneShape('hands', labels.hands, {
-          type: 'rect',
-          props: { x: 42, y: 248, width: 196, height: 42 },
-          labelX: 140,
-          labelY: 274,
-        })}
+        <g
+          className={`body-zone ${selected.has('hands') ? 'is-active' : ''}`}
+          {...zoneToggleProps('hands', labels.hands)}
+        >
+          <rect x="42" y="214" width="44" height="62" rx="16" />
+          <rect x="194" y="214" width="44" height="62" rx="16" />
+          <rect x="36" y="268" width="56" height="20" rx="10" />
+          <rect x="188" y="268" width="56" height="20" rx="10" />
+          <text x="140" y="442" textAnchor="middle">
+            {labels.hands}
+          </text>
+        </g>
         {zoneShape('legs', labels.legs, {
           type: 'rect',
           props: { x: 76, y: 314, width: 128, height: 112 },
@@ -249,6 +258,9 @@ export default function BeyondWordsGym() {
   })
   const [sessionId, setSessionId] = useState(() => makeId('bw'))
   const [activeStepId, setActiveStepId] = useState('builder')
+  const [isFocusModalOpen, setIsFocusModalOpen] = useState(false)
+  const [showSomaticGlossary, setShowSomaticGlossary] = useState(false)
+  const [showNoticingLibrary, setShowNoticingLibrary] = useState(false)
 
   const practiceDraft = getDraft(practiceLab.id)
   const practiceSentence = buildSentence(practiceLab, practiceDraft)
@@ -258,6 +270,25 @@ export default function BeyondWordsGym() {
   useEffect(() => {
     setLastVisitedLab('beyond-words')
   }, [setLastVisitedLab])
+
+  useEffect(() => {
+    if (!isFocusModalOpen) return undefined
+
+    const previousOverflow = document.body.style.overflow
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsFocusModalOpen(false)
+      }
+    }
+
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isFocusModalOpen])
 
   useEffect(() => {
     if (!isTimerRunning) return undefined
@@ -354,6 +385,13 @@ export default function BeyondWordsGym() {
       setActiveStepId(nextStep.id)
     }
   }
+  const openFocusPractice = () => {
+    if (hasPracticeSentence && activeStepId === 'builder') {
+      setActiveStepId('timer')
+    }
+    setIsFocusModalOpen(true)
+  }
+  const closeFocusPractice = () => setIsFocusModalOpen(false)
 
   useEffect(() => {
     if (!timerCompleted) return
@@ -425,6 +463,9 @@ export default function BeyondWordsGym() {
     setCompare({ snapshotA: null, snapshotB: null })
     setSessionId(makeId('bw'))
     setActiveStepId('builder')
+    setIsFocusModalOpen(false)
+    setShowSomaticGlossary(false)
+    setShowNoticingLibrary(false)
     setStatusMessage('נפתחה סשן חדשה לתרגול.')
   }
 
@@ -490,7 +531,65 @@ export default function BeyondWordsGym() {
           כאן לא רק מנסחים משפטים, אלא מתאמנים ב-Noticing: מה השפה עושה לגוף, לקשב ולבחירה.
         </p>
 
-        <div className="beyond-layout beyond-layout--flow">
+        <section className="panel-card panel-card--soft beyond-launcher">
+          <div className="panel-card__head">
+            <h3>1) Practice Sentence Builder</h3>
+            <div className="chips-wrap">
+              <span className="mini-pill">פוקוס: {currentStep.titleHe}</span>
+              <span className="mini-pill">טיימר: {durationLabel}</span>
+            </div>
+          </div>
+          <AlchemyEngine labId={practiceLab.id} compact showCoach={false} />
+          <div className="beyond-launcher__footer">
+            <div className="beyond-launcher__summary">
+              <strong>משפט תרגול:</strong>{' '}
+              {hasPracticeSentence ? practiceSentence : 'בנו קודם ניסוח כדי לעבור לתרגול ממוקד.'}
+            </div>
+            <div className="controls-row">
+              <button type="button" onClick={openFocusPractice} disabled={!hasPracticeSentence}>
+                פתח/י תרגול ממוקד
+              </button>
+              <button type="button" onClick={newSession}>
+                איפוס סשן
+              </button>
+            </div>
+          </div>
+          <div className="status-line" aria-live="polite">
+            {statusMessage || 'כשתסיימו לבנות משפט, פתחו מצב פוקוס ועבדו שלב-שלב.'}
+          </div>
+        </section>
+
+        {isFocusModalOpen && (
+          <div
+            className="focus-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="beyond-focus-modal-title"
+          >
+            <button
+              type="button"
+              className="focus-modal__backdrop"
+              aria-label="סגור מצב פוקוס"
+              onClick={closeFocusPractice}
+            />
+            <div className="focus-modal__dialog">
+              <div className="focus-modal__header">
+                <div className="focus-modal__headerText">
+                  <div className="focus-modal__eyebrow">מצב פוקוס</div>
+                  <h3 id="beyond-focus-modal-title">{currentStep.titleHe}</h3>
+                  <p>{currentStep.hintHe}</p>
+                </div>
+                <div className="focus-modal__actions">
+                  <button type="button" onClick={() => goToStep('builder')}>
+                    עריכת משפט
+                  </button>
+                  <button type="button" onClick={closeFocusPractice}>
+                    סגירה
+                  </button>
+                </div>
+              </div>
+              <div className="focus-modal__body">
+                <div className="beyond-layout beyond-layout--flow">
           <aside className="beyond-rail">
             <div className="flow-rail-card flow-rail-card--focus">
               <div className="flow-rail-card__title">פוקוס נוכחי</div>
@@ -724,18 +823,30 @@ export default function BeyondWordsGym() {
                 </div>
               </div>
 
-              <div className="triple-grid">
-                {Object.entries(lab.somaticQualityByZone).map(([zoneId, qualities]) => (
-                  <div key={zoneId} className="mini-card">
-                    <h4>{lab.bodyZones.find((zone) => zone.id === zoneId)?.labelHe ?? zoneId}</h4>
-                    <ul>
-                      {qualities.map((quality) => (
-                        <li key={quality}>{quality}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
+              <div className="inline-toggle-row">
+                <button
+                  type="button"
+                  className="ghost-button"
+                  onClick={() => setShowSomaticGlossary((prev) => !prev)}
+                  aria-expanded={showSomaticGlossary}
+                >
+                  {showSomaticGlossary ? 'הסתר מילון תחושות לפי אזור' : 'הצג מילון תחושות לפי אזור'}
+                </button>
               </div>
+              {showSomaticGlossary && (
+                <div className="triple-grid">
+                  {Object.entries(lab.somaticQualityByZone).map(([zoneId, qualities]) => (
+                    <div key={zoneId} className="mini-card">
+                      <h4>{lab.bodyZones.find((zone) => zone.id === zoneId)?.labelHe ?? zoneId}</h4>
+                      <ul>
+                        {qualities.map((quality) => (
+                          <li key={quality}>{quality}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              )}
               <StageNextButton onClick={() => goToStep('meaning')} label="המשך למשמעות" />
               </section>
             </FlowStage>
@@ -847,13 +958,25 @@ export default function BeyondWordsGym() {
                     המשך להשוואה
                   </button>
                 </div>
-                <div className="noticing-prompts">
-                  {lab.noticingPrompts.map((prompt) => (
-                    <div key={prompt} className="noticing-prompt">
-                      {prompt}
-                    </div>
-                  ))}
+                <div className="inline-toggle-row">
+                  <button
+                    type="button"
+                    className="ghost-button"
+                    onClick={() => setShowNoticingLibrary((prev) => !prev)}
+                    aria-expanded={showNoticingLibrary}
+                  >
+                    {showNoticingLibrary ? 'הסתר דוגמאות noticing' : 'הצג דוגמאות noticing'}
+                  </button>
                 </div>
+                {showNoticingLibrary && (
+                  <div className="noticing-prompts">
+                    {lab.noticingPrompts.map((prompt) => (
+                      <div key={prompt} className="noticing-prompt">
+                        {prompt}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               </section>
             </FlowStage>
@@ -931,7 +1054,11 @@ export default function BeyondWordsGym() {
               {statusMessage}
             </div>
           </div>
-        </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   )
