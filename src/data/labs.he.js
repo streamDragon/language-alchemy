@@ -261,6 +261,43 @@ export const lessonPlansByLabId = {
       },
     ],
   },
+  'mind-liberating-language': {
+    titleHe: 'שיעור מקדים: Mind Liberating Language',
+    summaryHe:
+      'עבודה שמתחילה מטקסט המטופל כפי שהוא, ומכוונת לבניית ניסוח מטפל שמזיז תודעה ופותח אופציות.',
+    videoUrl: '',
+    objectivesHe: [
+      'להבדיל בין תוכן הסיפור לבין צורת הסגירה של התודעה.',
+      'לזהות כימותים/מודאליות/זהות שסוגרים שדה.',
+      'לבנות ניסוח מטפל שמכבד חוויה אך פותח אפשרויות.',
+      'למדוד שינוי לפי אופציות חדשות שהמטופל מסכים לשקול.',
+    ],
+    lessonSectionsHe: [
+      {
+        title: 'זרימת העבודה',
+        bullets: [
+          'מה המטופל אומר (טקסט גולמי).',
+          'מה זה אומר על סגירת תודעה ועיוורון לאופציות.',
+          'ניסוח מטפל לשחרור: כימות + הקשר + שאלה פותחת.',
+          'לפני/אחרי: אילו אופציות נעשו אפשריות.',
+        ],
+      },
+      {
+        title: 'עיקרון קליני-לשוני',
+        bullets: [
+          'לא להתווכח ישר עם התוכן.',
+          'כן לעבוד על כמות/זמן/הקשר/משמעות.',
+          'הצלחה = המטופל מוכן לראות עוד אפשרות אחת לפחות.',
+        ],
+      },
+    ],
+    coachPromptsHe: [
+      'התחל/י מהטקסט המדויק של המטופל, בלי תיקון.',
+      'שאל/י: איפה הניסוח סוגר שדה? (תמיד/אי אפשר/זה אני).',
+      'בנה/י ניסוח שמכיר בחוויה ואז פותח 5% מרחב.',
+      'בדוק/י בסוף: אילו אופציות הוא מוכן לשקול עכשיו שלא הופיעו קודם.',
+    ],
+  },
   'clean-questions': null,
   beyond: {
     titleHe: 'שיעור מקדים: מעבר למילים (Noticing + גוף + משמעות)',
@@ -304,6 +341,7 @@ export const lessonPlansByLabId = {
 const lessonAliasMap = {
   'clean-questions': 'questions',
   'beyond-words': 'beyond',
+  'mind-liberating': 'mind-liberating-language',
 }
 
 export function getLessonPlanByLabId(labId) {
@@ -312,4 +350,3 @@ export function getLessonPlanByLabId(labId) {
   const alias = lessonAliasMap[labId]
   return alias ? lessonPlansByLabId[alias] ?? null : null
 }
-

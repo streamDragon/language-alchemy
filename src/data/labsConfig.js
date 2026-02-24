@@ -312,6 +312,16 @@ export const visibleLabs = [
   },
 ]
 
+visibleLabs.push({
+  kind: 'mind-liberating',
+  id: 'mind-liberating-language',
+  route: '/lab/mind-liberating-language',
+  titleHe: 'מיינד ליברייטינג שפה',
+  titleEn: 'Mind Liberating Language',
+  descriptionHe:
+    'טקסט מטופל → מדד סגירת תודעה → ניסוח מטפל משחרר → אופציות שנפתחות.',
+})
+
 export const hiddenLabs = [
   alchemy({
     id: 'beyond-practice',

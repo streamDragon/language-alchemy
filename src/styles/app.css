@@ -357,6 +357,200 @@
   text-decoration: underline;
 }
 
+.mindlab-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) 360px;
+  gap: 0.9rem;
+  align-items: start;
+}
+
+.mindlab-main {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.mindlab-rail {
+  min-width: 0;
+}
+
+.mindlab-rail__sticky {
+  position: sticky;
+  top: 0.75rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.mindlab-field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.mindlab-field > span {
+  color: #28465d;
+  font-weight: 600;
+}
+
+.mindlab-textarea {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #d8e2eb;
+  background: #fff;
+  padding: 0.7rem 0.8rem;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.mindlab-textarea:focus {
+  outline: 2px solid rgba(211, 165, 74, 0.35);
+  outline-offset: 1px;
+  border-color: rgba(211, 165, 74, 0.35);
+}
+
+.mindlab-prompt-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.mindlab-script-preview {
+  border: 1px solid #e2eaf2;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 92% 12%, rgba(211, 165, 74, 0.08), transparent 42%),
+    #fbfdff;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.mindlab-script-preview__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.mindlab-script-preview__head strong {
+  color: #17324a;
+}
+
+.mindlab-script-preview p {
+  margin: 0.55rem 0 0;
+  color: #456175;
+  line-height: 1.55;
+}
+
+.mindlab-quote {
+  margin: 0;
+  border-inline-start: 4px solid rgba(109, 24, 53, 0.25);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 0.7rem 0.75rem;
+  color: #233d52;
+  line-height: 1.6;
+}
+
+.mindlab-score-grid {
+  display: grid;
+  gap: 0.6rem;
+  margin-bottom: 0.65rem;
+}
+
+.mindlab-score-card {
+  border: 1px solid #e1eaf2;
+  border-radius: 12px;
+  background: #fff;
+  padding: 0.65rem 0.7rem;
+}
+
+.mindlab-score-card.tone-high {
+  border-color: rgba(109, 24, 53, 0.24);
+  background: linear-gradient(180deg, #fff7f8 0%, #fff 100%);
+}
+
+.mindlab-score-card.tone-mid {
+  border-color: rgba(211, 165, 74, 0.28);
+  background: linear-gradient(180deg, #fffbf2 0%, #fff 100%);
+}
+
+.mindlab-score-card.tone-low {
+  border-color: rgba(40, 138, 74, 0.22);
+  background: linear-gradient(180deg, #f7fdf9 0%, #fff 100%);
+}
+
+.mindlab-score-card__label {
+  color: #5e7487;
+  font-size: 0.8rem;
+}
+
+.mindlab-score-card__value {
+  color: #17324a;
+  font-weight: 700;
+  margin-top: 0.15rem;
+}
+
+.mindlab-bar {
+  margin-top: 0.45rem;
+  height: 8px;
+  border-radius: 999px;
+  background: #eef3f7;
+  overflow: hidden;
+}
+
+.mindlab-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #d3a54a 0%, #7d2444 55%, #611934 100%);
+}
+
+.mindlab-chip-lists {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.mindlab-hints {
+  margin-top: 0.65rem;
+  border-radius: 12px;
+  border: 1px solid rgba(211, 165, 74, 0.25);
+  background: rgba(255, 249, 238, 0.7);
+  padding: 0.65rem 0.75rem;
+}
+
+.mindlab-hints h4 {
+  margin: 0 0 0.35rem;
+  color: #6d1835;
+}
+
+.mindlab-hints ul {
+  margin: 0;
+  padding-inline-start: 1rem;
+  color: #4c6275;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.mindlab-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.mindlab-delta-grid {
+  margin-top: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.mindlab-delta-grid .mini-card ul {
+  margin-top: 0.45rem;
+}
+
+.mindlab-consent-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
 .alchemy-card--compact {
   padding: 0.8rem;
   box-shadow: none;
@@ -1347,6 +1541,14 @@ textarea {
   .beyond-rail {
     position: static;
   }
+
+  .mindlab-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .mindlab-rail__sticky {
+    position: static;
+  }
 }
 
 @media (max-width: 860px) {
@@ -1390,6 +1592,11 @@ textarea {
   }
 
   .triple-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mindlab-options-grid,
+  .mindlab-delta-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1439,6 +1646,11 @@ textarea {
 
   .lesson-prompt__actions button {
     flex: 1 1 auto;
+  }
+
+  .mindlab-script-preview__head {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .controls-row {
