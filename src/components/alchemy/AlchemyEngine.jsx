@@ -25,7 +25,102 @@ function cloneValue(value) {
   }
 }
 
-function CoachPanel({ lab, draft, sentence, tags }) {
+const SOURCE_TOPICS_BY_LAB = {
+  phrasing: [
+    {
+      id: 'work-team',
+      labelHe: 'עבודה וצוות',
+      stories: [
+        'כשמשנים החלטה בלי לעדכן אותי מראש, אני מגלה על זה מאוחר וזה פוגע ביכולת שלי להיערך.',
+        'כשיש ציפייה לתשובה מיידית בלי הקשר, אני נהיה דרוך ומגיב פחות מדויק.',
+        'כשמשימה מתרחבת תוך כדי עבודה בלי תיאום, אני מאבד פוקוס ומתקשה לעמוד בזמנים.',
+      ],
+    },
+    {
+      id: 'clients-management',
+      labelHe: 'לקוחות וניהול',
+      stories: [
+        'לקוח מבקש שינוי ברגע האחרון ואני לא בטוח מה דחוף ומה יכול לחכות.',
+        'המנהל מבקש עדכון תכוף מאוד וזה יוצר תחושת לחץ במקום בהירות.',
+        'יש ריבוי ערוצים (וואטסאפ/מייל/שיחה) ואני מאבד רצף עבודה.',
+      ],
+    },
+    {
+      id: 'clinic-therapy',
+      labelHe: 'קליניקה/טיפול',
+      stories: [
+        'מטופל מבקש מענה ארוך בין מפגשים ואני רוצה לשמור על גבולות ועדיין להיות אמפתי.',
+        'מטופל מגיע עם טקסט פנימי נוקשה, ואני רוצה לעזור לו לעבור לניסוח יותר פתוח.',
+      ],
+    },
+  ],
+  empathy: [
+    {
+      id: 'relationship',
+      labelHe: 'זוגיות וקשר',
+      stories: [
+        'כשאני משתף משהו אישי ומקבל עצה מיד, אני מרגיש שלא נשאר מקום למה שאני חווה.',
+        'כשמדברים בטון חד בזמן ויכוח, אני נסגר ומתקשה להסביר מה חשוב לי.',
+      ],
+    },
+    {
+      id: 'family-parenting',
+      labelHe: 'משפחה והורות',
+      stories: [
+        'כשיש הרבה משימות בבית בלי תיאום, אני מרגיש עומס ולא מצליח לבקש עזרה בזמן.',
+        'כשילד מתנגד ואני מגיב מהר, אני מרגיש אחר כך שלא הייתי מדויק.',
+      ],
+    },
+  ],
+  boundaries: [
+    {
+      id: 'work-boundaries',
+      labelHe: 'גבולות בעבודה',
+      stories: [
+        'מבקשים ממני משימה נוספת בזמן שאני כבר בעומס, ואני רוצה לסרב בלי לשרוף את הקשר.',
+        'פניות אחרי שעות העבודה יוצרות אצלי דריכות מתמשכת ואני רוצה מסגרת ברורה.',
+      ],
+    },
+    {
+      id: 'social-boundaries',
+      labelHe: 'גבולות אישיים',
+      stories: [
+        'מבקשים ממני טובה בתדירות גבוהה ואני רוצה להגיד לא בלי אשמה.',
+        'יש שיחות ארוכות בזמן לא מתאים ואני צריך דרך לעצור בעדינות.',
+      ],
+    },
+  ],
+  default: [
+    {
+      id: 'general',
+      labelHe: 'כללי',
+      stories: [
+        'יש לי סיטואציה שאני רוצה לנסח מחדש בצורה מדויקת יותר.',
+        'אני רוצה לקחת משפט תקוע ולהפוך אותו לניסוח שמייצר יותר אפשרויות.',
+      ],
+    },
+  ],
+}
+
+function getSourceTopicsForLab(labId) {
+  return SOURCE_TOPICS_BY_LAB[labId] ?? SOURCE_TOPICS_BY_LAB.default
+}
+
+function getSourceContext(draft) {
+  return {
+    patientText: draft?.sourceContext?.patientText ?? '',
+    activeTopicId: draft?.sourceContext?.activeTopicId ?? '',
+    customStoriesByTopic: draft?.sourceContext?.customStoriesByTopic ?? {},
+  }
+}
+
+function sourceContextSummary(sourceContext) {
+  const text = (sourceContext?.patientText ?? '').trim()
+  if (!text) return ''
+  return text.length > 64 ? `${text.slice(0, 64)}...` : text
+}
+
+function CoachPanel({ lab, draft, sentence, tags, sourceText }) {
   const warmthLabel = warmthLabelHe(draft?.warmth ?? 50)
   const tips = []
 
@@ -49,6 +144,7 @@ function CoachPanel({ lab, draft, sentence, tags }) {
     <aside className="coach-panel" aria-label="Coach panel">
       <div className="coach-panel__title">פאנל מאמן</div>
       <div className="coach-panel__meta">חום נוכחי: {warmthLabel}</div>
+      {sourceText ? <p className="coach-panel__source">מקור: "{sourceText}"</p> : null}
       <p className="coach-panel__sentence">{sentence}</p>
       <ul className="coach-panel__tips">
         {tips.map((tip) => (
@@ -80,6 +176,22 @@ export default function AlchemyEngine({
   const sentence = useMemo(() => (lab && draft ? buildSentence(lab, draft) : ''), [lab, draft])
   const tokens = useMemo(() => (lab && draft ? previewTokens(lab, draft) : []), [lab, draft])
   const tags = useMemo(() => (lab && draft ? selectedTagsForDraft(lab, draft) : []), [lab, draft])
+  const template = useMemo(() => (lab && draft ? getTemplate(lab, draft.templateId) : null), [lab, draft])
+  const banks = useMemo(
+    () => (lab && draft ? activeChipBanksForTemplate(lab, draft.templateId) : []),
+    [lab, draft],
+  )
+  const sourceTopics = useMemo(() => getSourceTopicsForLab(lab?.id), [lab?.id])
+  const sourceContext = useMemo(() => getSourceContext(draft), [draft])
+  const sourceSummary = useMemo(() => sourceContextSummary(sourceContext), [sourceContext])
+  const [openBankId, setOpenBankId] = useState('')
+  const [openSourceTopicId, setOpenSourceTopicId] = useState('')
+  const resolvedOpenBankId =
+    openBankId && banks.some((bank) => bank.id === openBankId) ? openBankId : ''
+  const resolvedOpenSourceTopicId =
+    openSourceTopicId && sourceTopics.some((topic) => topic.id === openSourceTopicId)
+      ? openSourceTopicId
+      : ''
 
   useEffect(() => {
     if (!onSentenceChange || !lab || !draft) return
@@ -95,9 +207,6 @@ export default function AlchemyEngine({
     return null
   }
 
-  const template = getTemplate(lab, draft.templateId)
-  const banks = activeChipBanksForTemplate(lab, draft.templateId)
-
   const activeCount = tokens.filter((token) => token.value).length
   const warmthVariantKey = draft.warmth <= 33 ? 'cold' : draft.warmth <= 66 ? 'neutral' : 'warm'
   const chipTextForCurrentWarmth = (chip) =>
@@ -106,6 +215,123 @@ export default function AlchemyEngine({
   const setDraft = (updater) => {
     updateDraft(labId, updater)
     setStatusMessage('')
+  }
+
+  const activeSourceTopicId = sourceContext.activeTopicId || sourceTopics[0]?.id || ''
+
+  const sourceTopicsWithStories = sourceTopics.map((topic) => {
+    const customStories = Array.isArray(sourceContext.customStoriesByTopic?.[topic.id])
+      ? sourceContext.customStoriesByTopic[topic.id]
+      : []
+    const customItems = customStories.map((text, index) => ({
+      id: `custom-${topic.id}-${index}`,
+      text,
+      origin: 'custom',
+    }))
+    const seedItems = (topic.stories ?? []).map((text, index) => ({
+      id: `seed-${topic.id}-${index}`,
+      text,
+      origin: 'seed',
+    }))
+
+    return {
+      ...topic,
+      items: [...customItems, ...seedItems],
+      customCount: customItems.length,
+    }
+  })
+
+  const updateSourceContext = (updater) => {
+    setDraft((current) => {
+      const previous = getSourceContext(current)
+      const next =
+        typeof updater === 'function'
+          ? updater(previous)
+          : { ...previous, ...(updater ?? {}) }
+
+      return {
+        ...current,
+        sourceContext: next,
+        updatedAt: new Date().toISOString(),
+      }
+    })
+  }
+
+  const handleSourceTextChange = (value) => {
+    updateSourceContext((current) => ({
+      ...current,
+      patientText: value,
+    }))
+  }
+
+  const handleSelectSourceTopic = (topicId) => {
+    updateSourceContext((current) => ({
+      ...current,
+      activeTopicId: topicId,
+    }))
+    setOpenSourceTopicId(topicId)
+  }
+
+  const loadStoryIntoSource = (storyText, mode = 'replace', topicId) => {
+    const safeStory = String(storyText ?? '').trim()
+    if (!safeStory) return
+
+    updateSourceContext((current) => {
+      const currentText = (current.patientText ?? '').trim()
+      const nextText =
+        mode === 'append' && currentText
+          ? `${currentText}\n\n${safeStory}`
+          : safeStory
+
+      return {
+        ...current,
+        activeTopicId: topicId || current.activeTopicId || activeSourceTopicId,
+        patientText: nextText,
+      }
+    })
+
+    setStatusMessage(mode === 'append' ? 'הסיפור נוסף לטקסט המקור.' : 'הסיפור נטען לטקסט המקור.')
+  }
+
+  const handleSaveSourceAsStory = () => {
+    const storyText = (sourceContext.patientText ?? '').trim()
+    if (!storyText) {
+      setStatusMessage('הדביקו קודם משפט מטופל או סיפור קצר.')
+      return
+    }
+
+    const topicId = activeSourceTopicId || sourceTopics[0]?.id
+    if (!topicId) return
+
+    let wasAdded = false
+    updateSourceContext((current) => {
+      const customStoriesByTopic = { ...(current.customStoriesByTopic ?? {}) }
+      const existing = Array.isArray(customStoriesByTopic[topicId]) ? customStoriesByTopic[topicId] : []
+      if (existing.includes(storyText)) {
+        return {
+          ...current,
+          activeTopicId: topicId,
+        }
+      }
+      customStoriesByTopic[topicId] = [storyText, ...existing].slice(0, 12)
+      wasAdded = true
+      return {
+        ...current,
+        activeTopicId: topicId,
+        customStoriesByTopic,
+      }
+    })
+
+    setOpenSourceTopicId(topicId)
+    setStatusMessage(wasAdded ? 'נשמר סיפור חדש בנושא הפעיל.' : 'הסיפור כבר קיים בנושא הפעיל.')
+  }
+
+  const clearSourceText = () => {
+    updateSourceContext((current) => ({
+      ...current,
+      patientText: '',
+    }))
+    setStatusMessage('טקסט המקור נוקה.')
   }
 
   const handleCopy = async () => {
@@ -177,6 +403,110 @@ export default function AlchemyEngine({
         </div>
       )}
 
+      {!compact && (
+        <MenuSection
+          title="טקסט מקור / משפט המטופל"
+          subtitle={
+            sourceSummary ||
+            'הדביקו משפט של מטופל/לקוח או טענו סיפור מוכן מתוך נושא רלוונטי.'
+          }
+          badgeText={sourceSummary ? 'פעיל' : 'אופציונלי'}
+          defaultOpen={false}
+          className="source-context-menu"
+        >
+          <div className="source-context-panel">
+            <label className="source-context-panel__field">
+              <span>משפט המטופל / סיפור מקור</span>
+              <textarea
+                className="source-context-panel__textarea"
+                rows={4}
+                placeholder="לדוגמה: 'כל פעם שמשנים לי דברים ברגע האחרון אני נסגר ולא יודע מאיפה להתחיל...'"
+                value={sourceContext.patientText}
+                onChange={(event) => handleSourceTextChange(event.target.value)}
+              />
+            </label>
+
+            <div className="source-context-panel__toolbar">
+              <label className="source-context-panel__topic">
+                <span>נושא פעיל</span>
+                <select
+                  value={activeSourceTopicId}
+                  onChange={(event) => handleSelectSourceTopic(event.target.value)}
+                >
+                  {sourceTopics.map((topic) => (
+                    <option key={topic.id} value={topic.id}>
+                      {topic.labelHe}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="source-context-panel__actions">
+                <button type="button" onClick={handleSaveSourceAsStory}>
+                  שמור כסיפור
+                </button>
+                <button type="button" onClick={clearSourceText}>
+                  נקה טקסט
+                </button>
+              </div>
+            </div>
+
+            <div className="source-context-topics">
+              {sourceTopicsWithStories.map((topic) => (
+                <MenuSection
+                  key={topic.id}
+                  title={topic.labelHe}
+                  subtitle={`${topic.items.length} סיפורים זמינים`}
+                  badgeText={topic.customCount ? `+${topic.customCount} שלי` : 'מוכן'}
+                  compact
+                  isOpen={resolvedOpenSourceTopicId === topic.id}
+                  onToggle={() =>
+                    setOpenSourceTopicId((currentId) => (currentId === topic.id ? '' : topic.id))
+                  }
+                  className="source-topic-menu"
+                >
+                  <div className="source-story-list">
+                    {topic.items.map((item) => (
+                      <div key={item.id} className="source-story-item">
+                        <button
+                          type="button"
+                          className="source-story-item__text"
+                          onClick={() => {
+                            setOpenSourceTopicId(topic.id)
+                            loadStoryIntoSource(item.text, 'replace', topic.id)
+                          }}
+                          title="טען לטקסט המקור"
+                        >
+                          {item.text}
+                        </button>
+                        <div className="source-story-item__meta">
+                          <span
+                            className={`source-story-item__badge ${
+                              item.origin === 'custom' ? 'is-custom' : ''
+                            }`}
+                          >
+                            {item.origin === 'custom' ? 'שלי' : 'מוכן'}
+                          </span>
+                          <button
+                            type="button"
+                            className="source-story-item__append"
+                            onClick={() => {
+                              setOpenSourceTopicId(topic.id)
+                              loadStoryIntoSource(item.text, 'append', topic.id)
+                            }}
+                          >
+                            הוסף
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </MenuSection>
+              ))}
+            </div>
+          </div>
+        </MenuSection>
+      )}
+
       <div className="preview-panel">
         <div className="preview-panel__top">
           <span className="preview-panel__label">תצוגת ניסוח</span>
@@ -196,6 +526,7 @@ export default function AlchemyEngine({
           ))}
         </div>
         <p className="preview-panel__sentence">{sentence}</p>
+        {sourceSummary ? <p className="preview-panel__source">מתוך מקור: {sourceSummary}</p> : null}
         <div className="controls-row">
           <button type="button" onClick={handleCopy}>
             העתק
@@ -227,7 +558,7 @@ export default function AlchemyEngine({
 
       <div className="alchemy-layout">
         <div className="chip-bank-panel">
-          {banks.map((bank, index) => {
+          {banks.map((bank) => {
             const selectedChipId = draft.selectedBySlot?.[bank.slotId]
             const selectedChip = bank.chips.find((chip) => chip.id === selectedChipId)
             const selectedText = selectedChip ? chipTextForCurrentWarmth(selectedChip) : ''
@@ -237,8 +568,9 @@ export default function AlchemyEngine({
                 key={bank.id}
                 title={bank.labelHe}
                 subtitle={selectedText || undefined}
-                badgeText={selectedChipId ? 'Selected' : bank.optional ? 'Optional' : 'Choose'}
-                defaultOpen={index === 0 || Boolean(selectedChipId)}
+                badgeText={selectedChipId ? 'נבחר' : bank.optional ? 'אופציונלי' : 'לבחירה'}
+                isOpen={resolvedOpenBankId === bank.id}
+                onToggle={() => setOpenBankId((currentId) => (currentId === bank.id ? '' : bank.id))}
                 compact={compact}
               >
                 <div className="chip-bank chip-bank--embedded">
@@ -276,7 +608,7 @@ export default function AlchemyEngine({
                           }))
                         }
                       >
-                        None
+                        ללא
                       </button>
                     )}
                   </div>
@@ -286,7 +618,15 @@ export default function AlchemyEngine({
           })}
         </div>
 
-        {showCoach && <CoachPanel lab={lab} draft={draft} sentence={sentence} tags={tags} />}
+        {showCoach && (
+          <CoachPanel
+            lab={lab}
+            draft={draft}
+            sentence={sentence}
+            tags={tags}
+            sourceText={sourceSummary}
+          />
+        )}
       </div>
     </section>
   )

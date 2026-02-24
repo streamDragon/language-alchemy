@@ -5,11 +5,23 @@ export default function MenuSection({
   subtitle,
   badgeText,
   defaultOpen = false,
+  isOpen: controlledOpen,
+  onToggle,
   compact = false,
   className = '',
   children,
 }) {
-  const [isOpen, setIsOpen] = useState(defaultOpen)
+  const [internalOpen, setInternalOpen] = useState(defaultOpen)
+  const isControlled = typeof controlledOpen === 'boolean'
+  const isOpen = isControlled ? controlledOpen : internalOpen
+
+  const handleToggle = () => {
+    if (onToggle) {
+      onToggle()
+      return
+    }
+    setInternalOpen((prev) => !prev)
+  }
 
   const classes = ['menu-section', isOpen ? 'is-open' : '', compact ? 'menu-section--compact' : '', className]
     .filter(Boolean)
@@ -21,7 +33,7 @@ export default function MenuSection({
         type="button"
         className="menu-section__toggle"
         aria-expanded={isOpen}
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={handleToggle}
       >
         <span className="menu-section__titleWrap">
           <span className="menu-section__title">{title}</span>
@@ -30,7 +42,7 @@ export default function MenuSection({
         <span className="menu-section__meta">
           {badgeText ? <span className="menu-section__badge">{badgeText}</span> : null}
           <span className="menu-section__chevron" aria-hidden="true">
-            {isOpen ? '▾' : '▸'}
+            {isOpen ? '-' : '+'}
           </span>
         </span>
       </button>

@@ -191,6 +191,7 @@ export function resetAlchemyDraft(lab, currentDraft) {
   return {
     ...fresh,
     warmth: currentDraft?.warmth ?? fresh.warmth,
+    sourceContext: currentDraft?.sourceContext ?? fresh.sourceContext,
   }
 }
 
