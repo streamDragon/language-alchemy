@@ -717,6 +717,99 @@ button:hover {
   gap: 0.7rem;
 }
 
+.menu-section {
+  border: 1px solid #dde6ef;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  overflow: hidden;
+}
+
+.menu-section.is-open {
+  border-color: rgba(109, 24, 53, 0.22);
+  box-shadow: 0 8px 20px rgba(16, 38, 61, 0.03);
+}
+
+.menu-section__toggle {
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  padding: 0.7rem 0.75rem;
+  background: transparent;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.7rem;
+  text-align: start;
+}
+
+.menu-section__toggle:hover {
+  background: rgba(248, 251, 255, 0.8);
+}
+
+.menu-section.is-open .menu-section__toggle {
+  background:
+    radial-gradient(circle at 95% 14%, rgba(211, 165, 74, 0.08), transparent 55%),
+    linear-gradient(180deg, #fffdf8 0%, #fbfdff 100%);
+}
+
+.menu-section__titleWrap {
+  min-width: 0;
+  display: grid;
+  gap: 0.16rem;
+}
+
+.menu-section__title {
+  color: #1a364e;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.menu-section__subtitle {
+  color: #667f92;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 48ch;
+}
+
+.menu-section__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+}
+
+.menu-section__badge {
+  border-radius: 999px;
+  border: 1px solid #d7e1ea;
+  background: #f4f8fb;
+  color: #5b7387;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.12rem 0.45rem;
+}
+
+.menu-section__chevron {
+  color: #6f8598;
+  font-size: 0.95rem;
+  line-height: 1;
+  margin-top: 0.1rem;
+}
+
+.menu-section__body {
+  padding: 0 0.75rem 0.75rem;
+}
+
+.menu-section--compact .menu-section__toggle {
+  padding: 0.6rem 0.65rem;
+}
+
+.menu-section--compact .menu-section__body {
+  padding: 0 0.65rem 0.65rem;
+}
+
 .chip-bank {
   border: 1px solid #e2e9f1;
   border-radius: 12px;
@@ -729,6 +822,17 @@ button:hover {
   margin: 0 0 0.5rem;
   color: #2c4a62;
   font-size: 0.94rem;
+}
+
+.chip-bank--embedded {
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+.chip-bank--embedded h3,
+.chip-bank--embedded h4 {
+  display: none;
 }
 
 .chips-wrap {

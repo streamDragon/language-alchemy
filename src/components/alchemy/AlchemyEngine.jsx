@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { getLabConfig } from '../../data/labsConfig'
 import { useAppState } from '../../state/appStateContext'
 import LabLessonPrompt from '../layout/LabLessonPrompt'
+import MenuSection from '../layout/MenuSection'
 import {
   activeChipBanksForTemplate,
   buildSentence,
@@ -98,6 +99,9 @@ export default function AlchemyEngine({
   const banks = activeChipBanksForTemplate(lab, draft.templateId)
 
   const activeCount = tokens.filter((token) => token.value).length
+  const warmthVariantKey = draft.warmth <= 33 ? 'cold' : draft.warmth <= 66 ? 'neutral' : 'warm'
+  const chipTextForCurrentWarmth = (chip) =>
+    chip.textVariants ? chip.textVariants[warmthVariantKey] ?? chip.textVariants.neutral : ''
 
   const setDraft = (updater) => {
     updateDraft(labId, updater)
@@ -223,52 +227,63 @@ export default function AlchemyEngine({
 
       <div className="alchemy-layout">
         <div className="chip-bank-panel">
-          {banks.map((bank) => (
-            <section key={bank.id} className="chip-bank">
-              <h3>{bank.labelHe}</h3>
-              <div className="chips-wrap">
-                {bank.chips.map((chip) => {
-                  const text = chip.textVariants
-                    ? chip.textVariants[draft.warmth <= 33 ? 'cold' : draft.warmth <= 66 ? 'neutral' : 'warm'] ??
-                      chip.textVariants.neutral
-                    : ''
-                  const selected = draft.selectedBySlot?.[bank.slotId] === chip.id
-                  return (
-                    <button
-                      key={chip.id}
-                      type="button"
-                      className={`chip ${selected ? 'chip--selected' : ''}`}
-                      aria-pressed={selected}
-                      onClick={() =>
-                        setDraft((current) => selectChipInDraft(current, bank.slotId, chip.id))
-                      }
-                    >
-                      {text}
-                    </button>
-                  )
-                })}
-                {bank.optional && (
-                  <button
-                    type="button"
-                    className={`chip ${!draft.selectedBySlot?.[bank.slotId] ? 'chip--selected' : ''}`}
-                    aria-pressed={!draft.selectedBySlot?.[bank.slotId]}
-                    onClick={() =>
-                      setDraft((current) => ({
-                        ...current,
-                        selectedBySlot: {
-                          ...current.selectedBySlot,
-                          [bank.slotId]: '',
-                        },
-                        updatedAt: new Date().toISOString(),
-                      }))
-                    }
-                  >
-                    ללא
-                  </button>
-                )}
-              </div>
-            </section>
-          ))}
+          {banks.map((bank, index) => {
+            const selectedChipId = draft.selectedBySlot?.[bank.slotId]
+            const selectedChip = bank.chips.find((chip) => chip.id === selectedChipId)
+            const selectedText = selectedChip ? chipTextForCurrentWarmth(selectedChip) : ''
+
+            return (
+              <MenuSection
+                key={bank.id}
+                title={bank.labelHe}
+                subtitle={selectedText || undefined}
+                badgeText={selectedChipId ? 'Selected' : bank.optional ? 'Optional' : 'Choose'}
+                defaultOpen={index === 0 || Boolean(selectedChipId)}
+                compact={compact}
+              >
+                <div className="chip-bank chip-bank--embedded">
+                  <div className="chips-wrap">
+                    {bank.chips.map((chip) => {
+                      const text = chipTextForCurrentWarmth(chip)
+                      const selected = selectedChipId === chip.id
+                      return (
+                        <button
+                          key={chip.id}
+                          type="button"
+                          className={`chip ${selected ? 'chip--selected' : ''}`}
+                          aria-pressed={selected}
+                          onClick={() =>
+                            setDraft((current) => selectChipInDraft(current, bank.slotId, chip.id))
+                          }
+                        >
+                          {text}
+                        </button>
+                      )
+                    })}
+                    {bank.optional && (
+                      <button
+                        type="button"
+                        className={`chip ${!selectedChipId ? 'chip--selected' : ''}`}
+                        aria-pressed={!selectedChipId}
+                        onClick={() =>
+                          setDraft((current) => ({
+                            ...current,
+                            selectedBySlot: {
+                              ...current.selectedBySlot,
+                              [bank.slotId]: '',
+                            },
+                            updatedAt: new Date().toISOString(),
+                          }))
+                        }
+                      >
+                        None
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </MenuSection>
+            )
+          })}
         </div>
 
         {showCoach && <CoachPanel lab={lab} draft={draft} sentence={sentence} tags={tags} />}
