@@ -1,75 +1,296 @@
 import { useState } from 'react'
+import './App.css'
+
+const SENTENCE_TYPES = [
+  {
+    id: 'assertive-boundary',
+    label: 'גבול / בקשה',
+    status: 'active',
+    description: 'ניסוח אסרטיבי שמציין הקשר, תחושה, צורך ובקשה ברורה.',
+    slots: [
+      {
+        id: 'context',
+        label: 'זמן',
+        options: [
+          'כשזה קורה שוב',
+          'בזמן שיחה מול כולם',
+          'כשמשנים החלטה בלי לעדכן',
+          'כשקובעים עבורי בלי לשאול',
+        ],
+      },
+      {
+        id: 'feeling',
+        label: 'רגש/תחושה',
+        options: [
+          'אני מרגישה מוצפת',
+          'אני מרגיש לחוץ',
+          'אני מרגישה לא מובנת',
+          'אני מרגיש מתוח',
+        ],
+      },
+      {
+        id: 'need',
+        label: 'צורך',
+        options: [
+          'חשוב לי להבין מה הוחלט',
+          'אני צריך יותר בהירות',
+          'חשוב לי שיכבדו את הקצב שלי',
+          'אני צריכה זמן לעבד לפני תשובה',
+        ],
+      },
+      {
+        id: 'request',
+        label: 'בקשה/גבול',
+        options: [
+          'אז בבקשה לדבר איתי בכבוד',
+          'אז בבקשה לעדכן אותי לפני שינוי',
+          'ולא להרים עליי קול',
+          'ובואו נסכם צעד אחד בכל פעם',
+        ],
+      },
+      {
+        id: 'closing',
+        label: 'סיום',
+        options: [
+          'ככה אוכל לשתף פעולה',
+          'כדי שאוכל להגיב בצורה טובה יותר',
+          'וזה יעזור לי להישאר נוכח',
+          'וככה נוכל להתקדם יחד',
+        ],
+      },
+    ],
+    previewOrder: ['context', 'feeling', 'need', 'request', 'closing'],
+    guidance:
+      'לחצו על צ׳יפים כדי להרכיב ניסוח. אפשר לבטל בחירה בלחיצה חוזרת ולהשאיר מקום פתוח.',
+  },
+  {
+    id: 'emotion-reflection',
+    label: 'שיקוף רגש',
+    status: 'coming-soon',
+  },
+  {
+    id: 'request-soft',
+    label: 'בקשה רכה',
+    status: 'coming-soon',
+  },
+  {
+    id: 'clarifying-question',
+    label: 'שאלת הבהרה',
+    status: 'coming-soon',
+  },
+]
+
+function createInitialSelections() {
+  return Object.fromEntries(
+    SENTENCE_TYPES.map((type) => {
+      if (type.status !== 'active') {
+        return [type.id, {}]
+      }
+
+      const defaults = Object.fromEntries(
+        type.slots.map((slot) => [slot.id, slot.options[0] ?? '']),
+      )
+
+      return [type.id, defaults]
+    }),
+  )
+}
 
 function App() {
-  // ההגדרות של "אבני הלגו" של השפה שלנו
-  const subjects = [
-    { text: "אף אחד", stress: 3 },
-    { text: "המנהל שלי", stress: 2 },
-    { text: "דני מהצוות", stress: 1 }
-  ];
+  const [activeTypeId, setActiveTypeId] = useState('assertive-boundary')
+  const [selectionsByType, setSelectionsByType] = useState(createInitialSelections)
+  const [statusMessage, setStatusMessage] = useState('')
 
-  const times = [
-    { text: "אף פעם לא", stress: 3 },
-    { text: "בדרך כלל לא", stress: 2 },
-    { text: "היום לא", stress: 1 }
-  ];
+  const activeType = SENTENCE_TYPES.find((type) => type.id === activeTypeId)
+  const activeSelections = selectionsByType[activeTypeId] ?? {}
 
-  const actions = [
-    { text: "מעריך אותי בכלל", stress: 3 },
-    { text: "רואה את ההשקעה שלי", stress: 2 },
-    { text: "אמר לי תודה על הפיצ'ר", stress: 1 }
-  ];
+  if (!activeType || activeType.status !== 'active') {
+    return null
+  }
 
-  // המצב הנוכחי של המשפט
-  const [subject, setSubject] = useState(subjects[0]);
-  const [time, setTime] = useState(times[0]);
-  const [action, setAction] = useState(actions[0]);
+  const activeCount = activeType.previewOrder.filter(
+    (slotId) => activeSelections[slotId],
+  ).length
 
-  // חישוב הטמפרטורה הרגשית (מקסימום 9)
-  const totalStress = subject.stress + time.stress + action.stress;
-  
-  // קביעת צבע הרקע לפי רמת הלחץ (אלכימיה!)
-  const getBackgroundColor = () => {
-    if (totalStress >= 8) return '#ffebee'; // אדום לחוץ - עיוות מוחלט (Beta State)
-    if (totalStress >= 5) return '#fff3e0'; // כתום אזהרה
-    return '#e8f5e9'; // ירוק רגוע - עובדות יבשות (Alpha State)
-  };
+  const slotMap = Object.fromEntries(activeType.slots.map((slot) => [slot.id, slot]))
+
+  const sentenceParts = activeType.previewOrder
+    .map((slotId) => activeSelections[slotId]?.trim())
+    .filter(Boolean)
+
+  const finalSentence = sentenceParts.length
+    ? `${sentenceParts.join(', ')}.`
+    : 'בחרו רכיבים כדי לבנות משפט.'
+
+  const updateSelection = (slotId, value) => {
+    setSelectionsByType((previous) => {
+      const currentTypeSelections = previous[activeTypeId] ?? {}
+      const nextValue = currentTypeSelections[slotId] === value ? '' : value
+
+      return {
+        ...previous,
+        [activeTypeId]: {
+          ...currentTypeSelections,
+          [slotId]: nextValue,
+        },
+      }
+    })
+  }
+
+  const resetSelections = () => {
+    setSelectionsByType((previous) => ({
+      ...previous,
+      [activeTypeId]: Object.fromEntries(
+        activeType.slots.map((slot) => [slot.id, slot.options[0] ?? '']),
+      ),
+    }))
+    setStatusMessage('בוצע איפוס לנוסח הבסיס.')
+  }
+
+  const shuffleSelections = () => {
+    setSelectionsByType((previous) => ({
+      ...previous,
+      [activeTypeId]: Object.fromEntries(
+        activeType.slots.map((slot) => {
+          const randomIndex = Math.floor(Math.random() * slot.options.length)
+          return [slot.id, slot.options[randomIndex]]
+        }),
+      ),
+    }))
+    setStatusMessage('נבחרו רכיבים אקראיים.')
+  }
+
+  const saveDraft = async () => {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(finalSentence)
+        setStatusMessage('הנוסח הועתק ללוח.')
+        return
+      }
+
+      setStatusMessage('הנוסח מוכן. אפשר להעתיק ידנית מהתצוגה.')
+    } catch {
+      setStatusMessage('לא הצלחתי להעתיק ללוח. אפשר להעתיק ידנית.')
+    }
+  }
 
   return (
-    <div style={{ padding: '40px', fontFamily: 'Arial', backgroundColor: getBackgroundColor(), minHeight: '100vh', transition: 'background-color 0.5s ease', textAlign: 'center' }}>
-      <h1>⚗️ מעבדת אלכימיה של שפה</h1>
-      <p style={{ fontSize: '18px', color: '#555' }}>
-        שחק עם הכמתים ושים לב איך הגוף שלך מגיב כשהמשפט הופך מ"אשליה" (תטא/בטא) לעובדתי ורגוע (אלפא).
-      </p>
+    <div className="app-shell" dir="rtl">
+      <main className="trainer-frame">
+        <header className="trainer-header">
+          <button type="button" className="ghost-button">
+            חזרה לאפליקציה הראשית
+          </button>
+          <h1>Sentence Morpher</h1>
+        </header>
 
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', margin: '40px 0', fontSize: '24px' }}>
-        <select value={subject.text} onChange={(e) => setSubject(subjects.find(s => s.text === e.target.value))} style={{ fontSize: '20px', padding: '10px', borderRadius: '8px' }}>
-          {subjects.map((s, idx) => <option key={idx} value={s.text}>{s.text}</option>)}
-        </select>
+        <section className="trainer-content">
+          <div className="intro-card">
+            <h2>מעבדת שינוי ניסוח</h2>
+            <p>
+              זהו מסך הבסיס שממנו נתחיל. בהמשך נוסיף סוגי משפטים נוספים
+              (שאלות, שיקוף רגשות, בקשות ועוד) בלי לשנות את מבנה העבודה.
+            </p>
+          </div>
 
-        <select value={time.text} onChange={(e) => setTime(times.find(t => t.text === e.target.value))} style={{ fontSize: '20px', padding: '10px', borderRadius: '8px' }}>
-          {times.map((t, idx) => <option key={idx} value={t.text}>{t.text}</option>)}
-        </select>
+          <div className="type-switcher" role="tablist" aria-label="סוגי משפטים">
+            {SENTENCE_TYPES.map((type) => (
+              <button
+                key={type.id}
+                type="button"
+                role="tab"
+                className={`type-pill ${
+                  type.id === activeTypeId ? 'type-pill--active' : ''
+                } ${type.status !== 'active' ? 'type-pill--disabled' : ''}`}
+                aria-selected={type.id === activeTypeId}
+                disabled={type.status !== 'active'}
+                onClick={() => setActiveTypeId(type.id)}
+              >
+                <span>{type.label}</span>
+                {type.status !== 'active' && <small>בקרוב</small>}
+              </button>
+            ))}
+          </div>
 
-        <select value={action.text} onChange={(e) => setAction(actions.find(a => a.text === e.target.value))} style={{ fontSize: '20px', padding: '10px', borderRadius: '8px' }}>
-          {actions.map((a, idx) => <option key={idx} value={a.text}>{a.text}</option>)}
-        </select>
-      </div>
+          <section className="builder-card" aria-labelledby="builder-title">
+            <div className="builder-head">
+              <div>
+                <h3 id="builder-title">משפט גדול</h3>
+                <p>{activeType.description}</p>
+              </div>
+              <div className="head-actions">
+                <button type="button" onClick={resetSelections}>
+                  איפוס
+                </button>
+                <button type="button" onClick={shuffleSelections}>
+                  בחירה אקראית
+                </button>
+              </div>
+            </div>
 
-      <div style={{ marginTop: '50px', padding: '30px', backgroundColor: 'white', borderRadius: '15px', display: 'inline-block', boxShadow: '0 8px 16px rgba(0,0,0,0.1)' }}>
-        <h2>מד מערכת העצבים (Felt Sense): {totalStress}/9</h2>
-        <div style={{ height: '20px', width: '300px', backgroundColor: '#eee', borderRadius: '10px', overflow: 'hidden', margin: '0 auto' }}>
-          <div style={{ 
-            height: '100%', 
-            width: `${(totalStress / 9) * 100}%`, 
-            backgroundColor: totalStress >= 8 ? '#f44336' : totalStress >= 5 ? '#ff9800' : '#4caf50',
-            transition: 'width 0.5s ease, background-color 0.5s ease'
-          }}></div>
-        </div>
-        <p style={{ marginTop: '20px', fontSize: '18px', fontWeight: 'bold', color: '#333' }}>
-          {totalStress >= 8 ? '⚠️ אזהרה: משוואת הגנה קיצונית (כיווץ - Beta State)' : totalStress >= 5 ? '🟡 שים לב: יש כאן עיוות של המציאות' : '✅ מצוין: המוח שלך קורא עכשיו עובדות (התרחבות - Alpha State)'}
-        </p>
-      </div>
+            <div className="sentence-preview" aria-live="polite">
+              <div className="preview-label">תצוגת נוסח</div>
+              <div className="token-stream">
+                {activeType.previewOrder.map((slotId) => {
+                  const slot = slotMap[slotId]
+                  const value = activeSelections[slotId]
+                  const isEmpty = !value
+
+                  return (
+                    <span
+                      key={slotId}
+                      className={`preview-token ${isEmpty ? 'preview-token--empty' : ''}`}
+                      title={slot.label}
+                    >
+                      {value || `[${slot.label}]`}
+                    </span>
+                  )
+                })}
+              </div>
+              <p className="preview-text">{finalSentence}</p>
+            </div>
+
+            <div className="builder-meta">
+              <span>{activeCount}/{activeType.previewOrder.length} רכיבים פעילים</span>
+              <span>{activeType.guidance}</span>
+            </div>
+
+            <div className="chip-groups">
+              {activeType.slots.map((slot) => (
+                <section key={slot.id} className="chip-group">
+                  <h4>{slot.label}</h4>
+                  <div className="chips-wrap">
+                    {slot.options.map((option) => {
+                      const isSelected = activeSelections[slot.id] === option
+
+                      return (
+                        <button
+                          key={option}
+                          type="button"
+                          className={`chip ${isSelected ? 'chip--selected' : ''}`}
+                          onClick={() => updateSelection(slot.id, option)}
+                          aria-pressed={isSelected}
+                        >
+                          {option}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </section>
+              ))}
+            </div>
+
+            <div className="builder-footer">
+              <button type="button" className="save-button" onClick={saveDraft}>
+                שמור נוסח זמני
+              </button>
+              <div className="status-line" aria-live="polite">
+                {statusMessage}
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
     </div>
   )
 }
