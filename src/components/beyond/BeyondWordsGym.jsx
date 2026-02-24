@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { getLabConfig } from '../../data/labsConfig'
 import { useAppState } from '../../state/appStateContext'
 import AlchemyEngine from '../alchemy/AlchemyEngine'
@@ -142,6 +142,90 @@ function BodyMap({ zones, selectedZoneIds, onToggleZone }) {
   )
 }
 
+const FLOW_STEPS = [
+  {
+    id: 'builder',
+    title: '1) Practice Sentence Builder',
+    titleHe: 'בניית ניסוח',
+    hintHe: 'בוחרים משפט תרגול אחד',
+  },
+  {
+    id: 'timer',
+    title: '2) Say It + Timer',
+    titleHe: 'אמירה + טיימר',
+    hintHe: 'קוראים ומחזיקים קשב לאפקט',
+  },
+  {
+    id: 'somatic',
+    title: '3) Somatic Tracker',
+    titleHe: 'תחושת גוף',
+    hintHe: 'איפה זה מורגש, כמה ואיך',
+  },
+  {
+    id: 'meaning',
+    title: '4) Meaning Lens',
+    titleHe: 'משמעות',
+    hintHe: 'מסר + שינוי ניסוח קטן',
+  },
+  {
+    id: 'protocol',
+    title: '5) Attention-Shifting Micro-Protocol',
+    titleHe: 'פרוטוקול קשב',
+    hintHe: 'מעגלי noticing והרחבה',
+  },
+  {
+    id: 'compare',
+    title: '6) Before / After Compare',
+    titleHe: 'השוואה',
+    hintHe: 'A/B ודלתא',
+  },
+]
+
+function FlowStage({
+  step,
+  isActive,
+  onActivate,
+  summary,
+  badgeText,
+  badgeTone = 'idle',
+  children,
+}) {
+  return (
+    <section className={`flow-stage ${isActive ? 'is-active' : ''}`}>
+      <button
+        type="button"
+        className="flow-stage__toggle"
+        aria-expanded={isActive}
+        onClick={onActivate}
+      >
+        <span className="flow-stage__titleWrap">
+          <span className="flow-stage__title">{step.title}</span>
+          <span className="flow-stage__hint">{step.hintHe}</span>
+        </span>
+        <span className="flow-stage__meta">
+          {summary && <span className="flow-stage__summary">{summary}</span>}
+          {badgeText && (
+            <span className={`flow-stage__badge flow-stage__badge--${badgeTone}`}>
+              {badgeText}
+            </span>
+          )}
+        </span>
+      </button>
+      {isActive && <div className="flow-stage__body">{children}</div>}
+    </section>
+  )
+}
+
+function StageNextButton({ onClick, label }) {
+  return (
+    <div className="flow-stage__footer">
+      <button type="button" onClick={onClick}>
+        {label}
+      </button>
+    </div>
+  )
+}
+
 export default function BeyondWordsGym() {
   const lab = getLabConfig('beyond-words')
   const practiceLab = getLabConfig(lab.practiceBuilderLabId)
@@ -164,9 +248,12 @@ export default function BeyondWordsGym() {
     snapshotB: null,
   })
   const [sessionId, setSessionId] = useState(() => makeId('bw'))
+  const [activeStepId, setActiveStepId] = useState('builder')
 
   const practiceDraft = getDraft(practiceLab.id)
   const practiceSentence = buildSentence(practiceLab, practiceDraft)
+  const hasPracticeSentence =
+    !!practiceSentence && practiceSentence !== practiceLab.preview?.emptyTextHe
 
   useEffect(() => {
     setLastVisitedLab('beyond-words')
@@ -181,6 +268,7 @@ export default function BeyondWordsGym() {
           window.clearInterval(intervalId)
           setIsTimerRunning(false)
           setTimerCompleted(true)
+          setActiveStepId('somatic')
           setStatusMessage('הטיימר הסתיים. עכשיו שימו לב: מה קורה בגוף עכשיו?')
           return 0
         }
@@ -205,6 +293,67 @@ export default function BeyondWordsGym() {
   )
 
   const delta = computeSomaticDelta(compare.snapshotA, compare.snapshotB)
+  const somaticHasData =
+    hasSomaticSignal(somatic) || (somatic.qualityTags?.length ?? 0) > 0
+  const meaningHasData =
+    Boolean(meaningLens.messageText.trim()) ||
+    Boolean(meaningLens.fivePercentShiftText.trim())
+  const activeStepIndex = FLOW_STEPS.findIndex((step) => step.id === activeStepId)
+  const currentStep = FLOW_STEPS[activeStepIndex] ?? FLOW_STEPS[0]
+  const nextStep = FLOW_STEPS[activeStepIndex + 1] ?? null
+  const protocolCurrentStep = Math.min(protocolStepIndex + 1, totalProtocolSteps)
+
+  const flowStateByStep = {
+    builder: {
+      summary: hasPracticeSentence
+        ? `${practiceSentence.slice(0, 84)}${practiceSentence.length > 84 ? '…' : ''}`
+        : 'עדיין אין ניסוח',
+      badgeText: hasPracticeSentence ? 'מוכן' : 'ממתין',
+      badgeTone: hasPracticeSentence ? 'ready' : 'idle',
+    },
+    timer: {
+      summary: `${selectedDurationSec}ש | ${
+        isTimerRunning ? 'רץ' : timerCompleted ? 'הסתיים' : 'מוכן'
+      }`,
+      badgeText: timerCompleted ? 'הושלם' : isTimerRunning ? 'פעיל' : 'מוכן',
+      badgeTone: timerCompleted ? 'done' : isTimerRunning ? 'active' : 'idle',
+    },
+    somatic: {
+      summary: somaticHasData
+        ? `${somatic.selectedZones.length} אזורים | עוצמה ${somatic.intensity}/10 | ולנס ${somatic.valence}`
+        : 'עדיין לא נמדד',
+      badgeText: somaticHasData ? 'נמדד' : 'ממתין',
+      badgeTone: somaticHasData ? 'ready' : 'idle',
+    },
+    meaning: {
+      summary: meaningHasData
+        ? `${Number(Boolean(meaningLens.messageText.trim())) + Number(Boolean(meaningLens.fivePercentShiftText.trim()))}/2 שדות מולאו`
+        : 'אופציונלי אבל מומלץ',
+      badgeText: meaningHasData ? 'נכתב' : 'אופציונלי',
+      badgeTone: meaningHasData ? 'ready' : 'idle',
+    },
+    protocol: {
+      summary: `${protocolStepsCompleted}/${totalProtocolSteps} צעדים | ${protocolCompletedCycles}/3 מחזורים`,
+      badgeText: protocolStepsCompleted >= totalProtocolSteps ? 'הושלם' : 'בתרגול',
+      badgeTone: protocolStepsCompleted >= totalProtocolSteps ? 'done' : 'active',
+    },
+    compare: {
+      summary: `A: ${compare.snapshotA ? 'שמור' : '—'} | B: ${
+        compare.snapshotB ? 'שמור' : '—'
+      }`,
+      badgeText:
+        compare.snapshotA && compare.snapshotB ? 'מוכן להשוואה' : 'חלקי',
+      badgeTone:
+        compare.snapshotA && compare.snapshotB ? 'ready' : 'idle',
+    },
+  }
+
+  const goToStep = (stepId) => setActiveStepId(stepId)
+  const goToNextStep = () => {
+    if (nextStep) {
+      setActiveStepId(nextStep.id)
+    }
+  }
 
   useEffect(() => {
     if (!timerCompleted) return
@@ -254,6 +403,7 @@ export default function BeyondWordsGym() {
 
   const startTimer = () => {
     setStatusMessage('קראו את המשפט בקול או בלב. שימו לב למה שקורה בגוף בזמן הקריאה.')
+    setActiveStepId('timer')
     setIsTimerRunning(true)
     setTimerCompleted(false)
   }
@@ -274,6 +424,7 @@ export default function BeyondWordsGym() {
     setProtocolStepIndex(0)
     setCompare({ snapshotA: null, snapshotB: null })
     setSessionId(makeId('bw'))
+    setActiveStepId('builder')
     setStatusMessage('נפתחה סשן חדשה לתרגול.')
   }
 
@@ -339,16 +490,120 @@ export default function BeyondWordsGym() {
           כאן לא רק מנסחים משפטים, אלא מתאמנים ב-Noticing: מה השפה עושה לגוף, לקשב ולבחירה.
         </p>
 
-        <div className="beyond-layout">
-          <div className="beyond-main">
-            <section className="panel-card panel-card--soft">
-              <div className="panel-card__head">
-                <h3>1) Practice Sentence Builder</h3>
+        <div className="beyond-layout beyond-layout--flow">
+          <aside className="beyond-rail">
+            <div className="flow-rail-card flow-rail-card--focus">
+              <div className="flow-rail-card__title">פוקוס נוכחי</div>
+              <div className="flow-rail-card__step">{currentStep.titleHe}</div>
+              <p className="flow-rail-card__hint">{currentStep.hintHe}</p>
+              <div className="flow-rail-card__sentence">
+                {hasPracticeSentence ? practiceSentence : practiceLab.preview?.emptyTextHe}
               </div>
-              <AlchemyEngine labId={practiceLab.id} compact showCoach={false} />
-            </section>
+              <div className="flow-rail-card__stats">
+                <div className="flow-stat">
+                  <span>טיימר</span>
+                  <strong>{durationLabel}</strong>
+                </div>
+                <div className="flow-stat">
+                  <span>עוצמה</span>
+                  <strong>{somatic.intensity}/10</strong>
+                </div>
+                <div className="flow-stat">
+                  <span>ולנס</span>
+                  <strong>{somatic.valence}</strong>
+                </div>
+                <div className="flow-stat">
+                  <span>אזורים</span>
+                  <strong>{somatic.selectedZones.length}</strong>
+                </div>
+              </div>
+            </div>
 
-            <section className="panel-card">
+            <div className="flow-rail-card">
+              <div className="flow-rail-card__title">מסלול התרגול</div>
+              <div className="flow-step-list" role="tablist" aria-label="שלבי התרגול">
+                {FLOW_STEPS.map((step) => {
+                  const stepState = flowStateByStep[step.id]
+                  const isActiveStep = activeStepId === step.id
+
+                  return (
+                    <button
+                      key={step.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActiveStep}
+                      className={`flow-step-button ${isActiveStep ? 'is-active' : ''}`}
+                      onClick={() => goToStep(step.id)}
+                    >
+                      <span className="flow-step-button__top">
+                        <span className="flow-step-button__name">{step.titleHe}</span>
+                        <span
+                          className={`flow-step-button__badge flow-step-button__badge--${stepState.badgeTone}`}
+                        >
+                          {stepState.badgeText}
+                        </span>
+                      </span>
+                      <span className="flow-step-button__summary">{stepState.summary}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="flow-rail-card">
+              <div className="flow-rail-card__title">סטטוס סשן</div>
+              <div className="flow-session-grid">
+                <div className="mini-pill">A: {compare.snapshotA ? 'שמור' : '—'}</div>
+                <div className="mini-pill">B: {compare.snapshotB ? 'שמור' : '—'}</div>
+                <div className="mini-pill">
+                  פרוטוקול: {protocolStepsCompleted}/{totalProtocolSteps}
+                </div>
+                <div className="mini-pill">משמעות: {meaningHasData ? 'נכתב' : 'לא עדיין'}</div>
+              </div>
+              <div className="status-line" aria-live="polite">
+                {statusMessage}
+              </div>
+            </div>
+          </aside>
+
+          <div className="beyond-main beyond-main--flow">
+            <div className="beyond-focus-strip">
+              <div>
+                <strong>{currentStep.title}</strong>
+                <p>{currentStep.hintHe}</p>
+              </div>
+              {nextStep && (
+                <button type="button" onClick={goToNextStep}>
+                  לשלב הבא: {nextStep.titleHe}
+                </button>
+              )}
+            </div>
+            <FlowStage
+              step={FLOW_STEPS[0]}
+              isActive={activeStepId === 'builder'}
+              onActivate={() => goToStep('builder')}
+              summary={flowStateByStep.builder.summary}
+              badgeText={flowStateByStep.builder.badgeText}
+              badgeTone={flowStateByStep.builder.badgeTone}
+            >
+              <section className="panel-card panel-card--soft">
+                <AlchemyEngine labId={practiceLab.id} compact showCoach={false} />
+                <StageNextButton
+                  onClick={() => goToStep('timer')}
+                  label="המשך לאמירה + טיימר"
+                />
+              </section>
+            </FlowStage>
+
+            <FlowStage
+              step={FLOW_STEPS[1]}
+              isActive={activeStepId === 'timer'}
+              onActivate={() => goToStep('timer')}
+              summary={flowStateByStep.timer.summary}
+              badgeText={flowStateByStep.timer.badgeText}
+              badgeTone={flowStateByStep.timer.badgeTone}
+            >
+              <section className="panel-card">
               <div className="panel-card__head">
                 <h3>2) Say It + Timer</h3>
                 <div className="chips-wrap">
@@ -390,11 +645,23 @@ export default function BeyondWordsGym() {
                   <button type="button" onClick={resetTimer}>
                     איפוס טיימר
                   </button>
+                  <button type="button" onClick={() => goToStep('somatic')}>
+                    המשך למדידת גוף
+                  </button>
                 </div>
               </div>
-            </section>
+              </section>
+            </FlowStage>
 
-            <section className="panel-card">
+            <FlowStage
+              step={FLOW_STEPS[2]}
+              isActive={activeStepId === 'somatic'}
+              onActivate={() => goToStep('somatic')}
+              summary={flowStateByStep.somatic.summary}
+              badgeText={flowStateByStep.somatic.badgeText}
+              badgeTone={flowStateByStep.somatic.badgeTone}
+            >
+              <section className="panel-card">
               <div className="panel-card__head">
                 <h3>3) Somatic Tracker</h3>
               </div>
@@ -469,9 +736,19 @@ export default function BeyondWordsGym() {
                   </div>
                 ))}
               </div>
-            </section>
+              <StageNextButton onClick={() => goToStep('meaning')} label="המשך למשמעות" />
+              </section>
+            </FlowStage>
 
-            <section className="panel-card">
+            <FlowStage
+              step={FLOW_STEPS[3]}
+              isActive={activeStepId === 'meaning'}
+              onActivate={() => goToStep('meaning')}
+              summary={flowStateByStep.meaning.summary}
+              badgeText={flowStateByStep.meaning.badgeText}
+              badgeTone={flowStateByStep.meaning.badgeTone}
+            >
+              <section className="panel-card">
               <div className="panel-card__head">
                 <h3>4) Meaning Lens</h3>
               </div>
@@ -505,15 +782,28 @@ export default function BeyondWordsGym() {
                   />
                 </label>
               </div>
-            </section>
+              <StageNextButton
+                onClick={() => goToStep('protocol')}
+                label="המשך לפרוטוקול קשב"
+              />
+              </section>
+            </FlowStage>
 
-            <section className="panel-card">
+            <FlowStage
+              step={FLOW_STEPS[4]}
+              isActive={activeStepId === 'protocol'}
+              onActivate={() => goToStep('protocol')}
+              summary={flowStateByStep.protocol.summary}
+              badgeText={flowStateByStep.protocol.badgeText}
+              badgeTone={flowStateByStep.protocol.badgeTone}
+            >
+              <section className="panel-card">
               <div className="panel-card__head">
                 <h3>5) Attention-Shifting Micro-Protocol</h3>
               </div>
               <div className="protocol-card">
                 <div className="protocol-card__progress">
-                  מחזור {Math.min(protocolCycle, 3)} / 3 | צעד {Math.min(protocolStepIndex + 1, totalProtocolSteps)} / {totalProtocolSteps}
+                  מחזור {Math.min(protocolCycle, 3)} / 3 | צעד {protocolCurrentStep} / {totalProtocolSteps}
                 </div>
                 <p className="protocol-card__prompt">{protocolPrompt}</p>
                 <div className="controls-row">
@@ -553,6 +843,9 @@ export default function BeyondWordsGym() {
                   >
                     בדיקת אפקט מחדש
                   </button>
+                  <button type="button" onClick={() => goToStep('compare')}>
+                    המשך להשוואה
+                  </button>
                 </div>
                 <div className="noticing-prompts">
                   {lab.noticingPrompts.map((prompt) => (
@@ -562,9 +855,18 @@ export default function BeyondWordsGym() {
                   ))}
                 </div>
               </div>
-            </section>
+              </section>
+            </FlowStage>
 
-            <section className="panel-card">
+            <FlowStage
+              step={FLOW_STEPS[5]}
+              isActive={activeStepId === 'compare'}
+              onActivate={() => goToStep('compare')}
+              summary={flowStateByStep.compare.summary}
+              badgeText={flowStateByStep.compare.badgeText}
+              badgeTone={flowStateByStep.compare.badgeTone}
+            >
+              <section className="panel-card">
               <div className="panel-card__head">
                 <h3>6) Before / After Compare</h3>
               </div>
@@ -574,6 +876,9 @@ export default function BeyondWordsGym() {
                 </button>
                 <button type="button" onClick={() => captureSnapshot('B')}>
                   שמור כ-B
+                </button>
+                <button type="button" onClick={() => goToStep('somatic')}>
+                  חזרה לתחושת גוף
                 </button>
               </div>
 
@@ -619,9 +924,10 @@ export default function BeyondWordsGym() {
                   <p className="muted-text">שמרו A ו-B כדי לראות דלתא.</p>
                 )}
               </div>
-            </section>
+              </section>
+            </FlowStage>
 
-            <div className="status-line" aria-live="polite">
+            <div className="status-line beyond-inline-status" aria-live="polite">
               {statusMessage}
             </div>
           </div>

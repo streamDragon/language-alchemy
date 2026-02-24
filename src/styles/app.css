@@ -609,6 +609,295 @@ button:hover {
   gap: 0.9rem;
 }
 
+.beyond-layout--flow {
+  grid-template-columns: 320px minmax(0, 1fr);
+  align-items: start;
+}
+
+.beyond-rail {
+  display: grid;
+  gap: 0.8rem;
+  position: sticky;
+  top: 0.75rem;
+}
+
+.flow-rail-card {
+  border: 1px solid #dde6ef;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f9fbfe 100%);
+  padding: 0.75rem;
+  box-shadow: 0 8px 22px rgba(16, 38, 61, 0.03);
+}
+
+.flow-rail-card--focus {
+  border-color: rgba(109, 24, 53, 0.18);
+  background:
+    radial-gradient(circle at 88% 12%, rgba(211, 165, 74, 0.11), transparent 46%),
+    linear-gradient(180deg, #fffdf8 0%, #fbfcff 100%);
+}
+
+.flow-rail-card__title {
+  color: #6d1835;
+  font-weight: 700;
+  font-size: 0.84rem;
+}
+
+.flow-rail-card__step {
+  margin-top: 0.25rem;
+  color: #142f47;
+  font-weight: 700;
+}
+
+.flow-rail-card__hint {
+  margin: 0.25rem 0 0;
+  color: #657b8d;
+  font-size: 0.8rem;
+}
+
+.flow-rail-card__sentence {
+  margin-top: 0.6rem;
+  border-radius: 10px;
+  border: 1px solid #e5edf4;
+  background: #fff;
+  padding: 0.55rem;
+  color: #233c4f;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.flow-rail-card__stats {
+  margin-top: 0.55rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem;
+}
+
+.flow-stat {
+  border-radius: 10px;
+  border: 1px solid #e5edf4;
+  background: #fff;
+  padding: 0.45rem 0.55rem;
+  display: grid;
+  gap: 0.1rem;
+}
+
+.flow-stat span {
+  color: #6e8597;
+  font-size: 0.72rem;
+}
+
+.flow-stat strong {
+  color: #19344c;
+  font-size: 0.9rem;
+}
+
+.flow-step-list {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.45rem;
+}
+
+.flow-step-button {
+  width: 100%;
+  text-align: start;
+  display: grid;
+  gap: 0.18rem;
+  border-radius: 12px;
+  border: 1px solid #dde6ef;
+  background: #fff;
+  padding: 0.55rem 0.6rem;
+}
+
+.flow-step-button:hover {
+  background: #fbfdff;
+}
+
+.flow-step-button.is-active {
+  border-color: rgba(109, 24, 53, 0.35);
+  background: linear-gradient(180deg, #fff8f2 0%, #fcf3ea 100%);
+}
+
+.flow-step-button__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+.flow-step-button__name {
+  color: #19354d;
+  font-weight: 700;
+  font-size: 0.83rem;
+}
+
+.flow-step-button__summary {
+  color: #687f92;
+  font-size: 0.74rem;
+  line-height: 1.35;
+  text-align: start;
+}
+
+.flow-step-button__badge,
+.flow-stage__badge {
+  border-radius: 999px;
+  padding: 0.12rem 0.4rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  border: 1px solid #d7e1ea;
+  background: #f4f8fb;
+  color: #5f7689;
+  white-space: nowrap;
+}
+
+.flow-step-button__badge--ready,
+.flow-stage__badge--ready {
+  border-color: rgba(46, 154, 50, 0.25);
+  background: rgba(46, 154, 50, 0.08);
+  color: #2b7d2e;
+}
+
+.flow-step-button__badge--active,
+.flow-stage__badge--active {
+  border-color: rgba(18, 126, 140, 0.22);
+  background: rgba(18, 126, 140, 0.08);
+  color: #0f6674;
+}
+
+.flow-step-button__badge--done,
+.flow-stage__badge--done {
+  border-color: rgba(109, 24, 53, 0.2);
+  background: rgba(109, 24, 53, 0.08);
+  color: #6d1835;
+}
+
+.flow-session-grid {
+  margin-top: 0.45rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.mini-pill {
+  border-radius: 999px;
+  border: 1px solid #dde6ef;
+  background: #fff;
+  padding: 0.25rem 0.45rem;
+  font-size: 0.75rem;
+  color: #4f6678;
+}
+
+.beyond-main--flow {
+  align-content: start;
+}
+
+.beyond-focus-strip {
+  position: sticky;
+  top: 0.75rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: 12px;
+  border: 1px solid #e2eaf2;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(6px);
+  padding: 0.65rem 0.75rem;
+}
+
+.beyond-focus-strip strong {
+  color: #17314a;
+}
+
+.beyond-focus-strip p {
+  margin: 0.15rem 0 0;
+  color: #6b8294;
+  font-size: 0.8rem;
+}
+
+.flow-stage {
+  border-radius: 14px;
+  border: 1px solid #dde6ef;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(16, 38, 61, 0.03);
+  overflow: hidden;
+}
+
+.flow-stage.is-active {
+  border-color: rgba(109, 24, 53, 0.2);
+  box-shadow: 0 10px 26px rgba(16, 38, 61, 0.05);
+}
+
+.flow-stage__toggle {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #e7eef5;
+  border-radius: 0;
+  background: linear-gradient(180deg, #fcfdff 0%, #f7fbff 100%);
+  padding: 0.75rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  text-align: start;
+}
+
+.flow-stage.is-active .flow-stage__toggle {
+  background:
+    radial-gradient(circle at 95% 14%, rgba(211, 165, 74, 0.1), transparent 50%),
+    linear-gradient(180deg, #fffdf8 0%, #f7fbff 100%);
+}
+
+.flow-stage__titleWrap {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.flow-stage__title {
+  color: #17324a;
+  font-weight: 700;
+}
+
+.flow-stage__hint {
+  color: #6c8395;
+  font-size: 0.78rem;
+}
+
+.flow-stage__meta {
+  min-width: 0;
+  display: grid;
+  justify-items: end;
+  gap: 0.25rem;
+}
+
+.flow-stage__summary {
+  color: #61798b;
+  font-size: 0.76rem;
+  max-width: 38ch;
+  text-align: end;
+}
+
+.flow-stage__body {
+  padding: 0.75rem;
+  background: #fbfdff;
+}
+
+.flow-stage__body > .panel-card {
+  box-shadow: none;
+  margin: 0;
+}
+
+.flow-stage__footer {
+  margin-top: 0.8rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.beyond-inline-status {
+  display: none;
+}
+
 .timer-panel {
   border: 1px solid #e2eaf2;
   border-radius: 12px;
@@ -803,6 +1092,14 @@ textarea {
   .alchemy-layout {
     grid-template-columns: 1fr;
   }
+
+  .beyond-layout--flow {
+    grid-template-columns: 1fr;
+  }
+
+  .beyond-rail {
+    position: static;
+  }
 }
 
 @media (max-width: 860px) {
@@ -847,6 +1144,10 @@ textarea {
   .compare-grid {
     grid-template-columns: 1fr;
   }
+
+  .beyond-focus-strip {
+    position: static;
+  }
 }
 
 @media (max-width: 620px) {
@@ -880,6 +1181,39 @@ textarea {
   .stack-list__item--row {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .flow-step-list {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 0.1rem;
+  }
+
+  .flow-step-button {
+    min-width: 220px;
+    flex: 0 0 auto;
+  }
+
+  .flow-stage__toggle {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .flow-stage__meta {
+    justify-items: start;
+  }
+
+  .flow-stage__summary {
+    text-align: start;
+    max-width: none;
+  }
+
+  .beyond-inline-status {
+    display: block;
+  }
+
+  .beyond-rail .status-line {
+    display: none;
   }
 }
 
