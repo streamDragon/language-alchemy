@@ -1,32 +1,114 @@
+﻿const CONTEXT_LABELS = {
+  selfCoaching: "קואצ'ינג / עבודה עצמית",
+  therapy: 'טיפול / פסיכולוגיה',
+  relationships: 'יחסים זוגיים / משפחתיים',
+  daily: 'אתגר יומיומי / החלטות',
+  identity: 'זהות ושינוי עצמי (TCU)',
+  career: 'עבודה / קריירה',
+}
+
 export const liberatingContexts = [
-  { id: 'self-coaching', labelHe: "קואצ'ינג / עבודה עצמית", labelEn: 'Self Coaching' },
-  { id: 'therapy', labelHe: 'טיפול / פסיכולוגיה', labelEn: 'Therapy' },
-  { id: 'relationships', labelHe: 'יחסים זוגיים / משפחתיים', labelEn: 'Relationships' },
-  { id: 'daily', labelHe: 'אתגר יומיומי / החלטות', labelEn: 'Daily Decisions' },
-  { id: 'identity', labelHe: 'זהות ושינוי עצמי (TCU)', labelEn: 'Identity & Change' },
-  { id: 'career', labelHe: 'עבודה / קריירה', labelEn: 'Work & Career' },
+  { id: 'self-coaching', labelHe: CONTEXT_LABELS.selfCoaching, labelEn: 'Self Coaching' },
+  { id: 'therapy', labelHe: CONTEXT_LABELS.therapy, labelEn: 'Therapy' },
+  { id: 'relationships', labelHe: CONTEXT_LABELS.relationships, labelEn: 'Relationships' },
+  { id: 'daily', labelHe: CONTEXT_LABELS.daily, labelEn: 'Daily Decisions' },
+  { id: 'identity', labelHe: CONTEXT_LABELS.identity, labelEn: 'Identity & Change' },
+  { id: 'career', labelHe: CONTEXT_LABELS.career, labelEn: 'Work & Career' },
 ]
 
-export const liberatingClientStatements = [
+const CONTEXT_ID_BY_LABEL = Object.fromEntries(
+  liberatingContexts.map((context) => [context.labelHe, context.id]),
+)
+
+function normalize(value) {
+  return String(value ?? '').trim()
+}
+
+function hasPatternName(items, patternName) {
+  const target = normalize(patternName).toLowerCase()
+  return (items ?? []).some((item) => normalize(item?.pattern).toLowerCase() === target)
+}
+
+function buildAutoIdealResponses(statementText, contextId) {
+  const statement = normalize(statementText)
+  const emotionHeavy = /(מרגיש|חרדה|ריקנות|מנוחה|פוחד|פחד)/.test(statement)
+
+  const baseResponses = [
+    {
+      pattern: 'Animating Relationships',
+      response: `מה הקשר בין "${statement}" לבין מה שאתה מרגיש עכשיו? איך הניסוח הזה מתקשר למה שאתה כן רוצה?`,
+    },
+    {
+      pattern: emotionHeavy
+        ? 'Changing Relationships: Attention & Feeling 3.0'
+        : 'Changing Relationships: Thinking & Feeling 3.0',
+      response: emotionHeavy
+        ? 'מה הקשר של מה שאתה שם לב אליו, למה שאתה מרגיש? ומה הקשר של מה שעוד לא קיבל תשומת לב, למה שעוד יכול להשתנות?' 
+        : 'מה הקשר בין מה שאתה חושב לבין מה שאתה מרגיש? מה הקשר של רק מה שהיית מרגיש, לכל מה שאתה לא חושב אבל יכול?',
+    },
+    {
+      pattern: 'Trance-ending Knowing to Not Knowing',
+      response:
+        'מה הכל שאתה לא יודע... שאתה לא יודע... שאתה לא מבין שאתה לא יודע... אבל אפשרי כאן לגבי זה?',
+    },
+    {
+      pattern: 'Cartesian Logic',
+      response: `מה הקשר של מה שאתה אומר עכשיו, לכל מה שלא נכנס עדיין למה שאתה אומר אבל כן יכול להיות רלוונטי?`,
+    },
+  ]
+
+  if (contextId === 'identity') {
+    return [
+      {
+        pattern: 'QBism + de Finetti',
+        response:
+          'אם זו תחזית/אמונה על עצמך, מה ההסתברות שאתה נותן לשינוי קטן (ולא מוחלט)? מה יכול לעדכן את ההסתברות הזו?',
+      },
+      baseResponses[0],
+      baseResponses[2],
+      {
+        pattern: 'Cartesian Logic + Quantification',
+        response:
+          'מה הקשר של מה שאתה מאמין על עצמך עכשיו, לכל מה שאתה עדיין לא מאמין אבל יכול לבדוק בהדרגה?',
+      },
+    ]
+  }
+
+  return baseResponses
+}
+
+function completeIdealResponses(item) {
+  const existing = Array.isArray(item.idealResponses) ? [...item.idealResponses] : []
+  const fillers = buildAutoIdealResponses(item.statement, item.context)
+
+  for (const candidate of fillers) {
+    if (existing.length >= 4) break
+    if (hasPatternName(existing, candidate.pattern)) continue
+    existing.push(candidate)
+  }
+
+  return existing.slice(0, 4)
+}
+
+const rawClientStatements = [
   {
     id: 1,
-    context: 'self-coaching',
+    context: CONTEXT_LABELS.selfCoaching,
     statement: 'אני פשוט לא מאמין שאני יכול להשתנות',
     idealResponses: [
       {
         pattern: 'Animating Relationships',
-        response:
-          'מה הקשר בין מה שאתה חושב על עצמך לבין מה שאתה מרגיש עכשיו? איך החשיבה שלך מתקשרת לרגש הזה?',
+        response: "מה הקשר בין מה שאתה חושב על 'עצמי' לבין מה שאתה מרגיש עכשיו? איך המחשבה מתקשרת לרגש?",
       },
       {
-        pattern: 'Changing Relationships: Thinking & Feeling 3.0',
+        pattern: 'Thinking & Feeling 3.0',
         response:
           'מה הקשר בין מה שאתה חושב לבין מה שאתה מרגיש? מה הקשר של רק מה שהיית מרגיש, לכל מה שאתה לא חושב אבל יכול?',
       },
       {
         pattern: 'Trance-ending Knowing to Not Knowing',
         response:
-          'מה הכל שאתה לא יודע... שאתה לא יודע... שאתה לא מבין שאתה לא יודע... אבל אפשרי כאן?',
+          'מה הכל שאתה לא יודע...שאתה לא יודע...שאתה לא מבין שאתה לא יודע...אבל אפשרי לגבי השינוי?',
       },
       {
         pattern: 'Cartesian Logic',
@@ -37,22 +119,21 @@ export const liberatingClientStatements = [
   },
   {
     id: 2,
-    context: 'therapy',
+    context: CONTEXT_LABELS.therapy,
     statement: 'אני לא יודע למה אני תמיד הורס לעצמי דברים טובים',
     idealResponses: [
       {
         pattern: 'Animating Relationships',
-        response: 'איך ההרס הזה מתקשר למה שאתה כן רוצה? מה הקשר בין ההרס לבין הרצון?',
+        response: "איך ההרס הזה מתקשר למה שאתה כן רוצה? מה הקשר בין 'ההרס' ל'רצון'?",
       },
       {
-        pattern: 'Changing Relationships: Attention & Feeling 3.0',
+        pattern: 'Attention & Feeling 3.0',
         response:
           'מה הקשר של מה שאתה שם לב אליו, למה שאתה מרגיש? מה הקשר של רק מה שהיית מרגיש, לכל מה שאתה לא שם לב אבל יכול?',
       },
       {
         pattern: 'Trance-ending Knowing to Not Knowing',
-        response:
-          'מה הכל שאתה לא יודע... שאתה לא יודע... שאתה לא מבין שאתה לא יודע... למה זה קורה?',
+        response: 'מה הכל שאתה לא יודע...שאתה לא יודע...למה זה קורה?',
       },
       {
         pattern: 'Cartesian Logic',
@@ -62,191 +143,89 @@ export const liberatingClientStatements = [
   },
   {
     id: 3,
-    context: 'career',
-    statement: 'אני מרגיש תקוע בעבודה ולא יודע מה לעשות',
+    context: CONTEXT_LABELS.relationships,
+    statement: 'אני תמיד בוחר בבן/בת זוג לא נכונים',
     idealResponses: [
       {
-        pattern: 'Attention & Feeling 3.0',
-        response:
-          'מה הקשר בין מה שאתה שם לב אליו בעבודה לבין מה שאתה מרגיש בגוף? ומה עוד קיים שם שלא קיבל תשומת לב?',
-      },
-      {
-        pattern: 'Generalization Shift',
-        response: 'באילו חלקים של העבודה אתה פחות תקוע? מתי זה אפילו 5% יותר פתוח?',
-      },
-      {
-        pattern: 'Cartesian Logic',
-        response: 'מה הקשר של מה שאתה לא יודע מה לעשות, לכל מה שאתה כן יודע אפילו חלקית?',
-      },
-      {
         pattern: 'Animating Relationships',
-        response: 'איך ה"תקוע" מתקשר למה שאתה רוצה לזוז אליו?',
+        response:
+          "מה הקשר בין 'הבחירה' שלך לבין מה שאתה מרגיש אחרי? איך הבחירה מתקשרת לרגש?",
+      },
+      {
+        pattern: 'Thinking & Feeling 3.0',
+        response: 'מה הקשר בין מה שאתה חושב על מערכות יחסים לבין מה שאתה מרגיש?',
       },
     ],
   },
   {
     id: 4,
-    context: 'relationships',
-    statement: 'המחשבות האלה לא נותנות לי מנוחה',
+    context: CONTEXT_LABELS.career,
+    statement: 'אני מרגיש תקוע בעבודה ולא יודע מה לעשות',
     idealResponses: [
       {
-        pattern: 'Animating Relationships',
-        response: 'איך המחשבות מתקשרות למה שהגוף שלך מנסה לעשות כרגע? ומה הקשר למנוחה?',
-      },
-      {
-        pattern: 'Trance-ending Knowing to Not Knowing',
-        response: 'מה אתה עדיין לא יודע על איך מנוחה יכולה להתחיל אפילו כשיש מחשבות?',
-      },
-      {
-        pattern: 'Generalization Shift',
-        response: 'הן לא נותנות מנוחה תמיד, או שיש רגעים קטנים שכן?',
-      },
-      {
-        pattern: 'Cartesian Logic + Quantification',
-        response: 'מה הקשר של כל מה שהמחשבות עושות, לכל מה שהן לא עושות עכשיו?',
+        pattern: 'Attention & Feeling 3.0',
+        response:
+          'מה הקשר של מה שאתה שם לב אליו בעבודה, למה שאתה מרגיש? מה הקשר של רק מה שהיית מרגיש, לכל מה שאתה לא שם לב אבל יכול?',
       },
     ],
   },
   {
     id: 5,
-    context: 'daily',
-    statement: 'אם אני לא אעשה את זה מושלם אין טעם בכלל להתחיל',
+    context: CONTEXT_LABELS.identity,
+    statement: 'האישיות שלי היא פשוט ככה, אין מה לעשות',
     idealResponses: [
       {
-        pattern: 'Cartesian Logic + Quantification',
-        response: 'מה הקשר של מושלם, לכל מה שהוא לא מושלם אבל כן מקדם?',
-      },
-      {
-        pattern: 'Generalization Shift',
-        response: 'אין טעם בכלל, או שיש טעם חלקי אם זה רק צעד ראשון?',
-      },
-      {
-        pattern: 'Animating Relationships',
-        response: 'איך ה"מושלם" מתקשר להתחלה? ואיך התחלה מתקשרת ללמידה?',
-      },
-      {
-        pattern: 'Thinking & Feeling 3.0',
-        response: 'מה הקשר בין המחשבה "צריך מושלם" לבין מה שאתה מרגיש לפני התחלה?',
+        pattern: 'Trance-ending Knowing to Not Knowing',
+        response: "מה הכל שאתה לא יודע...שאתה לא יודע...על 'האישיות' שלך...אבל אפשרי?",
       },
     ],
   },
+  { id: 6, context: CONTEXT_LABELS.selfCoaching, statement: 'אני מפחד להיכשל אז אני לא מנסה בכלל', idealResponses: [] },
+  { id: 7, context: CONTEXT_LABELS.therapy, statement: 'המחשבות השליליות האלה לא נותנות לי מנוחה', idealResponses: [] },
+  { id: 8, context: CONTEXT_LABELS.relationships, statement: 'אני לא יודע איך לתקשר עם בן הזוג שלי', idealResponses: [] },
+  { id: 9, context: CONTEXT_LABELS.career, statement: 'אין לי מוטיבציה לעשות כלום', idealResponses: [] },
+  { id: 10, context: CONTEXT_LABELS.identity, statement: 'אני לא יודע מי אני באמת', idealResponses: [] },
   {
-    id: 6,
-    context: 'identity',
-    statement: 'האישיות שלי היא רק הימור ארוך טווח שלא באמת משתנה',
+    id: 11,
+    context: CONTEXT_LABELS.selfCoaching,
+    statement: 'אני רוצה להפסיק להשוות את עצמי לאחרים אבל לא מצליח',
+    idealResponses: [],
+  },
+  { id: 12, context: CONTEXT_LABELS.therapy, statement: 'החרדה הזאת שולטת בחיים שלי', idealResponses: [] },
+  { id: 13, context: CONTEXT_LABELS.relationships, statement: 'אני מרגיש לא ראוי לאהבה', idealResponses: [] },
+  { id: 14, context: CONTEXT_LABELS.career, statement: 'אני תמיד דוחה דברים עד הרגע האחרון', idealResponses: [] },
+  { id: 15, context: CONTEXT_LABELS.identity, statement: 'העבר שלי מגביל אותי', idealResponses: [] },
+  { id: 16, context: CONTEXT_LABELS.selfCoaching, statement: 'אני לא בטוח בהחלטות שלי', idealResponses: [] },
+  { id: 17, context: CONTEXT_LABELS.therapy, statement: 'אני מרגיש ריקנות ולא יודע למה', idealResponses: [] },
+  { id: 18, context: CONTEXT_LABELS.relationships, statement: 'אני פוחד להתקרב לאנשים', idealResponses: [] },
+  { id: 19, context: CONTEXT_LABELS.career, statement: 'אני לא רואה עתיד טוב לעצמי', idealResponses: [] },
+  {
+    id: 20,
+    context: CONTEXT_LABELS.identity,
+    statement: 'האמונות שלי על עצמי הן כמו הימור שאני מפסיד בו',
     idealResponses: [
       {
-        pattern: 'QBism / de Finetti Reframe',
+        pattern: 'QBism + de Finetti',
         response:
-          'אם זה הימור, מה ההסתברות שאתה נותן לשינוי קטן ולא לשינוי מוחלט? ומה מעדכן את ההימור הזה?',
-      },
-      {
-        pattern: 'Trance-ending Knowing to Not Knowing',
-        response: 'מה אתה לא יודע עדיין על איך זהות מתעדכנת דרך בחירות קטנות חוזרות?',
-      },
-      {
-        pattern: 'Animating Relationships',
-        response: 'איך "אישיות" מתקשרת להרגלים, ואיך הרגלים מתקשרים להקשר ולזמן?',
-      },
-      {
-        pattern: 'Generalization Shift',
-        response: 'לא באמת משתנה אף פעם, או משתנה בקצב שלא קיבל עדיין שם?',
+          'אם האמונה היא הימור, מה ההסתברות שאתה נותן לתוצאה אחרת? איזה מידע/חוויה היה מעדכן את ההימור הזה אפילו ב-5%?',
       },
     ],
   },
-  {
-    id: 7,
-    context: 'therapy',
-    statement: 'אני תמיד חוזר לאותה נקודה, אז כנראה אין לי סיכוי',
-    idealResponses: [
-      {
-        pattern: 'Universal Quantifier Shift',
-        response: 'תמיד חוזר לאותה נקודה, או שיש גם חזרות שונות שקצת נראות אותו דבר?',
-      },
-      {
-        pattern: 'Cartesian Logic',
-        response: 'מה הקשר של מה שאתה קורא לו "אין סיכוי", לכל מה שעוד לא נבדק?',
-      },
-      {
-        pattern: 'Animating Relationships',
-        response: 'איך ה"חוזר לאותה נקודה" מתקשר לניסיון שלך כן להשתנות?',
-      },
-      {
-        pattern: 'Trance-ending Knowing to Not Knowing',
-        response: 'מה עוד אתה לא יודע על התנאים שבהם זה כן נראה אחרת?',
-      },
-    ],
-  },
-  {
-    id: 8,
-    context: 'relationships',
-    statement: 'הם אף פעם לא באמת מקשיבים לי',
-    idealResponses: [
-      {
-        pattern: 'Universal Quantifier Shift',
-        response: 'אף פעם? היה רגע אחד של הקשבה חלקית שכן חשוב לזכור?',
-      },
-      {
-        pattern: 'Animating Relationships',
-        response: 'איך הדרך שבה אתה מדבר מתקשרת ליכולת שלהם להקשיב, ולהפך?',
-      },
-      {
-        pattern: 'Attention & Feeling 3.0',
-        response: 'מה אתה שם לב אליו כשאתה אומר "לא מקשיבים", ומה הגוף שלך מרגיש ברגע הזה?',
-      },
-      {
-        pattern: 'Cartesian Logic',
-        response: 'מה הקשר של כל מה שהם לא עושים, לכל מה שהם כן עושים שכן נחשב הקשבה?',
-      },
-    ],
-  },
-  {
-    id: 9,
-    context: 'career',
-    statement: 'אם אני אבקש עזרה יחשבו שאני חלש',
-    idealResponses: [
-      {
-        pattern: 'Cause-Effect / Cartesian',
-        response: 'איך בדיוק בקשת עזרה גורמת לחולשה, ובאיזה הקשרים זה דווקא מעיד על אחריות?',
-      },
-      {
-        pattern: 'Thinking & Feeling 3.0',
-        response: 'מה הקשר בין המחשבה הזאת לבין התחושה בגוף רגע לפני שאתה מבקש?',
-      },
-      {
-        pattern: 'Trance-ending Knowing to Not Knowing',
-        response: 'מה אתה לא יודע עדיין על איך אחרים מפרשים בקשת עזרה?',
-      },
-      {
-        pattern: 'Generalization Shift',
-        response: 'מי "יחשבו"? כולם, או חלק מסוים שאתה מניח עליו משהו?',
-      },
-    ],
-  },
-  {
-    id: 10,
-    context: 'daily',
-    statement: 'אני חייב להבין הכל לפני שאני מתחיל',
-    idealResponses: [
-      {
-        pattern: 'Modal Operator Shift',
-        response: 'חייב להבין הכל, או מספיק להבין מספיק כדי להתחיל צעד ראשון?',
-      },
-      {
-        pattern: 'Cartesian Logic + Quantification',
-        response: 'מה הקשר של "הכל" לכל מה שלא צריך להבין עדיין כדי להתחיל?',
-      },
-      {
-        pattern: 'Animating Relationships',
-        response: 'איך ההבנה מתקשרת להתחלה, ואיך התחלה מתקשרת להבנה נוספת?',
-      },
-      {
-        pattern: 'Trance-ending Knowing to Not Knowing',
-        response: 'מה אתה לא יודע עדיין שתוכל לדעת רק אחרי שתתחיל?',
-      },
-    ],
-  },
+  { id: 21, context: CONTEXT_LABELS.selfCoaching, statement: 'אני רוצה לשנות אבל משהו שומר אותי במקום', idealResponses: [] },
+  { id: 22, context: CONTEXT_LABELS.therapy, statement: 'אני לא שם לב לשינויים הקטנים סביבי', idealResponses: [] },
+  { id: 23, context: CONTEXT_LABELS.relationships, statement: 'אני תמיד נותן יותר מדי ולא מקבל בחזרה', idealResponses: [] },
+  { id: 24, context: CONTEXT_LABELS.career, statement: 'אני מרגיש שהזמן עובר ואני לא מתקדם', idealResponses: [] },
+  { id: 25, context: CONTEXT_LABELS.identity, statement: 'אני לא יודע מה הסיכויים האמיתיים שלי להצליח', idealResponses: [] },
 ]
+
+export const liberatingClientStatements = rawClientStatements.map((item) => {
+  const contextId = CONTEXT_ID_BY_LABEL[item.context] ?? 'daily'
+  return {
+    ...item,
+    context: contextId,
+    idealResponses: completeIdealResponses({ ...item, context: contextId }),
+  }
+})
 
 export const liberatingPatterns = [
   {
@@ -254,17 +233,19 @@ export const liberatingPatterns = [
     name: 'Animating Relationships',
     titleHe: 'הנפשת יחסים',
     page: '53',
+    emoji: '🔄',
     description: 'De-nominalizing + how is X relating to Y',
-    descriptionHe: 'ממירים "דבר קפוא" ליחסים חיים: איך X מתקשר ל-Y?',
+    descriptionHe: 'ממירים שם־עצם קפוא ליחסים חיים: איך X מתקשר ל-Y?',
     questions: [
       'מה הקשר בין X ל-Y?',
       'איך X מתקשר ל-Y?',
       'איך Y מתקשר ל-X?',
-      'איך ה"מתקשר" מתקשר ל-X ול-Y?',
+      "איך ה'מתקשר' מתקשר ל-X ול-Y?",
     ],
+    example: "מה הקשר בין 'האמונה' שלך לבין 'השינוי'?",
     fillBlankPrompt: 'איך X מתקשר ל-____?',
     fillBlankAnswer: 'Y',
-    feedbackHe: 'הפאטרן הזה מזיז את התודעה מ"עצמים" ליחסים חיים ומשתנים.',
+    feedbackHe: 'פאטרן שמזיז את התודעה ממצב סטטי ליחסים דינמיים.',
     flowNodes: ['X', 'קשר', 'Y', 'Meta-Relationship'],
   },
   {
@@ -272,8 +253,9 @@ export const liberatingPatterns = [
     name: 'Changing Relationships: Attention & Feeling 3.0',
     titleHe: 'קשב ותחושה 3.0',
     page: '57',
+    emoji: '👁️❤️',
     description: 'Cartesian + Quantification + Void',
-    descriptionHe: 'פותח את השדה דרך קשב/תחושה, כימות, ומה שלא קיבל תשומת לב.',
+    descriptionHe: 'פותח שדה דרך קשב/תחושה, כימות, ומה שלא היה בפוקוס.',
     questions: [
       'מה הקשר של מה שאתה שם לב אליו, למה שאתה מרגיש?',
       'מה הקשר של רק מה שהיית מרגיש, לכל מה שאתה לא שם לב אבל יכול?',
@@ -282,7 +264,7 @@ export const liberatingPatterns = [
     ],
     fillBlankPrompt: 'מה הקשר של מה שאתה שם לב אליו, למה שאתה ____?',
     fillBlankAnswer: 'מרגיש',
-    feedbackHe: 'כאן אנחנו עובדים על שדה הקשב: מה בפוקוס ומה מחוץ לפוקוס.',
+    feedbackHe: 'כאן אנחנו מרחיבים את המפה דרך מה שבפוקוס ומה שעדיין לא בפוקוס.',
     flowNodes: ['Attention', 'Feeling', 'Noticing', 'Void/Open Field'],
   },
   {
@@ -290,72 +272,72 @@ export const liberatingPatterns = [
     name: 'Changing Relationships: Thinking & Feeling 3.0',
     titleHe: 'חשיבה ותחושה 3.0',
     page: '58',
-    description: 'Cartesian + Quantification + Thought/Feeling split',
-    descriptionHe: 'מפריד ומחבר מחדש בין מחשבה לתחושה כדי לייצר מרחב בחירה.',
+    emoji: '🧠❤️',
+    description: 'Cartesian + Quantification + Void',
+    descriptionHe: 'מפריד ומחבר מחדש בין חשיבה לתחושה כדי לפתוח בחירה.',
     questions: [
       'מה הקשר בין מה שאתה חושב לבין מה שאתה מרגיש?',
       'מה הקשר של רק מה שהיית מרגיש, לכל מה שאתה לא חושב אבל יכול?',
       'מה הקשר של רק מה שהיית חושב, לכל מה שאתה לא מרגיש אבל יכול?',
-      'מה הקשר של כלום שאתה לא חושב, לכל מה שאתה לא מרגיש אבל אפשרי עכשיו?',
     ],
     fillBlankPrompt: 'מה הקשר בין מה שאתה חושב לבין מה שאתה ____?',
     fillBlankAnswer: 'מרגיש',
-    feedbackHe: 'הפאטרן מתאים במיוחד כשיש מיזוג קשיח בין סיפור פנימי לתחושה.',
-    flowNodes: ['Thinking', 'Feeling', 'Cross Mapping', 'Expanded Options'],
+    feedbackHe: 'מעולה למצבים של היתקעות בין סיפור פנימי לתגובת גוף/רגש.',
+    flowNodes: ['Thinking', 'Feeling', 'Split', 'New Relationship'],
   },
   {
     id: 'generalization',
     name: 'Changing Relationships Pattern & Generalization',
-    titleHe: 'פאטרן הכללה ויחסים',
+    titleHe: 'פאטרן הכללה ורצף',
     page: '59',
-    description: 'Generalization + exceptions + relationship shift',
-    descriptionHe: 'מאתגר הכללות ומחפש חריגים כדי לפתוח רצף חדש.',
+    emoji: '🌐',
+    description: 'Flowchart + Interconnectedness + Alpha Sequence',
+    descriptionHe: 'מאתגר הכללות ומייצר רצף דרך חריגים, קישורים והרחבת שדה.',
     questions: [
-      'זה תמיד כך, או שיש יוצאי דופן?',
-      'מתי זה קורה פחות?',
-      'מה שונה כשזה קורה פחות?',
-      'איך ההבדל הזה מתקשר למה שאתה יכול לעשות עכשיו?',
+      "What's this like?",
+      'What are all the other positive connections associated with this?',
+      'אילו חריגים קיימים כאן?',
+      'מה זה מאפשר לראות עכשיו שלא היה זמין קודם?',
     ],
     fillBlankPrompt: 'זה תמיד כך, או שיש ____?',
     fillBlankAnswer: 'יוצאי דופן',
-    feedbackHe: 'הכללה נשברת דרך חריגים, קנה מידה, ותנאים.',
-    flowNodes: ['Generalization', 'Exception', 'Difference', 'Action Option'],
+    feedbackHe: 'הפאטרן הזה שובר הכללה דרך חריגים וקשרים חדשים.',
+    flowNodes: ['Generalization', 'Exceptions', 'Connections', 'Alpha Sequence'],
   },
   {
     id: 'trance-ending',
     name: 'Trance-ending Knowing to Not Knowing',
-    titleHe: 'מסיים טראנס: מידיעה לאי-ידיעה',
+    titleHe: 'מידיעה לאי-ידיעה יוצרת',
     page: '61',
-    description: 'Shift from rigid knowing to generative not-knowing',
-    descriptionHe: 'מעביר מ"אני יודע שזה ככה" לסקרנות שלא יודעת הכל.',
+    emoji: '🌌',
+    description: 'Non-mirror image reverse + Not Knowing + Positive Attributes',
+    descriptionHe: 'מוציא מטראנס של ודאות קשיחה אל סקרנות, אפשרות ותנועה.',
     questions: [
-      'מה אתה לא יודע עדיין על זה?',
-      'מה אתה לא יודע שאתה לא יודע על זה?',
-      'מה יכול להתאפשר דווקא מתוך אי-הידיעה הזאת?',
-      'מה נהיה אפשרי כשלא חייבים לדעת הכל עכשיו?',
+      'מה הכל שאתה לא יודע…שאתה לא יודע…שאתה לא מבין שאתה לא יודע…אבל אפשרי?',
+      'מה עוד אפשרי כשלא חייבים לדעת הכל עכשיו?',
     ],
-    fillBlankPrompt: 'מה אתה לא יודע שאתה לא ____ על זה?',
+    fillBlankPrompt: 'מה הכל שאתה לא יודע... שאתה לא ____...?',
     fillBlankAnswer: 'יודע',
-    feedbackHe: 'אי-ידיעה כאן אינה בלבול, אלא פתיחת שדה לאפשרויות חדשות.',
-    flowNodes: ['Rigid Knowing', 'Not Knowing', 'Possibility', 'Choice'],
+    feedbackHe: 'אי-ידיעה כאן היא מנוע לפתיחת שדה, לא חוסר ערך.',
+    flowNodes: ['Knowing', 'Not Knowing', 'Possibility', 'Choice'],
   },
   {
     id: 'cartesian',
     name: 'Cartesian Logic & Quantification',
     titleHe: 'לוגיקה קרטזית וכימות',
     page: '56',
-    description: 'X / not-X / all / none / some to open field',
-    descriptionHe: 'משחק עם כימות ולוגיקה קרטזית כדי לחשוף מה נשמט מהשדה.',
+    emoji: '📐',
+    description: "Universal Quantifier on 'not' + open the field",
+    descriptionHe: 'עובד עם X / not-X וכימות (תמיד/לפעמים) כדי לפתוח אפשרויות.',
     questions: [
-      'מה הקשר של X, לכל מה שלא X?',
-      'מה הקשר של כל X, לחלק מהלא-X?',
-      'מה הקשר של שום X, לכל שאר מה שאפשרי?',
+      'מה הקשר של A, לכל מה שלא A?',
+      'מה הקשר של לא A, לכל מה שלא לא A?',
       'מה משתנה כשעוברים מ"תמיד" ל"לפעמים"?',
     ],
     fillBlankPrompt: 'מה משתנה כשעוברים מ"תמיד" ל"____"?',
     fillBlankAnswer: 'לפעמים',
     feedbackHe: 'כימות מדויק משנה חוויה נוירולוגית, לא רק ניסוח.',
-    flowNodes: ['X', 'Not X', 'All/None/Some', 'Open Field'],
+    flowNodes: ['A', 'Not A', 'Quantifiers', 'Open Field'],
   },
 ]
 

@@ -321,7 +321,10 @@ export default function PatternSequenceMaster({
             className={`pattern-master__patternCard ${selectedPatternId === pattern.id ? 'is-active' : ''}`}
             onClick={() => handleSelectPattern(pattern.id)}
           >
-            <strong>{pattern.titleHe}</strong>
+            <div className="pattern-master__patternCardHead">
+              <span aria-hidden="true">{pattern.emoji ?? '✨'}</span>
+              <strong>{pattern.titleHe}</strong>
+            </div>
             <small>{pattern.name}</small>
             <span>עמוד {pattern.page}</span>
           </button>
@@ -331,7 +334,10 @@ export default function PatternSequenceMaster({
       {selectedPattern && (
         <div className="pattern-master__panel">
           <div className="callout-line">
-            <strong>{selectedPattern.titleHe}</strong>
+            <strong>
+              {selectedPattern.emoji ? `${selectedPattern.emoji} ` : ''}
+              {selectedPattern.titleHe}
+            </strong>
             <span>{selectedPattern.descriptionHe}</span>
           </div>
 

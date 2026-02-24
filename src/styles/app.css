@@ -1769,6 +1769,12 @@ button:hover {
   color: #203c52;
 }
 
+.pattern-master__patternCardHead {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 .pattern-master__patternCard small {
   color: #6f8699;
   font-size: 0.75rem;
