@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getLabConfig } from '../../data/labsConfig'
 import { useAppState } from '../../state/appStateContext'
+import LabLessonPrompt from '../layout/LabLessonPrompt'
 import {
   activeChipBanksForTemplate,
   buildSentence,
@@ -150,6 +151,8 @@ export default function AlchemyEngine({
           </button>
         </div>
       </div>
+
+      {!compact && lab.route && <LabLessonPrompt labId={lab.id} />}
 
       {lab.templates.length > 1 && (
         <div className="template-switcher" role="tablist" aria-label="מבני ניסוח">

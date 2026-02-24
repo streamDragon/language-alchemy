@@ -232,6 +232,131 @@
   background: var(--alchemy-card-soft);
 }
 
+.secondary-button {
+  background: linear-gradient(180deg, #7d2444 0%, #611934 100%);
+  color: #fff;
+}
+
+.lesson-prompt {
+  margin-bottom: 0.85rem;
+  border-radius: 14px;
+  border: 1px solid rgba(211, 165, 74, 0.32);
+  background:
+    radial-gradient(circle at 92% 14%, rgba(211, 165, 74, 0.12), transparent 42%),
+    linear-gradient(180deg, #fffdf8 0%, #fbfdff 100%);
+  padding: 0.8rem;
+  box-shadow: 0 8px 22px rgba(16, 38, 61, 0.03);
+}
+
+.lesson-prompt--compact {
+  margin-bottom: 0.65rem;
+  padding: 0.7rem;
+}
+
+.lesson-prompt__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.lesson-prompt__titleWrap {
+  min-width: 0;
+}
+
+.lesson-prompt__eyebrow {
+  color: var(--alchemy-burgundy);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.lesson-prompt__titleWrap h3 {
+  margin: 0.15rem 0 0.2rem;
+  color: var(--alchemy-navy);
+  font-size: 1rem;
+}
+
+.lesson-prompt__titleWrap p {
+  margin: 0;
+  color: var(--alchemy-muted);
+  font-size: 0.87rem;
+  line-height: 1.45;
+}
+
+.lesson-prompt__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: flex-end;
+}
+
+.lesson-prompt__actions button {
+  border-radius: 999px;
+  border: 1px solid rgba(16, 38, 61, 0.12);
+  padding: 0.45rem 0.75rem;
+  font-weight: 700;
+  background: linear-gradient(180deg, #183857 0%, #10263d 100%);
+  color: #fff;
+}
+
+.lesson-prompt__actions .secondary-button {
+  background: linear-gradient(180deg, #7d2444 0%, #611934 100%);
+}
+
+.lesson-prompt__body {
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.lesson-block {
+  border: 1px solid #e3ebf3;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.86);
+  padding: 0.65rem 0.75rem;
+}
+
+.lesson-block--coach {
+  border-color: rgba(109, 24, 53, 0.18);
+  background:
+    radial-gradient(circle at 90% 12%, rgba(109, 24, 53, 0.06), transparent 46%),
+    rgba(255, 255, 255, 0.92);
+}
+
+.lesson-block h4 {
+  margin: 0 0 0.35rem;
+  color: #17324a;
+}
+
+.lesson-block p {
+  margin: 0;
+  color: #486275;
+  line-height: 1.5;
+}
+
+.lesson-block ul {
+  margin: 0;
+  padding-inline-start: 1.1rem;
+  color: #446072;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.lesson-prompt__resource {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.lesson-prompt__resource a {
+  color: var(--alchemy-burgundy);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.lesson-prompt__resource a:hover {
+  text-decoration: underline;
+}
+
 .alchemy-card--compact {
   padding: 0.8rem;
   box-shadow: none;
@@ -1242,6 +1367,15 @@ textarea {
     flex-direction: column;
   }
 
+  .lesson-prompt__top {
+    flex-direction: column;
+  }
+
+  .lesson-prompt__actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
   .hero-card__actions {
     width: 100%;
     grid-template-columns: 1fr;
@@ -1301,6 +1435,10 @@ textarea {
   .alchemy-card__head,
   .panel-card__head {
     flex-direction: column;
+  }
+
+  .lesson-prompt__actions button {
+    flex: 1 1 auto;
   }
 
   .controls-row {

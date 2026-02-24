@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { getLabConfig } from '../data/labsConfig'
+import LabLessonPrompt from '../components/layout/LabLessonPrompt'
 
 function copyText(text, setStatus) {
   if (!text) return
@@ -31,6 +32,8 @@ export default function CleanQuestionsPage() {
             <p>{lab.descriptionHe}</p>
           </div>
         </div>
+
+        <LabLessonPrompt labId={lab.id} />
 
         <div className="template-switcher" role="tablist" aria-label="מצב עבודה">
           {lab.modes.map((item) => (

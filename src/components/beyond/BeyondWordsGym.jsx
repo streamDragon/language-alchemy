@@ -2,6 +2,7 @@
 import { getLabConfig } from '../../data/labsConfig'
 import { useAppState } from '../../state/appStateContext'
 import AlchemyEngine from '../alchemy/AlchemyEngine'
+import LabLessonPrompt from '../layout/LabLessonPrompt'
 import { buildSentence } from '../../utils/alchemy'
 import { makeId } from '../../utils/ids'
 import { computeSomaticDelta, hasSomaticSignal } from '../../utils/somatic'
@@ -530,6 +531,8 @@ export default function BeyondWordsGym() {
         <p className="muted-text">
           כאן לא רק מנסחים משפטים, אלא מתאמנים ב-Noticing: מה השפה עושה לגוף, לקשב ולבחירה.
         </p>
+
+        <LabLessonPrompt labId={lab.id} />
 
         <section className="panel-card panel-card--soft beyond-launcher">
           <div className="panel-card__head">
