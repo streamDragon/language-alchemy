@@ -3,6 +3,9 @@ import { getLabConfig } from '../data/labsConfig'
 import { useAppState } from '../state/appStateContext'
 import { makeId } from '../utils/ids'
 import LabLessonPrompt from '../components/layout/LabLessonPrompt'
+import LiberatingConversationSimulator from '../components/mind/LiberatingConversationSimulator'
+import PatternSequenceMaster from '../components/mind/PatternSequenceMaster'
+import { MessageCircle, Sparkles, Workflow } from 'lucide-react'
 
 const SAMPLE_PATIENT_TEXTS = [
   'אני תמיד נתקע כשצריך לדבר מול אנשים, זה פשוט לא אני.',
@@ -276,6 +279,7 @@ export default function MindLiberatingLanguagePage() {
   const [beforeOptionsText, setBeforeOptionsText] = useState('')
   const [afterOptionsText, setAfterOptionsText] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
+  const [activeTrainingToolId, setActiveTrainingToolId] = useState('')
 
   useEffect(() => {
     setLastVisitedLab(lab.id)
@@ -387,6 +391,11 @@ export default function MindLiberatingLanguagePage() {
   const loadSample = (text) => {
     setPatientText(text)
     setStatusMessage('נטענה דוגמת טקסט מטופל. עכשיו בנה/י ניסוח משחרר.')
+  }
+
+  const loadPatientTextFromTrainingTool = (text) => {
+    setPatientText(text)
+    setStatusMessage('נטען משפט מטופל מהמעבדה המתקדמת אל המיינד ליברטינג הראשי.')
   }
 
   return (
@@ -621,6 +630,79 @@ export default function MindLiberatingLanguagePage() {
                   )}
                 </div>
               </div>
+            </section>
+
+            <section className="panel-card panel-card--soft">
+              <div className="panel-card__head">
+                <div>
+                  <h3>4) מעבדות אימון מתקדמות</h3>
+                  <p>
+                    תרגול "על יבש" של שפה משחררת: בוחרים הקשר, מקבלים משפט, ובונים תגובה/רצף עם פידבק מיידי.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mindlab-training-grid">
+                <button
+                  type="button"
+                  className={`mindlab-training-card ${
+                    activeTrainingToolId === 'simulator' ? 'is-active' : ''
+                  }`}
+                  onClick={() =>
+                    setActiveTrainingToolId((current) =>
+                      current === 'simulator' ? '' : 'simulator',
+                    )
+                  }
+                  aria-pressed={activeTrainingToolId === 'simulator'}
+                >
+                  <div className="mindlab-training-card__icon">
+                    <MessageCircle size={20} aria-hidden="true" />
+                  </div>
+                  <div className="mindlab-training-card__content">
+                    <strong>סימולטור שיחות משחררות</strong>
+                    <small>Mind Liberating Conversation Simulator</small>
+                    <span>משפט מטופל רנדומלי + תגובת מטפל + בדיקה + דוגמאות אידיאליות</span>
+                  </div>
+                  <Sparkles size={18} aria-hidden="true" />
+                </button>
+
+                <button
+                  type="button"
+                  className={`mindlab-training-card ${
+                    activeTrainingToolId === 'pattern-master' ? 'is-active' : ''
+                  }`}
+                  onClick={() =>
+                    setActiveTrainingToolId((current) =>
+                      current === 'pattern-master' ? '' : 'pattern-master',
+                    )
+                  }
+                  aria-pressed={activeTrainingToolId === 'pattern-master'}
+                >
+                  <div className="mindlab-training-card__icon">
+                    <Workflow size={20} aria-hidden="true" />
+                  </div>
+                  <div className="mindlab-training-card__content">
+                    <strong>מאסטר רצפים</strong>
+                    <small>Pattern Sequence Master</small>
+                    <span>פאטרנים, flowchart, fill-in-blanks, סדר רצף ויישום על משפט רנדומלי</span>
+                  </div>
+                  <Sparkles size={18} aria-hidden="true" />
+                </button>
+              </div>
+
+              {activeTrainingToolId === 'simulator' && (
+                <LiberatingConversationSimulator
+                  className="mindlab-training-panel"
+                  onLoadPatientText={loadPatientTextFromTrainingTool}
+                />
+              )}
+
+              {activeTrainingToolId === 'pattern-master' && (
+                <PatternSequenceMaster
+                  className="mindlab-training-panel"
+                  onLoadPatientText={loadPatientTextFromTrainingTool}
+                />
+              )}
             </section>
 
             <div className="status-line" aria-live="polite">

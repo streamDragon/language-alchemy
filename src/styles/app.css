@@ -1462,6 +1462,483 @@ button:hover {
   justify-content: flex-start;
 }
 
+.mindlab-training-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.mindlab-training-card {
+  border-radius: 14px;
+  border: 1px solid #dce6f0;
+  background:
+    radial-gradient(circle at 90% 12%, rgba(211, 165, 74, 0.08), transparent 45%),
+    linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  padding: 0.8rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.65rem;
+  text-align: start;
+  box-shadow: 0 8px 22px rgba(16, 38, 61, 0.03);
+}
+
+.mindlab-training-card.is-active {
+  border-color: rgba(109, 24, 53, 0.3);
+  background:
+    radial-gradient(circle at 90% 12%, rgba(211, 165, 74, 0.14), transparent 45%),
+    linear-gradient(180deg, #fff9f1 0%, #fbfdff 100%);
+}
+
+.mindlab-training-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(16, 38, 61, 0.08);
+  background: #fff;
+  color: #17314a;
+}
+
+.mindlab-training-card__content {
+  min-width: 0;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.mindlab-training-card__content strong {
+  color: #17324a;
+}
+
+.mindlab-training-card__content small {
+  color: #6b8294;
+  font-weight: 600;
+}
+
+.mindlab-training-card__content span {
+  color: #52697c;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.mindlab-training-panel {
+  margin-top: 0.85rem;
+}
+
+.feature-heading {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.feature-heading__sub {
+  margin: 0.2rem 0 0;
+  color: #6b8294;
+  font-size: 0.8rem;
+}
+
+.simulator-card,
+.pattern-master-card {
+  border-color: rgba(211, 165, 74, 0.24);
+  background:
+    radial-gradient(circle at 92% 12%, rgba(211, 165, 74, 0.09), transparent 48%),
+    linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+}
+
+.simulator-progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: flex-end;
+}
+
+.simulator-progress__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  border: 1px solid #dbe5ee;
+  background: #f5f9fc;
+  color: #567083;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.simulator-progress__pill.is-master {
+  border-color: rgba(46, 154, 50, 0.25);
+  background: rgba(46, 154, 50, 0.08);
+  color: #2c7e2f;
+}
+
+.simulator-context-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin-bottom: 0.75rem;
+}
+
+.simulator-context-card {
+  border-radius: 12px;
+  border: 1px solid #dde6ef;
+  background: #fff;
+  padding: 0.6rem;
+  display: grid;
+  gap: 0.2rem;
+  justify-items: start;
+  text-align: start;
+  color: #1d3a51;
+}
+
+.simulator-context-card small {
+  color: #6f8598;
+  font-size: 0.75rem;
+}
+
+.simulator-context-card span {
+  color: #8a9baa;
+  font-size: 0.72rem;
+}
+
+.simulator-context-card.is-active {
+  border-color: rgba(109, 24, 53, 0.28);
+  background: linear-gradient(180deg, #fff8f1 0%, #f9edf5 100%);
+}
+
+.simulator-statement {
+  border: 1px solid #e2eaf2;
+  border-radius: 12px;
+  background: #fff;
+  padding: 0.7rem;
+  margin-bottom: 0.75rem;
+}
+
+.simulator-statement__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.45rem;
+}
+
+.simulator-statement__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.simulator-statement__actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.simulator-feedback {
+  margin-top: 0.75rem;
+  border: 1px solid #e2eaf2;
+  border-radius: 12px;
+  background: #fff;
+  padding: 0.7rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.simulator-feedback.is-good {
+  border-color: rgba(46, 154, 50, 0.25);
+  background: linear-gradient(180deg, #f7fdf9 0%, #fff 100%);
+}
+
+.simulator-feedback.is-mid {
+  border-color: rgba(211, 165, 74, 0.26);
+  background: linear-gradient(180deg, #fffbf2 0%, #fff 100%);
+}
+
+.simulator-feedback.is-warn {
+  border-color: rgba(109, 24, 53, 0.2);
+  background: linear-gradient(180deg, #fff8fa 0%, #fff 100%);
+}
+
+.simulator-feedback__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.simulator-feedback__head strong {
+  color: #17324a;
+}
+
+.simulator-feedback__head small {
+  color: #6d8396;
+  display: block;
+  margin-top: 0.15rem;
+}
+
+.simulator-feedback__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 999px;
+  border: 1px solid #dbe5ee;
+  background: #f7fafc;
+  color: #5e7487;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.45rem;
+}
+
+.simulator-feedback__list {
+  margin: 0;
+  padding-inline-start: 1rem;
+  color: #476172;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.simulator-ideal-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.simulator-ideal-item {
+  border-radius: 10px;
+  border: 1px solid #e2ebf4;
+  background: #fff;
+  padding: 0.6rem;
+}
+
+.simulator-ideal-item p {
+  margin: 0.4rem 0 0;
+  color: #3f5b6f;
+  line-height: 1.5;
+}
+
+.simulator-ideal-item__pattern {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #6d1835;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.simulator-master-callout {
+  margin-top: 0.8rem;
+  border-radius: 12px;
+  border: 1px solid rgba(46, 154, 50, 0.25);
+  background:
+    radial-gradient(circle at 90% 12%, rgba(46, 154, 50, 0.08), transparent 45%),
+    linear-gradient(180deg, #f7fdf9 0%, #fff 100%);
+  padding: 0.7rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.55rem;
+  align-items: start;
+  color: #275b2f;
+}
+
+.simulator-master-callout p {
+  margin: 0.15rem 0 0;
+  color: #456d4c;
+  font-size: 0.84rem;
+}
+
+.pattern-master__modeSwitch .template-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.pattern-master__patternGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin-bottom: 0.75rem;
+}
+
+.pattern-master__patternCard {
+  border-radius: 12px;
+  border: 1px solid #dde6ef;
+  background: #fff;
+  padding: 0.65rem;
+  display: grid;
+  gap: 0.2rem;
+  text-align: start;
+  color: #203c52;
+}
+
+.pattern-master__patternCard small {
+  color: #6f8699;
+  font-size: 0.75rem;
+}
+
+.pattern-master__patternCard span {
+  color: #7b8f9f;
+  font-size: 0.72rem;
+}
+
+.pattern-master__patternCard.is-active {
+  border-color: rgba(109, 24, 53, 0.28);
+  background: linear-gradient(180deg, #fff9f2 0%, #faf0f7 100%);
+}
+
+.pattern-master__panel {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.pattern-master__flowchart {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #e3ebf3;
+  background: #fff;
+  padding: 0.2rem;
+}
+
+.pattern-master__flowbox {
+  fill: #fbfdff;
+  stroke: #dce6ef;
+  stroke-width: 1.2;
+}
+
+.pattern-master__flowtext {
+  fill: #25465d;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pattern-master__flowline,
+.pattern-master__flowarrow {
+  stroke: #7a8ea0;
+  fill: none;
+  stroke-width: 1.5;
+}
+
+.pattern-master__questionList {
+  margin: 0;
+  padding-inline-start: 1.05rem;
+  display: grid;
+  gap: 0.25rem;
+  color: #2f4b5f;
+}
+
+.pattern-master__exercise {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.pattern-master__checkline {
+  border-radius: 10px;
+  border: 1px solid #e1eaf2;
+  background: #f9fbfe;
+  color: #5c7486;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.82rem;
+}
+
+.pattern-master__checkline.is-good {
+  border-color: rgba(46, 154, 50, 0.22);
+  background: rgba(46, 154, 50, 0.05);
+  color: #2e7137;
+}
+
+.pattern-master__checkline.is-warn {
+  border-color: rgba(109, 24, 53, 0.2);
+  background: rgba(109, 24, 53, 0.04);
+  color: #6b3047;
+}
+
+.pattern-master__checkline span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.pattern-master__orderGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
+}
+
+.pattern-master__orderCol {
+  border-radius: 12px;
+  border: 1px solid #e2eaf2;
+  background: #fff;
+  padding: 0.65rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.pattern-master__orderCol h4 {
+  margin: 0;
+  color: #1f3c52;
+}
+
+.pattern-master__pool {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.pattern-master__poolItem {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #dde7f0;
+  background: #fbfdff;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.4rem;
+  align-items: start;
+  text-align: start;
+  padding: 0.45rem 0.55rem;
+  color: #24455c;
+}
+
+.pattern-master__poolItem:hover {
+  border-color: rgba(211, 165, 74, 0.35);
+  background: #fffbf4;
+}
+
+.pattern-master__builtList {
+  margin: 0;
+  padding-inline-start: 1rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.pattern-master__builtItem {
+  border-radius: 10px;
+  border: 1px solid #e1eaf3;
+  background: #fbfdff;
+  padding: 0.45rem 0.5rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.pattern-master__builtActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.pattern-master__builtActions button {
+  padding: 0.28rem 0.5rem;
+  font-size: 0.78rem;
+}
+
+.pattern-master__application {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.pattern-master__applicationTop {
+  display: grid;
+  grid-template-columns: minmax(0, 240px) 1fr;
+  gap: 0.65rem;
+  align-items: end;
+}
+
 .beyond-inline-status {
   display: none;
 }
@@ -1849,6 +2326,18 @@ textarea {
     grid-template-columns: 1fr;
   }
 
+  .mindlab-training-grid,
+  .simulator-context-grid,
+  .pattern-master__patternGrid,
+  .pattern-master__orderGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .pattern-master__applicationTop {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
   .somatic-controls {
     grid-template-columns: 1fr;
   }
@@ -1904,6 +2393,24 @@ textarea {
 
   .lesson-prompt__actions button {
     flex: 1 1 auto;
+  }
+
+  .simulator-statement__head,
+  .simulator-feedback__head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .simulator-progress {
+    justify-content: flex-start;
+  }
+
+  .mindlab-training-card {
+    grid-template-columns: auto 1fr;
+  }
+
+  .mindlab-training-card > svg:last-child {
+    display: none;
   }
 
   .mindlab-script-preview__head {
