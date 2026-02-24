@@ -62,6 +62,36 @@ function reducer(state, action) {
         ...state,
         favorites: state.favorites.filter((item) => item.id !== action.id),
       }
+    case 'IMPORT_FAVORITES_MERGE': {
+      const current = state.favorites
+      const byId = new Set(current.map((item) => item.id))
+      const bySignature = new Set(
+        current.map((item) => `${item.labId}::${item.sentenceText}::${item.createdAt}`),
+      )
+
+      const accepted = []
+      let skipped = 0
+
+      for (const item of action.items) {
+        const signature = `${item.labId}::${item.sentenceText}::${item.createdAt}`
+        if (byId.has(item.id) || bySignature.has(signature)) {
+          skipped += 1
+          continue
+        }
+        byId.add(item.id)
+        bySignature.add(signature)
+        accepted.push(item)
+      }
+
+      return {
+        ...state,
+        favorites: sortByDateDesc([...accepted, ...current]),
+        lastImportSummary: {
+          imported: accepted.length,
+          skipped,
+        },
+      }
+    }
     case 'UPSERT_HISTORY': {
       const exists = state.history.some((item) => item.id === action.entry.id)
       const next = exists
@@ -166,6 +196,44 @@ export function AppStateProvider({ children }) {
         const payload = buildFavoritesExportPayload(state.favorites)
         const date = new Date().toISOString().slice(0, 10)
         downloadJson(`language-alchemy-favorites-${date}.json`, payload)
+      },
+      importFavoritesMerge(items) {
+        const normalized = (items ?? [])
+          .filter((item) => item && typeof item === 'object' && item.sentenceText && item.labId)
+          .map((item) => ({
+            id: item.id ?? makeId('fav'),
+            labId: item.labId,
+            sentenceText: String(item.sentenceText),
+            createdAt: item.createdAt ?? new Date().toISOString(),
+            titleHe: item.titleHe ?? getLabConfig(item.labId)?.titleHe ?? item.labId,
+            tags: Array.isArray(item.tags) ? item.tags : [],
+            draftSnapshot:
+              item.draftSnapshot && typeof item.draftSnapshot === 'object'
+                ? item.draftSnapshot
+                : undefined,
+          }))
+
+        dispatch({ type: 'IMPORT_FAVORITES_MERGE', items: normalized })
+
+        const currentById = new Set(state.favorites.map((item) => item.id))
+        const currentBySignature = new Set(
+          state.favorites.map(
+            (item) => `${item.labId}::${item.sentenceText}::${item.createdAt}`,
+          ),
+        )
+        let imported = 0
+        let skipped = 0
+        for (const item of normalized) {
+          const signature = `${item.labId}::${item.sentenceText}::${item.createdAt}`
+          if (currentById.has(item.id) || currentBySignature.has(signature)) {
+            skipped += 1
+          } else {
+            imported += 1
+            currentById.add(item.id)
+            currentBySignature.add(signature)
+          }
+        }
+        return { imported, skipped, total: normalized.length }
       },
       runRandomAlchemist() {
         const candidates = visibleLabs.filter(

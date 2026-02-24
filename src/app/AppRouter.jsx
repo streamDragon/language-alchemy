@@ -15,7 +15,9 @@ export default function AppRouter() {
         <Route path="lab/empathy" element={<AlchemyLabPage labId="empathy" />} />
         <Route path="lab/boundaries" element={<AlchemyLabPage labId="boundaries" />} />
         <Route path="lab/clean-questions" element={<CleanQuestionsPage />} />
+        <Route path="lab/questions" element={<CleanQuestionsPage />} />
         <Route path="lab/beyond-words" element={<BeyondWordsLabPage />} />
+        <Route path="lab/beyond" element={<BeyondWordsLabPage />} />
         <Route path="library" element={<LibraryPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

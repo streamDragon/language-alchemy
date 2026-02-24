@@ -68,6 +68,9 @@ export default function CleanQuestionsPage() {
 
           {mode.id === 'meta-model' && (
             <div className="questioner-grid">
+              <div className="callout-line">
+                <strong>Rules Structure (Breen):</strong> UQ / MO / C&amp;E / CE
+              </div>
               <div className="chip-bank">
                 <h3>קטגוריות</h3>
                 <div className="chips-wrap">

@@ -59,6 +59,28 @@ export function buildFavoritesExportPayload(favorites) {
   }
 }
 
+export function parseFavoritesImportPayload(rawText) {
+  const parsed = safeParse(rawText, null)
+  if (!parsed || typeof parsed !== 'object') {
+    throw new Error('קובץ JSON לא תקין.')
+  }
+
+  const favorites = Array.isArray(parsed.favorites)
+    ? parsed.favorites
+    : Array.isArray(parsed)
+      ? parsed
+      : null
+
+  if (!favorites) {
+    throw new Error('לא נמצאה רשימת favorites בקובץ.')
+  }
+
+  return {
+    schemaVersion: parsed.schemaVersion ?? null,
+    favorites,
+  }
+}
+
 export function downloadJson(filename, data) {
   const blob = new Blob([JSON.stringify(data, null, 2)], {
     type: 'application/json',

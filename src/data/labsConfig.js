@@ -276,12 +276,16 @@ export const visibleLabs = [
       { id: 'belly', labelHe: 'בטן' },
       { id: 'pelvis', labelHe: 'אגן' },
       { id: 'hands', labelHe: 'ידיים' },
+      { id: 'legs', labelHe: 'רגליים' },
     ],
     somaticQualityByZone: {
       head: ['לחץ', 'מחשבות רצות', 'ערפול', 'צלילות', 'כובד'],
       throat: ['מחנק', 'פתיחות', 'רעד', 'שקט', 'יובש'],
       chest: ['התרחבות', 'כיווץ', 'דופק מהיר', 'חום', 'מועקה'],
       belly: ['פרפרים', 'קשר', 'שחרור', 'תנועה', 'זרימה'],
+      pelvis: ['יציבות', 'כבדות', 'חוסר שקט', 'נוכחות', 'אדמה'],
+      hands: ['רעד', 'חום', 'קור', 'מתח', 'רכות'],
+      legs: ['דריכה', 'חולשה', 'רעד', 'יציבות', 'זרם'],
     },
     globalSomaticQualities: ['tight', 'warm', 'heavy', 'open', 'buzzing', 'calm', 'pressure', 'expansion'],
     qualityLabelsHe: {
@@ -299,6 +303,9 @@ export const visibleLabs = [
     ],
     attentionProtocolPrompts: [
       'מה לא שמת לב שאתה רואה עכשיו?',
+      'מה לא שמת לב שאתה שומע עכשיו?',
+      'מה לא שמת לב שאתה מרגיש עכשיו?',
+      'מה אתה רואה עכשיו?',
       'מה אתה שומע עכשיו?',
       'מה אתה מרגיש עכשיו?',
     ],

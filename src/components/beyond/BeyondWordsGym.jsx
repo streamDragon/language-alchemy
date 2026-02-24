@@ -66,7 +66,7 @@ function BodyMap({ zones, selectedZoneIds, onToggleZone }) {
       </div>
       <svg
         className="body-map"
-        viewBox="0 0 280 420"
+        viewBox="0 0 280 460"
         aria-label="מפת גוף לבחירת אזורי תחושה"
       >
         <g className="body-map__silhouette" aria-hidden="true">
@@ -76,6 +76,8 @@ function BodyMap({ zones, selectedZoneIds, onToggleZone }) {
           <rect x="100" y="255" width="80" height="70" rx="28" />
           <rect x="86" y="315" width="36" height="76" rx="18" />
           <rect x="158" y="315" width="36" height="76" rx="18" />
+          <rect x="86" y="390" width="36" height="34" rx="12" />
+          <rect x="158" y="390" width="36" height="34" rx="12" />
           <rect x="48" y="128" width="34" height="110" rx="14" />
           <rect x="198" y="128" width="34" height="110" rx="14" />
         </g>
@@ -115,6 +117,12 @@ function BodyMap({ zones, selectedZoneIds, onToggleZone }) {
           props: { x: 42, y: 248, width: 196, height: 42 },
           labelX: 140,
           labelY: 274,
+        })}
+        {zoneShape('legs', labels.legs, {
+          type: 'rect',
+          props: { x: 76, y: 314, width: 128, height: 112 },
+          labelX: 140,
+          labelY: 374,
         })}
       </svg>
       <div className="chips-wrap">
@@ -183,14 +191,16 @@ export default function BeyondWordsGym() {
     return () => window.clearInterval(intervalId)
   }, [isTimerRunning])
 
-  const protocolCycle = Math.floor(protocolStepIndex / lab.attentionProtocolPrompts.length) + 1
+  const promptCount = lab.attentionProtocolPrompts.length
+  const totalProtocolSteps = promptCount * 3
+  const protocolCycle = Math.floor(protocolStepIndex / promptCount) + 1
   const protocolPrompt =
     lab.attentionProtocolPrompts[
-      protocolStepIndex % lab.attentionProtocolPrompts.length
+      protocolStepIndex % promptCount
     ]
-  const protocolStepsCompleted = Math.min(protocolStepIndex + 1, 9)
+  const protocolStepsCompleted = Math.min(protocolStepIndex + 1, totalProtocolSteps)
   const protocolCompletedCycles = Math.min(
-    Math.floor((protocolStepIndex + 1) / 3),
+    Math.floor((protocolStepIndex + 1) / promptCount),
     3,
   )
 
@@ -503,26 +513,45 @@ export default function BeyondWordsGym() {
               </div>
               <div className="protocol-card">
                 <div className="protocol-card__progress">
-                  מחזור {Math.min(protocolCycle, 3)} / 3 | צעד {Math.min(protocolStepIndex + 1, 9)} / 9
+                  מחזור {Math.min(protocolCycle, 3)} / 3 | צעד {Math.min(protocolStepIndex + 1, totalProtocolSteps)} / {totalProtocolSteps}
                 </div>
                 <p className="protocol-card__prompt">{protocolPrompt}</p>
                 <div className="controls-row">
                   <button
                     type="button"
-                    onClick={() => setProtocolStepIndex((prev) => Math.min(prev + 1, 8))}
+                    onClick={() =>
+                      setProtocolStepIndex((prev) =>
+                        Math.min(prev + 1, totalProtocolSteps - 1),
+                      )
+                    }
                   >
                     הבא
                   </button>
                   <button
                     type="button"
                     onClick={() =>
-                      setProtocolStepIndex((prev) => Math.min(Math.floor(prev / 3) * 3 + 3, 8))
+                      setProtocolStepIndex((prev) =>
+                        Math.min(
+                          Math.floor(prev / promptCount) * promptCount + promptCount,
+                          totalProtocolSteps - 1,
+                        ),
+                      )
                     }
                   >
                     סיים מחזור
                   </button>
                   <button type="button" onClick={() => setProtocolStepIndex(0)}>
                     התחל מחדש
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setStatusMessage(
+                        'בדקו שוב את האפקט של המשפט עכשיו: מה השתנה בעוצמה, באזור או באיכות התחושה?',
+                      )
+                    }
+                  >
+                    בדיקת אפקט מחדש
                   </button>
                 </div>
                 <div className="noticing-prompts">
