@@ -7,7 +7,7 @@ import LabLessonPrompt from '../components/layout/LabLessonPrompt'
 import MenuSection from '../components/layout/MenuSection'
 import LiberatingConversationSimulator from '../components/mind/LiberatingConversationSimulator'
 import PatternSequenceMaster from '../components/mind/PatternSequenceMaster'
-import { MessageCircle, Sparkles, Workflow } from 'lucide-react'
+import { MessageCircle, Sparkles, Volume2, VolumeX, Wand2, Workflow } from 'lucide-react'
 
 const SAMPLE_PATIENT_TEXTS = [
   'אני תמיד נתקע כשצריך לדבר מול אנשים, זה פשוט לא אני.',
@@ -149,6 +149,103 @@ const MINDLAB_MAIN_STEPS = [
     subtitleHe: 'סימולטור + מאסטר רצפים לתרגול על יבש עם פידבק.',
   },
 ]
+
+const MINDLAB_AUDIO_PREFS_KEY = 'la.v1.mindlabAudioPrefs'
+
+function readMindlabAudioPrefs() {
+  if (typeof window === 'undefined') {
+    return { enabled: false, muted: false, dontAskAgain: false }
+  }
+  try {
+    const raw = window.localStorage.getItem(MINDLAB_AUDIO_PREFS_KEY)
+    if (!raw) return { enabled: false, muted: false, dontAskAgain: false }
+    const parsed = JSON.parse(raw)
+    return {
+      enabled: Boolean(parsed?.enabled),
+      muted: Boolean(parsed?.muted),
+      dontAskAgain: Boolean(parsed?.dontAskAgain),
+    }
+  } catch {
+    return { enabled: false, muted: false, dontAskAgain: false }
+  }
+}
+
+function writeMindlabAudioPrefs(nextPrefs) {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(MINDLAB_AUDIO_PREFS_KEY, JSON.stringify(nextPrefs))
+  } catch {
+    // no-op
+  }
+}
+
+function playWebAudioCue(audioContextRef, cue = 'tap', muted = false) {
+  if (muted || typeof window === 'undefined') return
+  const AudioContextCtor = window.AudioContext || window.webkitAudioContext
+  if (!AudioContextCtor) return
+
+  let ctx = audioContextRef.current
+  if (!ctx) {
+    try {
+      ctx = new AudioContextCtor()
+      audioContextRef.current = ctx
+    } catch {
+      return
+    }
+  }
+
+  if (ctx.state === 'suspended') {
+    ctx.resume().catch(() => {})
+  }
+
+  const now = ctx.currentTime
+  const gain = ctx.createGain()
+  gain.connect(ctx.destination)
+  gain.gain.value = 0.0001
+
+  const cueMap = {
+    tap: [520, 660],
+    whoosh: [240, 320, 420],
+    sparkle: [880, 1046],
+    harp: [660, 880, 1320],
+    gong: [220, 330, 440],
+    ambient: [256, 384],
+  }
+  const frequencies = cueMap[cue] ?? cueMap.tap
+  const baseVolume = cue === 'ambient' ? 0.012 : 0.03
+  const attack = cue === 'ambient' ? 0.4 : 0.02
+  const release = cue === 'ambient' ? 1.4 : 0.18
+
+  frequencies.forEach((frequency, index) => {
+    const osc = ctx.createOscillator()
+    const oscGain = ctx.createGain()
+    osc.type = cue === 'ambient' ? 'sine' : index % 2 ? 'triangle' : 'sine'
+    osc.frequency.setValueAtTime(frequency, now)
+    oscGain.gain.setValueAtTime(0.0001, now)
+    oscGain.gain.linearRampToValueAtTime(baseVolume / (index + 1), now + attack)
+    oscGain.gain.exponentialRampToValueAtTime(0.0001, now + attack + release)
+    osc.connect(oscGain)
+    oscGain.connect(gain)
+    osc.start(now + index * 0.015)
+    osc.stop(now + attack + release + index * 0.015 + 0.02)
+  })
+}
+
+function AlchemistCompanion({ mood, message, pulseKey }) {
+  const face =
+    mood === 'dancing' ? '🧙‍♂️✨' : mood === 'surprised' ? '🧙‍♂️😲' : mood === 'clap' ? '🧙‍♂️👏' : '🧙‍♂️🙂'
+  return (
+    <aside className={`mindlab-companion mood-${mood || 'happy'}`} aria-live="polite" aria-label="Alchemist Companion">
+      <div key={pulseKey} className="mindlab-companion__orb" aria-hidden="true">
+        {face}
+      </div>
+      <div className="mindlab-companion__bubble">
+        <strong>Alchemist Companion</strong>
+        <span>{message || 'פותחים שדה, צעד אחד בכל פעם.'}</span>
+      </div>
+    </aside>
+  )
+}
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value))
@@ -318,11 +415,39 @@ export default function MindLiberatingLanguagePage() {
   const [activeMindTabId, setActiveMindTabId] = useState('workflow')
   const [activeStepId, setActiveStepId] = useState(MINDLAB_MAIN_STEPS[0].id)
   const [completedStepIds, setCompletedStepIds] = useState([])
+  const [companionMood, setCompanionMood] = useState('happy')
+  const [companionMessage, setCompanionMessage] = useState('ברוך הבא למעבדה. מתחילים במשפט המטופל ומשם פותחים שדה.')
+  const [companionPulseKey, setCompanionPulseKey] = useState(0)
+  const [audioPrefs, setAudioPrefs] = useState(() => readMindlabAudioPrefs())
+  const [showSoundConsent, setShowSoundConsent] = useState(() => !readMindlabAudioPrefs().dontAskAgain)
   const stepRefs = useRef({})
+  const audioContextRef = useRef(null)
+  const ambientTimerRef = useRef(null)
 
   useEffect(() => {
     setLastVisitedLab(lab.id)
   }, [lab.id, setLastVisitedLab])
+
+  useEffect(() => {
+    writeMindlabAudioPrefs(audioPrefs)
+  }, [audioPrefs])
+
+  useEffect(() => {
+    if (ambientTimerRef.current) {
+      window.clearInterval(ambientTimerRef.current)
+      ambientTimerRef.current = null
+    }
+    if (!audioPrefs.enabled || audioPrefs.muted) return
+    ambientTimerRef.current = window.setInterval(() => {
+      playWebAudioCue(audioContextRef, 'ambient', audioPrefs.muted)
+    }, 12000)
+    return () => {
+      if (ambientTimerRef.current) {
+        window.clearInterval(ambientTimerRef.current)
+        ambientTimerRef.current = null
+      }
+    }
+  }, [audioPrefs.enabled, audioPrefs.muted])
 
   const analysis = useMemo(() => analyzePatientText(patientText), [patientText])
   const quantifierShift =
@@ -419,6 +544,34 @@ export default function MindLiberatingLanguagePage() {
     [state],
   )
 
+  const triggerCompanion = (mood, message) => {
+    setCompanionMood(mood)
+    if (message) {
+      setCompanionMessage(message)
+    }
+    setCompanionPulseKey((current) => current + 1)
+  }
+
+  const playCue = (cue) => {
+    if (!audioPrefs.enabled) return
+    playWebAudioCue(audioContextRef, cue, audioPrefs.muted)
+  }
+
+  const applySoundConsent = ({ enabled, dontAskAgain = false }) => {
+    setAudioPrefs((current) => ({
+      ...current,
+      enabled,
+      dontAskAgain: current.dontAskAgain || dontAskAgain,
+    }))
+    setShowSoundConsent(false)
+    if (enabled) {
+      playCue('sparkle')
+      triggerCompanion('happy', 'יופי. המעבדה חיה ועדינה. אפשר להשתיק בכל רגע.')
+    } else {
+      triggerCompanion('happy', 'מעולה. עובדים בשקט מלא, בלי סאונד.')
+    }
+  }
+
   const scrollToStep = (stepId) => {
     const node = stepRefs.current[stepId]
     if (!node) return
@@ -437,11 +590,13 @@ export default function MindLiberatingLanguagePage() {
 
   const markStepDoneAndAdvance = (stepId) => {
     setCompletedStepIds((current) => (current.includes(stepId) ? current : [...current, stepId]))
+    playCue('sparkle')
     const currentIndex = MINDLAB_MAIN_STEPS.findIndex((step) => step.id === stepId)
     const nextStep = MINDLAB_MAIN_STEPS[currentIndex + 1]
     if (nextStep) {
       setActiveStepId(nextStep.id)
       scrollToStep(nextStep.id)
+      triggerCompanion('clap', `סוגר/ת שלב ${currentIndex + 1} וממשיך/ה ל-${nextStep.shortLabelHe}.`)
       setStatusMessage(`סיימת את ${currentIndex + 1}/${MINDLAB_MAIN_STEPS.length} • ממשיכים ל-${nextStep.shortLabelHe}.`)
       return
     }
@@ -460,6 +615,8 @@ export default function MindLiberatingLanguagePage() {
       return
     }
     setTherapistText(generatedTherapistText)
+    playCue('whoosh')
+    triggerCompanion('happy', 'וווו! נבנה ניסוח שמזיז את התודעה ולא רק מסביר.')
     setStatusMessage('נבנה ניסוח מטפל משחרר. אפשר לערוך אותו ידנית.')
   }
 
@@ -470,6 +627,7 @@ export default function MindLiberatingLanguagePage() {
     }
     try {
       await navigator.clipboard.writeText(therapistText)
+      playCue('tap')
       setStatusMessage('הטקסט של המטפל הועתק ללוח.')
     } catch {
       setStatusMessage('לא הצלחתי להעתיק ללוח.')
