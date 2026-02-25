@@ -6,6 +6,7 @@ import LabLessonPrompt from '../layout/LabLessonPrompt'
 import { buildSentence } from '../../utils/alchemy'
 import { makeId } from '../../utils/ids'
 import { computeSomaticDelta, hasSomaticSignal } from '../../utils/somatic'
+import { emitAlchemySignal } from '../../utils/alchemySignals'
 
 function clone(value) {
   try {
@@ -301,6 +302,9 @@ export default function BeyondWordsGym() {
           setIsTimerRunning(false)
           setTimerCompleted(true)
           setActiveStepId('somatic')
+          emitAlchemySignal('success', {
+            message: 'הטיימר הסתיים. עוברים למדידת גוף.',
+          })
           setStatusMessage('הטיימר הסתיים. עכשיו שימו לב: מה קורה בגוף עכשיו?')
           return 0
         }
@@ -441,6 +445,7 @@ export default function BeyondWordsGym() {
   ])
 
   const startTimer = () => {
+    emitAlchemySignal('whoosh', { message: 'הטיימר התחיל. שומרים קשב.' })
     setStatusMessage('קראו את המשפט בקול או בלב. שימו לב למה שקורה בגוף בזמן הקריאה.')
     setActiveStepId('timer')
     setIsTimerRunning(true)
@@ -467,6 +472,7 @@ export default function BeyondWordsGym() {
     setIsFocusModalOpen(false)
     setShowSomaticGlossary(false)
     setShowNoticingLibrary(false)
+    emitAlchemySignal('success', { message: 'נפתחה סשן חדשה לתרגול.' })
     setStatusMessage('נפתחה סשן חדשה לתרגול.')
   }
 
@@ -506,6 +512,7 @@ export default function BeyondWordsGym() {
       ...prev,
       [label === 'A' ? 'snapshotA' : 'snapshotB']: snapshot,
     }))
+    emitAlchemySignal('saved', { message: `נשמר Snapshot ${label}.` })
     setStatusMessage(`נשמר Snapshot ${label}.`)
   }
 

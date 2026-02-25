@@ -39,33 +39,33 @@ function arraysEqual(a, b) {
 
 function simpleSequenceFeedback(text) {
   const normalized = normalize(text)
-  if (!normalized) return { score: 0, labelHe: '׳—׳¡׳¨ ׳¨׳¦׳£', notesHe: ['׳›׳×׳‘׳• ׳¨׳¦׳£ ׳׳׳ ׳׳™׳™׳©׳•׳ ׳¢׳ ׳”׳׳©׳₪׳˜.'] }
+  if (!normalized) return { score: 0, labelHe: 'חסר רצף', notesHe: ['כתבו רצף מלא ליישום על המשפט.'] }
 
   let score = 30
   const notes = []
-  if (/[?״]/.test(normalized)) {
+  if (/[?؟]/.test(normalized)) {
     score += 20
-    notes.push('׳™׳© ׳©׳׳׳•׳× ׳₪׳•׳×׳—׳•׳×.')
+    notes.push('יש שאלות פותחות.')
   } else {
-    notes.push('׳”׳•׳¡׳™׳₪׳• ׳¡׳™׳׳ ׳™ ׳©׳׳׳”/׳©׳׳׳•׳× ׳׳₪׳•׳¨׳©׳•׳× ׳›׳“׳™ ׳׳©׳׳•׳¨ ׳¢׳ ׳×׳ ׳•׳¢׳”.')
+    notes.push('הוסיפו סימני שאלה/שאלות מפורשות כדי לשמור על תנועה.')
   }
-  if (/׳׳” ׳”׳§׳©׳¨|׳׳™׳ .*׳׳×׳§׳©׳¨/.test(normalized)) {
+  if (/מה הקשר|איך .*מתקשר/.test(normalized)) {
     score += 25
-    notes.push("׳׳¢׳•׳׳”: ׳™׳© ׳¦׳™׳¨ '׳™׳—׳¡׳™׳' ׳©׳׳–׳™׳– ׳׳× ׳”׳×׳•׳“׳¢׳”.")
+    notes.push("מעולה: יש ציר 'יחסים' שמזיז את התודעה.")
   }
-  if (/׳×׳׳™׳“|׳׳₪׳¢׳׳™׳|׳‘׳—׳׳§|׳›׳׳•׳|׳©׳•׳|׳׳•׳׳™|׳׳₪׳©׳¨/.test(normalized)) {
+  if (/תמיד|לפעמים|בחלק|כלום|שום|אולי|אפשר/.test(normalized)) {
     score += 15
-    notes.push('׳™׳© ׳¢׳‘׳•׳“׳” ׳¢׳ ׳›׳™׳׳•׳×/׳₪׳×׳™׳—׳× ׳©׳“׳”.')
+    notes.push('יש עבודה עם כימות/פתיחת שדה.')
   }
-  if (/׳׳ ׳™׳•׳“׳¢|׳׳₪׳©׳¨׳™|׳׳” ׳¢׳•׳“/.test(normalized)) {
+  if (/לא יודע|אפשרי|מה עוד/.test(normalized)) {
     score += 10
-    notes.push('׳ ׳›׳ ׳¡׳” ׳₪׳×׳™׳—׳× ׳׳™-׳™׳“׳™׳¢׳”/׳׳₪׳©׳¨׳•׳×.')
+    notes.push('נכנסה פתיחת אי-ידיעה/אפשרות.')
   }
 
   score = Math.min(100, score)
   return {
     score,
-    labelHe: score >= 75 ? '׳¨׳¦׳£ ׳—׳–׳§' : score >= 55 ? '׳‘׳¡׳™׳¡ ׳˜׳•׳‘' : '׳¦׳¨׳™׳ ׳¢׳•׳“ ׳₪׳×׳™׳—׳”',
+    labelHe: score >= 75 ? 'רצף חזק' : score >= 55 ? 'בסיס טוב' : 'צריך עוד פתיחה',
     notesHe: notes,
   }
 }
@@ -234,14 +234,14 @@ export default function PatternSequenceMaster({
 
   const handleShuffleOrderPool = () => {
     setOrderPool((current) => shuffleList(current))
-    setStatusMessage('׳”׳¡׳“׳¨ ׳׳¢׳¨׳‘׳•׳‘ ׳¢׳•׳“׳›׳.')
+    setStatusMessage('הסדר לערבוב עודכן.')
   }
 
   const handleResetOrderPractice = () => {
     setOrderPool(createOrderPool(selectedPattern))
     setBuiltOrder([])
     setOrderChecked(false)
-    setStatusMessage('׳×׳¨׳’׳•׳ ׳”׳¡׳“׳¨ ׳׳•׳₪׳¡.')
+    setStatusMessage('תרגול הסדר אופס.')
   }
 
   const handleCheckPractice = () => {
@@ -259,12 +259,12 @@ export default function PatternSequenceMaster({
     setApplicationSequenceText('')
     setApplicationChecked(false)
     onSignal?.('pattern-next-statement')
-    setStatusMessage('׳ ׳˜׳¢׳ ׳׳©׳₪׳˜ ׳—׳“׳© ׳׳™׳™׳©׳•׳.')
+    setStatusMessage('נטען משפט חדש ליישום.')
   }
 
   const handleSaveSequence = () => {
     if (!selectedPattern || !normalize(applicationSequenceText)) {
-      setStatusMessage('׳‘׳—׳¨׳• ׳₪׳׳˜׳¨׳ ׳•׳›׳×׳‘׳• ׳¨׳¦׳£ ׳™׳™׳©׳•׳ ׳׳₪׳ ׳™ ׳©׳׳™׳¨׳”.')
+      setStatusMessage('בחרו פאטרן וכתבו רצף יישום לפני שמירה.')
       return
     }
 
@@ -282,7 +282,7 @@ export default function PatternSequenceMaster({
       applicationFeedback,
     })
     onSignal?.('pattern-save', { score: applicationFeedback.score, orderCorrect, blankCorrect })
-    setStatusMessage('׳”׳¨׳¦׳£ ׳ ׳©׳׳¨ ׳׳”׳™׳¡׳˜׳•׳¨׳™׳”.')
+    setStatusMessage('הרצף נשמר להיסטוריה.')
   }
 
   return (
@@ -291,7 +291,7 @@ export default function PatternSequenceMaster({
         <div>
           <h3 className="feature-heading">
             <Workflow size={18} aria-hidden="true" />
-            <span>׳׳׳¡׳˜׳¨ ׳¨׳¦׳₪׳™׳ - ׳‘׳•׳ ׳” ׳©׳₪׳” ׳׳©׳—׳¨׳¨׳×</span>
+            <span>מאסטר רצפים - בונה שפה משחררת</span>
           </h3>
           <p className="feature-heading__sub">Pattern Sequence Master</p>
         </div>
@@ -302,7 +302,7 @@ export default function PatternSequenceMaster({
             onClick={() => setMode('learn')}
           >
             <BookOpen size={14} aria-hidden="true" />
-            ׳׳¦׳‘ ׳׳׳™׳“׳”
+            מצב למידה
           </button>
           <button
             type="button"
@@ -310,12 +310,12 @@ export default function PatternSequenceMaster({
             onClick={() => setMode('practice')}
           >
             <ListChecks size={14} aria-hidden="true" />
-            ׳׳¦׳‘ ׳×׳¨׳’׳•׳
+            מצב תרגול
           </button>
         </div>
       </div>
 
-      <div className="pattern-master__patternGrid" role="tablist" aria-label="׳‘׳—׳¨ ׳₪׳׳˜׳¨׳">
+      <div className="pattern-master__patternGrid" role="tablist" aria-label="בחר פאטרן">
         {liberatingPatterns.map((pattern) => (
           <button
             key={pattern.id}
@@ -326,11 +326,11 @@ export default function PatternSequenceMaster({
             onClick={() => handleSelectPattern(pattern.id)}
           >
             <div className="pattern-master__patternCardHead">
-              <span aria-hidden="true">{pattern.emoji ?? 'ג¨'}</span>
+              <span aria-hidden="true">{pattern.emoji ?? '✨'}</span>
               <strong>{pattern.titleHe}</strong>
             </div>
             <small>{pattern.name}</small>
-            <span>׳¢׳׳•׳“ {pattern.page}</span>
+            <span>עמוד {pattern.page}</span>
           </button>
         ))}
       </div>
@@ -348,9 +348,9 @@ export default function PatternSequenceMaster({
           <FlowChart nodes={selectedPattern.flowNodes} />
 
           <MenuSection
-            title="׳”׳¨׳¦׳£ ׳”׳׳׳"
-            subtitle={`${selectedPattern.questions.length} ׳©׳׳׳•׳×`}
-            badgeText="׳׳™׳׳•׳“"
+            title="הרצף המלא"
+            subtitle={`${selectedPattern.questions.length} שאלות`}
+            badgeText="לימוד"
             defaultOpen={mode === 'learn'}
             className="pattern-master__menu"
           >
@@ -363,9 +363,9 @@ export default function PatternSequenceMaster({
           </MenuSection>
 
           <MenuSection
-            title="׳×׳¨׳’׳•׳: Fill-in-the-Blanks"
+            title="תרגול: Fill-in-the-Blanks"
             subtitle={selectedPattern.fillBlankPrompt}
-            badgeText={fillChecked ? (blankCorrect ? '׳ ׳›׳•׳' : '׳‘׳“׳™׳§׳”') : '׳×׳¨׳’׳•׳'}
+            badgeText={fillChecked ? (blankCorrect ? 'נכון' : 'בדיקה') : 'תרגול'}
             defaultOpen={mode === 'practice'}
             className="pattern-master__menu"
           >
@@ -379,35 +379,35 @@ export default function PatternSequenceMaster({
                     setFillAnswer(event.target.value)
                     if (fillChecked) setFillChecked(false)
                   }}
-                  placeholder="׳”׳©׳׳/׳™ ׳׳× ׳”׳—׳¡׳¨"
+                  placeholder="השלם/י את החסר"
                 />
               </label>
               <div className={`pattern-master__checkline ${fillChecked ? (blankCorrect ? 'is-good' : 'is-warn') : ''}`}>
                 {fillChecked ? (
                   blankCorrect ? (
                     <span>
-                      <CheckCircle2 size={14} aria-hidden="true" /> ׳ ׳›׳•׳. ׳”׳×׳©׳•׳‘׳” ׳”׳¦׳₪׳•׳™׳”: {selectedPattern.fillBlankAnswer}
+                      <CheckCircle2 size={14} aria-hidden="true" /> נכון. התשובה הצפויה: {selectedPattern.fillBlankAnswer}
                     </span>
                   ) : (
-                    <span>׳›׳׳¢׳˜. ׳‘׳“׳§׳• ׳׳× ׳׳™׳׳× ׳”׳׳₪׳×׳— ׳©׳ ׳”׳₪׳׳˜׳¨׳: {selectedPattern.fillBlankAnswer}</span>
+                    <span>כמעט. בדקו את מילת המפתח של הפאטרן: {selectedPattern.fillBlankAnswer}</span>
                   )
                 ) : (
-                  <span>׳”׳©׳׳/׳™ ׳•׳׳– ׳׳—׳¥/׳™ "׳‘׳“׳•׳§ ׳×׳¨׳’׳•׳".</span>
+                  <span>השלם/י ואז לחץ/י "בדוק תרגול".</span>
                 )}
               </div>
             </div>
           </MenuSection>
 
           <MenuSection
-            title="׳×׳¨׳’׳•׳: ׳¡׳“׳¨ ׳¨׳¦׳£ (Drag/Drop + ׳׳•׳‘׳™׳™׳ tap)"
-            subtitle={`${builtOrder.length}/${selectedPattern.questions.length} ׳ ׳‘׳ ׳”`}
-            badgeText={orderChecked ? (orderCorrect ? '׳׳“׳•׳™׳§' : '׳‘׳“׳™׳§׳”') : '׳×׳¨׳’׳•׳'}
+            title="תרגול: סדר רצף (Drag/Drop + מובייל tap)"
+            subtitle={`${builtOrder.length}/${selectedPattern.questions.length} נבנה`}
+            badgeText={orderChecked ? (orderCorrect ? 'מדויק' : 'בדיקה') : 'תרגול'}
             defaultOpen={mode === 'practice'}
             className="pattern-master__menu"
           >
             <div className="pattern-master__orderGrid">
               <div className="pattern-master__orderCol">
-                <h4>׳‘׳¨׳™׳›׳× ׳©׳׳׳•׳×</h4>
+                <h4>בריכת שאלות</h4>
                 <div className="pattern-master__pool">
                   {orderPool.map((question) => (
                     <button
@@ -420,43 +420,43 @@ export default function PatternSequenceMaster({
                       <span>{question}</span>
                     </button>
                   ))}
-                  {!orderPool.length && <p className="muted-text">׳”׳›׳•׳ ׳”׳•׳¢׳‘׳¨ ׳׳¨׳¦׳£. ׳׳₪׳©׳¨ ׳׳‘׳“׳•׳§ ׳׳• ׳׳¡׳“׳¨ ׳׳—׳“׳©.</p>}
+                  {!orderPool.length && <p className="muted-text">הכול הועבר לרצף. אפשר לבדוק או לסדר מחדש.</p>}
                 </div>
                 <div className="controls-row">
                   <button type="button" onClick={handleShuffleOrderPool}>
                     <Shuffle size={14} aria-hidden="true" />
-                    ׳¢׳¨׳‘׳‘ ׳‘׳¨׳™׳›׳”
+                    ערבב בריכה
                   </button>
                   <button type="button" onClick={handleResetOrderPractice}>
-                    ׳׳™׳₪׳•׳¡ ׳¡׳“׳¨
+                    איפוס סדר
                   </button>
                 </div>
               </div>
 
               <div className="pattern-master__orderCol">
-                <h4>׳”׳¨׳¦׳£ ׳©׳‘׳ ׳™׳×</h4>
+                <h4>הרצף שבנית</h4>
                 <ol className="pattern-master__builtList">
                   {builtOrder.map((question, index) => (
                     <li key={`${question}-${index}`} className="pattern-master__builtItem">
                       <span>{question}</span>
                       <div className="pattern-master__builtActions">
-                        <button type="button" onClick={() => moveBuiltItem(index, -1)} aria-label="׳”׳¢׳‘׳¨ ׳׳׳¢׳׳”">
+                        <button type="button" onClick={() => moveBuiltItem(index, -1)} aria-label="העבר למעלה">
                           <MoveUp size={14} aria-hidden="true" />
                         </button>
-                        <button type="button" onClick={() => moveBuiltItem(index, 1)} aria-label="׳”׳¢׳‘׳¨ ׳׳׳˜׳”">
+                        <button type="button" onClick={() => moveBuiltItem(index, 1)} aria-label="העבר למטה">
                           <MoveDown size={14} aria-hidden="true" />
                         </button>
                         <button type="button" onClick={() => handleRemoveFromOrder(question, index)}>
-                          ׳”׳¡׳¨
+                          הסר
                         </button>
                       </div>
                     </li>
                   ))}
-                  {!builtOrder.length && <li className="muted-text">׳”׳§׳׳§/׳™ ׳¢׳ ׳©׳׳׳•׳× ׳׳”׳‘׳¨׳™׳›׳” ׳›׳“׳™ ׳׳‘׳ ׳•׳× ׳¨׳¦׳£.</li>}
+                  {!builtOrder.length && <li className="muted-text">הקלק/י על שאלות מהבריכה כדי לבנות רצף.</li>}
                 </ol>
                 {orderChecked && (
                   <div className={`pattern-master__checkline ${orderCorrect ? 'is-good' : 'is-warn'}`}>
-                    {orderCorrect ? '׳׳¢׳•׳׳”! ׳‘׳ ׳™׳× ׳׳× ׳”׳¨׳¦׳£ ׳‘׳¡׳“׳¨ ׳”׳ ׳›׳•׳.' : '׳¢׳•׳“ ׳׳. ׳ ׳¡׳• ׳׳¡׳“׳¨ ׳׳₪׳™ ׳”׳”׳™׳’׳™׳•׳ ׳©׳ ׳”׳₪׳׳˜׳¨׳.'}
+                    {orderCorrect ? 'מעולה! בנית את הרצף בסדר הנכון.' : 'עוד לא. נסו לסדר לפי ההיגיון של הפאטרן.'}
                   </div>
                 )}
               </div>
@@ -464,16 +464,16 @@ export default function PatternSequenceMaster({
           </MenuSection>
 
           <MenuSection
-            title="׳™׳™׳©׳•׳ ׳׳™׳™׳“׳™ ׳¢׳ ׳׳©׳₪׳˜ ׳׳˜׳•׳₪׳"
-            subtitle={applicationStatement?.statement ?? '׳‘׳—׳¨/׳™ ׳”׳§׳©׳¨ ׳•׳׳©׳₪׳˜'}
-            badgeText={applicationChecked ? applicationFeedback.labelHe : '׳™׳™׳©׳•׳'}
+            title="יישום מיידי על משפט מטופל"
+            subtitle={applicationStatement?.statement ?? 'בחר/י הקשר ומשפט'}
+            badgeText={applicationChecked ? applicationFeedback.labelHe : 'יישום'}
             defaultOpen
             className="pattern-master__menu"
           >
             <div className="pattern-master__application">
               <div className="pattern-master__applicationTop">
                 <label className="source-context-panel__topic">
-                  <span>׳”׳§׳©׳¨</span>
+                  <span>הקשר</span>
                   <select
                     value={applicationContextId}
                     onChange={(event) => handleSelectApplicationContext(event.target.value)}
@@ -488,23 +488,23 @@ export default function PatternSequenceMaster({
                 <div className="controls-row">
                   <button type="button" onClick={handleRandomApplicationStatement}>
                     <Shuffle size={14} aria-hidden="true" />
-                    ׳׳©׳₪׳˜ ׳¨׳ ׳“׳•׳׳׳™
+                    משפט רנדומלי
                   </button>
                   {onLoadPatientText && applicationStatement && (
                     <button type="button" onClick={() => onLoadPatientText(applicationStatement.statement)}>
                       <Brain size={14} aria-hidden="true" />
-                      ׳˜׳¢׳ ׳׳׳¢׳‘׳“׳” ׳”׳¨׳׳©׳™׳×
+                      טען למעבדה הראשית
                     </button>
                   )}
                 </div>
               </div>
 
               <blockquote className="mindlab-quote">
-                {applicationStatement?.statement ?? '׳׳™׳ ׳׳©׳₪׳˜׳™׳ ׳–׳׳™׳ ׳™׳ ׳‘׳”׳§׳©׳¨ ׳”׳–׳” ׳›׳¨׳’׳¢.'}
+                {applicationStatement?.statement ?? 'אין משפטים זמינים בהקשר הזה כרגע.'}
               </blockquote>
 
               <label className="mindlab-field">
-                <span>׳”׳¨׳¦׳£ ׳©׳׳ ׳¢׳ ׳”׳׳©׳₪׳˜ ׳”׳–׳”</span>
+                <span>הרצף שלך על המשפט הזה</span>
                 <textarea
                   rows={5}
                   className="mindlab-textarea"
@@ -514,7 +514,7 @@ export default function PatternSequenceMaster({
                     if (applicationChecked) setApplicationChecked(false)
                     setStatusMessage('')
                   }}
-                  placeholder="׳›׳×׳•׳‘/׳™ ׳›׳׳ ׳¨׳¦׳£ ׳׳׳ ׳©׳ ׳©׳׳׳•׳× ׳¢׳ ׳”׳׳©׳₪׳˜ ׳”׳¨׳ ׳“׳•׳׳׳™..."
+                  placeholder="כתוב/י כאן רצף מלא של שאלות על המשפט הרנדומלי..."
                 />
               </label>
 
@@ -535,7 +535,7 @@ export default function PatternSequenceMaster({
                     </div>
                     <span className="simulator-feedback__badge">
                       <Sparkles size={14} aria-hidden="true" />
-                      ׳™׳™׳©׳•׳ ׳¢׳ ׳©׳˜׳—
+                      יישום על שטח
                     </span>
                   </div>
                   <ul className="simulator-feedback__list">
@@ -551,11 +551,11 @@ export default function PatternSequenceMaster({
           <div className="controls-row">
             <button type="button" onClick={handleCheckPractice}>
               <CheckCircle2 size={14} aria-hidden="true" />
-              ׳‘׳“׳•׳§ ׳×׳¨׳’׳•׳
+              בדוק תרגול
             </button>
             <button type="button" onClick={handleSaveSequence}>
               <Save size={14} aria-hidden="true" />
-              ׳”׳•׳¡׳£ ׳׳”׳™׳¡׳˜׳•׳¨׳™׳” ׳©׳׳™
+              הוסף להיסטוריה שלי
             </button>
             <button
               type="button"
@@ -567,10 +567,10 @@ export default function PatternSequenceMaster({
                 setOrderChecked(false)
                 setApplicationSequenceText('')
                 setApplicationChecked(false)
-                setStatusMessage('׳×׳¨׳’׳•׳ ׳”׳₪׳׳˜׳¨׳ ׳׳•׳₪׳¡.')
+                setStatusMessage('תרגול הפאטרן אופס.')
               }}
             >
-              ׳׳™׳₪׳•׳¡ ׳×׳¨׳’׳•׳
+              איפוס תרגול
             </button>
           </div>
 

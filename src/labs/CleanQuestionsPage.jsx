@@ -1,12 +1,16 @@
 import { useState } from 'react'
 import { getLabConfig } from '../data/labsConfig'
 import LabLessonPrompt from '../components/layout/LabLessonPrompt'
+import { emitAlchemySignal } from '../utils/alchemySignals'
 
 function copyText(text, setStatus) {
   if (!text) return
   navigator.clipboard
     ?.writeText(text)
-    .then(() => setStatus('הטקסט הועתק ללוח.'))
+    .then(() => {
+      emitAlchemySignal('copied', { message: 'Copied to clipboard.' })
+      setStatus('הטקסט הועתק ללוח.')
+    })
     .catch(() => setStatus('לא הצלחתי להעתיק ללוח.'))
 }
 
