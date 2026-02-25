@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import { getLabConfig } from '../data/labsConfig'
 import { useAppState } from '../state/appStateContext'
 import { makeId } from '../utils/ids'
@@ -10,143 +10,143 @@ import PatternSequenceMaster from '../components/mind/PatternSequenceMaster'
 import { MessageCircle, Sparkles, Volume2, VolumeX, Wand2, Workflow } from 'lucide-react'
 
 const SAMPLE_PATIENT_TEXTS = [
-  'אני תמיד נתקע כשצריך לדבר מול אנשים, זה פשוט לא אני.',
-  'אין לי שום דרך אחרת, כולם מצפים ממני להיות חזק כל הזמן.',
-  'אני לא יכול להתמודד עם זה, זה גדול עליי מדי.',
+  '׳׳ ׳™ ׳×׳׳™׳“ ׳ ׳×׳§׳¢ ׳›׳©׳¦׳¨׳™׳ ׳׳“׳‘׳¨ ׳׳•׳ ׳׳ ׳©׳™׳, ׳–׳” ׳₪׳©׳•׳˜ ׳׳ ׳׳ ׳™.',
+  '׳׳™׳ ׳׳™ ׳©׳•׳ ׳“׳¨׳ ׳׳—׳¨׳×, ׳›׳•׳׳ ׳׳¦׳₪׳™׳ ׳׳׳ ׳™ ׳׳”׳™׳•׳× ׳—׳–׳§ ׳›׳ ׳”׳–׳׳.',
+  '׳׳ ׳™ ׳׳ ׳™׳›׳•׳ ׳׳”׳×׳׳•׳“׳“ ׳¢׳ ׳–׳”, ׳–׳” ׳’׳“׳•׳ ׳¢׳׳™׳™ ׳׳“׳™.',
 ]
 
 const CLOSURE_PATTERNS = [
   {
     id: 'uq',
-    labelHe: 'כימות כולל (תמיד/אף פעם/כולם)',
-    patterns: [/תמיד/g, /אף פעם/g, /כולם/g, /הכול/g, /הכל/g, /שום דבר/g],
+    labelHe: '׳›׳™׳׳•׳× ׳›׳•׳׳ (׳×׳׳™׳“/׳׳£ ׳₪׳¢׳/׳›׳•׳׳)',
+    patterns: [/׳×׳׳™׳“/g, /׳׳£ ׳₪׳¢׳/g, /׳›׳•׳׳/g, /׳”׳›׳•׳/g, /׳”׳›׳/g, /׳©׳•׳ ׳“׳‘׳¨/g],
     weight: 15,
-    releaseHintHe: "בדוק/י חריגים: 'תמיד' → 'לפעמים' / 'בחלק מהמקרים'.",
+    releaseHintHe: "׳‘׳“׳•׳§/׳™ ׳—׳¨׳™׳’׳™׳: '׳×׳׳™׳“' ג†’ '׳׳₪׳¢׳׳™׳' / '׳‘׳—׳׳§ ׳׳”׳׳§׳¨׳™׳'.",
   },
   {
     id: 'modal',
-    labelHe: 'נעילת אפשרות (אי אפשר/לא יכול/חייב)',
-    patterns: [/אי אפשר/g, /לא יכול(?:ה)?/g, /אין ברירה/g, /חייב(?:ת)?/g, /מוכרח(?:ת)?/g],
+    labelHe: '׳ ׳¢׳™׳׳× ׳׳₪׳©׳¨׳•׳× (׳׳™ ׳׳₪׳©׳¨/׳׳ ׳™׳›׳•׳/׳—׳™׳™׳‘)',
+    patterns: [/׳׳™ ׳׳₪׳©׳¨/g, /׳׳ ׳™׳›׳•׳(?:׳”)?/g, /׳׳™׳ ׳‘׳¨׳™׳¨׳”/g, /׳—׳™׳™׳‘(?:׳×)?/g, /׳׳•׳›׳¨׳—(?:׳×)?/g],
     weight: 18,
-    releaseHintHe: "רכך/י מודאליות: 'לא יכול' → 'כרגע קשה לי'.",
+    releaseHintHe: "׳¨׳›׳/׳™ ׳׳•׳“׳׳׳™׳•׳×: '׳׳ ׳™׳›׳•׳' ג†’ '׳›׳¨׳’׳¢ ׳§׳©׳” ׳׳™'.",
   },
   {
     id: 'certainty',
-    labelHe: 'ודאות קשיחה (ברור/אין מצב)',
-    patterns: [/ברור ש/g, /אין מצב/g, /בטוח ש/g, /חד משמעית/g],
+    labelHe: '׳•׳“׳׳•׳× ׳§׳©׳™׳—׳” (׳‘׳¨׳•׳¨/׳׳™׳ ׳׳¦׳‘)',
+    patterns: [/׳‘׳¨׳•׳¨ ׳©/g, /׳׳™׳ ׳׳¦׳‘/g, /׳‘׳˜׳•׳— ׳©/g, /׳—׳“ ׳׳©׳׳¢׳™׳×/g],
     weight: 12,
-    releaseHintHe: "הכנס/י מרחב בדיקה: 'ברור' → 'כרגע נראה לי'.",
+    releaseHintHe: "׳”׳›׳ ׳¡/׳™ ׳׳¨׳—׳‘ ׳‘׳“׳™׳§׳”: '׳‘׳¨׳•׳¨' ג†’ '׳›׳¨׳’׳¢ ׳ ׳¨׳׳” ׳׳™'.",
   },
   {
     id: 'identity',
-    labelHe: 'מיזוג זהות (זה אני / אני כזה)',
-    patterns: [/זה אני\b/g, /אני כזה/g, /אני בן אדם ש/g, /ככה אני/g],
+    labelHe: '׳׳™׳–׳•׳’ ׳–׳”׳•׳× (׳–׳” ׳׳ ׳™ / ׳׳ ׳™ ׳›׳–׳”)',
+    patterns: [/׳–׳” ׳׳ ׳™\b/g, /׳׳ ׳™ ׳›׳–׳”/g, /׳׳ ׳™ ׳‘׳ ׳׳“׳ ׳©/g, /׳›׳›׳” ׳׳ ׳™/g],
     weight: 16,
-    releaseHintHe: 'הפרד/י בין אדם להתנהגות/מצב: "יש חלק בי ש...".',
+    releaseHintHe: '׳”׳₪׳¨׳“/׳™ ׳‘׳™׳ ׳׳“׳ ׳׳”׳×׳ ׳”׳’׳•׳×/׳׳¦׳‘: "׳™׳© ׳—׳׳§ ׳‘׳™ ׳©...".',
   },
 ]
 
 const OPENNESS_PATTERNS = [
-  { labelHe: 'שפה פתוחה/אפשרית', patterns: [/אולי/g, /יכול להיות/g, /אפשר/g, /ייתכן/g], weight: 8 },
-  { labelHe: 'דיוק בזמן (כרגע/בינתיים)', patterns: [/כרגע/g, /בינתיים/g, /עכשיו/g, /בחלק מהמקרים/g], weight: 6 },
-  { labelHe: 'הבחנה חלקית (לפעמים/חלק)', patterns: [/לפעמים/g, /לעיתים/g, /חלק/g, /במידה/g], weight: 7 },
+  { labelHe: '׳©׳₪׳” ׳₪׳×׳•׳—׳”/׳׳₪׳©׳¨׳™׳×', patterns: [/׳׳•׳׳™/g, /׳™׳›׳•׳ ׳׳”׳™׳•׳×/g, /׳׳₪׳©׳¨/g, /׳™׳™׳×׳›׳/g], weight: 8 },
+  { labelHe: '׳“׳™׳•׳§ ׳‘׳–׳׳ (׳›׳¨׳’׳¢/׳‘׳™׳ ׳×׳™׳™׳)', patterns: [/׳›׳¨׳’׳¢/g, /׳‘׳™׳ ׳×׳™׳™׳/g, /׳¢׳›׳©׳™׳•/g, /׳‘׳—׳׳§ ׳׳”׳׳§׳¨׳™׳/g], weight: 6 },
+  { labelHe: '׳”׳‘׳—׳ ׳” ׳—׳׳§׳™׳× (׳׳₪׳¢׳׳™׳/׳—׳׳§)', patterns: [/׳׳₪׳¢׳׳™׳/g, /׳׳¢׳™׳×׳™׳/g, /׳—׳׳§/g, /׳‘׳׳™׳“׳”/g], weight: 7 },
 ]
 
 const QUANTIFIER_SHIFTS = [
   {
     id: 'q-soften',
-    labelHe: "כימות: תמיד → לפעמים / בחלק מהמקרים",
-    promptHe: 'מתי זה קורה רק בחלק מהמקרים, ולא תמיד?',
+    labelHe: "׳›׳™׳׳•׳×: ׳×׳׳™׳“ ג†’ ׳׳₪׳¢׳׳™׳ / ׳‘׳—׳׳§ ׳׳”׳׳§׳¨׳™׳",
+    promptHe: '׳׳×׳™ ׳–׳” ׳§׳•׳¨׳” ׳¨׳§ ׳‘׳—׳׳§ ׳׳”׳׳§׳¨׳™׳, ׳•׳׳ ׳×׳׳™׳“?',
   },
   {
     id: 'q-exception',
-    labelHe: 'חריגים: אף פעם → האם היה רגע אחד שונה?',
-    promptHe: 'האם היה אפילו רגע אחד שבו זה היה קצת אחרת?',
+    labelHe: '׳—׳¨׳™׳’׳™׳: ׳׳£ ׳₪׳¢׳ ג†’ ׳”׳׳ ׳”׳™׳” ׳¨׳’׳¢ ׳׳—׳“ ׳©׳•׳ ׳”?',
+    promptHe: '׳”׳׳ ׳”׳™׳” ׳׳₪׳™׳׳• ׳¨׳’׳¢ ׳׳—׳“ ׳©׳‘׳• ׳–׳” ׳”׳™׳” ׳§׳¦׳× ׳׳—׳¨׳×?',
   },
   {
     id: 'q-scale',
-    labelHe: 'סקאלה: הכול → באיזה מידה / כמה אחוז?',
-    promptHe: 'אם זה לא 100%, אז כמה זה כרגע?',
+    labelHe: '׳¡׳§׳׳׳”: ׳”׳›׳•׳ ג†’ ׳‘׳׳™׳–׳” ׳׳™׳“׳” / ׳›׳׳” ׳׳—׳•׳–?',
+    promptHe: '׳׳ ׳–׳” ׳׳ 100%, ׳׳– ׳›׳׳” ׳–׳” ׳›׳¨׳’׳¢?',
   },
 ]
 
 const RELEASE_CHANNELS = [
   {
     id: 'time',
-    labelHe: 'זמן (מתי/לפני/אחרי)',
-    promptHe: 'מתי זה פחות חזק? מה קורה רגע לפני שזה נסגר?',
+    labelHe: '׳–׳׳ (׳׳×׳™/׳׳₪׳ ׳™/׳׳—׳¨׳™)',
+    promptHe: '׳׳×׳™ ׳–׳” ׳₪׳—׳•׳× ׳—׳–׳§? ׳׳” ׳§׳•׳¨׳” ׳¨׳’׳¢ ׳׳₪׳ ׳™ ׳©׳–׳” ׳ ׳¡׳’׳¨?',
   },
   {
     id: 'space',
-    labelHe: 'מרחב/הקשר',
-    promptHe: 'באיזה מקום/הקשר זה אחרת? עם מי יש יותר מרחב?',
+    labelHe: '׳׳¨׳—׳‘/׳”׳§׳©׳¨',
+    promptHe: '׳‘׳׳™׳–׳” ׳׳§׳•׳/׳”׳§׳©׳¨ ׳–׳” ׳׳—׳¨׳×? ׳¢׳ ׳׳™ ׳™׳© ׳™׳•׳×׳¨ ׳׳¨׳—׳‘?',
   },
   {
     id: 'energy',
-    labelHe: 'גוף/אנרגיה',
-    promptHe: 'איך הגוף מחזיק את האמונה הזו עכשיו, ומה קורה אם זה מתרכך ב-5%?',
+    labelHe: '׳’׳•׳£/׳׳ ׳¨׳’׳™׳”',
+    promptHe: '׳׳™׳ ׳”׳’׳•׳£ ׳׳—׳–׳™׳§ ׳׳× ׳”׳׳׳•׳ ׳” ׳”׳–׳• ׳¢׳›׳©׳™׳•, ׳•׳׳” ׳§׳•׳¨׳” ׳׳ ׳–׳” ׳׳×׳¨׳›׳ ׳‘-5%?',
   },
   {
     id: 'meaning',
-    labelHe: 'משמעות/מסגור',
-    promptHe: 'איזו משמעות אחרת יכולה להסביר את מה שקרה בלי לנעול את כל האפשרויות?',
+    labelHe: '׳׳©׳׳¢׳•׳×/׳׳¡׳’׳•׳¨',
+    promptHe: '׳׳™׳–׳• ׳׳©׳׳¢׳•׳× ׳׳—׳¨׳× ׳™׳›׳•׳׳” ׳׳”׳¡׳‘׳™׳¨ ׳׳× ׳׳” ׳©׳§׳¨׳” ׳‘׳׳™ ׳׳ ׳¢׳•׳ ׳׳× ׳›׳ ׳”׳׳₪׳©׳¨׳•׳™׳•׳×?',
   },
 ]
 
 const OPTION_OPENERS = [
   {
     id: 'consent',
-    labelHe: 'אילו אופציות אתה מסכים לשקול?',
-    promptHe: 'אם לא חייבים לפתור הכול עכשיו, אילו שתי אופציות אתה מוכן רק לשקול?',
+    labelHe: '׳׳™׳׳• ׳׳•׳₪׳¦׳™׳•׳× ׳׳×׳” ׳׳¡׳›׳™׳ ׳׳©׳§׳•׳?',
+    promptHe: '׳׳ ׳׳ ׳—׳™׳™׳‘׳™׳ ׳׳₪׳×׳•׳¨ ׳”׳›׳•׳ ׳¢׳›׳©׳™׳•, ׳׳™׳׳• ׳©׳×׳™ ׳׳•׳₪׳¦׳™׳•׳× ׳׳×׳” ׳׳•׳›׳ ׳¨׳§ ׳׳©׳§׳•׳?',
   },
   {
     id: 'micro-step',
-    labelHe: 'מה הצעד הקטן הבא?',
-    promptHe: 'איזה צעד קטן אחד כן אפשרי, גם אם כל השאר עדיין לא ברור?',
+    labelHe: '׳׳” ׳”׳¦׳¢׳“ ׳”׳§׳˜׳ ׳”׳‘׳?',
+    promptHe: '׳׳™׳–׳” ׳¦׳¢׳“ ׳§׳˜׳ ׳׳—׳“ ׳›׳ ׳׳₪׳©׳¨׳™, ׳’׳ ׳׳ ׳›׳ ׳”׳©׳׳¨ ׳¢׳“׳™׳™׳ ׳׳ ׳‘׳¨׳•׳¨?',
   },
   {
     id: 'support',
-    labelHe: 'איזו תמיכה פותחת שדה?',
-    promptHe: 'מה תמיכה אחת שתעשה את זה יותר אפשרי עבורך?',
+    labelHe: '׳׳™׳–׳• ׳×׳׳™׳›׳” ׳₪׳•׳×׳—׳× ׳©׳“׳”?',
+    promptHe: '׳׳” ׳×׳׳™׳›׳” ׳׳—׳× ׳©׳×׳¢׳©׳” ׳׳× ׳–׳” ׳™׳•׳×׳¨ ׳׳₪׳©׳¨׳™ ׳¢׳‘׳•׳¨׳?',
   },
   {
     id: 'non-negotiable-shift',
-    labelHe: 'מה כבר לא מוכן שימשיך / מי לא מוכן להיות יותר?',
+    labelHe: '׳׳” ׳›׳‘׳¨ ׳׳ ׳׳•׳›׳ ׳©׳™׳׳©׳™׳ / ׳׳™ ׳׳ ׳׳•׳›׳ ׳׳”׳™׳•׳× ׳™׳•׳×׳¨?',
     promptHe:
-      'מה אתה לא מוכן שיקרה יותר, או מי אתה לא מוכן להיות יותר? זה אומר שמשהו חייב להשתנות גם אם עדיין לא ברור איך.',
+      '׳׳” ׳׳×׳” ׳׳ ׳׳•׳›׳ ׳©׳™׳§׳¨׳” ׳™׳•׳×׳¨, ׳׳• ׳׳™ ׳׳×׳” ׳׳ ׳׳•׳›׳ ׳׳”׳™׳•׳× ׳™׳•׳×׳¨? ׳–׳” ׳׳•׳׳¨ ׳©׳׳©׳”׳• ׳—׳™׳™׳‘ ׳׳”׳©׳×׳ ׳•׳× ׳’׳ ׳׳ ׳¢׳“׳™׳™׳ ׳׳ ׳‘׳¨׳•׳¨ ׳׳™׳.',
   },
 ]
 
 const THERAPIST_TONES = [
-  { id: 'grounded', labelHe: 'קרקעי / יציב', openerHe: 'אני שומע/ת אותך, וחשוב לי שנדייק רגע את מה שקורה כאן.' },
-  { id: 'soft', labelHe: 'רך / אמפתי', openerHe: 'אני איתך בזה, ובוא ננסה לפתוח כאן קצת יותר מרחב בלי לבטל את מה שאתה מרגיש.' },
-  { id: 'direct', labelHe: 'ישיר / מוביל', openerHe: 'בוא נעצור רגע ונבדוק אם הניסוח הנוכחי סוגר לך אפשרויות שכרגע עוד לא ראינו.' },
+  { id: 'grounded', labelHe: '׳§׳¨׳§׳¢׳™ / ׳™׳¦׳™׳‘', openerHe: '׳׳ ׳™ ׳©׳•׳׳¢/׳× ׳׳•׳×׳, ׳•׳—׳©׳•׳‘ ׳׳™ ׳©׳ ׳“׳™׳™׳§ ׳¨׳’׳¢ ׳׳× ׳׳” ׳©׳§׳•׳¨׳” ׳›׳׳.' },
+  { id: 'soft', labelHe: '׳¨׳ / ׳׳׳₪׳×׳™', openerHe: '׳׳ ׳™ ׳׳™׳×׳ ׳‘׳–׳”, ׳•׳‘׳•׳ ׳ ׳ ׳¡׳” ׳׳₪׳×׳•׳— ׳›׳׳ ׳§׳¦׳× ׳™׳•׳×׳¨ ׳׳¨׳—׳‘ ׳‘׳׳™ ׳׳‘׳˜׳ ׳׳× ׳׳” ׳©׳׳×׳” ׳׳¨׳’׳™׳©.' },
+  { id: 'direct', labelHe: '׳™׳©׳™׳¨ / ׳׳•׳‘׳™׳', openerHe: '׳‘׳•׳ ׳ ׳¢׳¦׳•׳¨ ׳¨׳’׳¢ ׳•׳ ׳‘׳“׳•׳§ ׳׳ ׳”׳ ׳™׳¡׳•׳— ׳”׳ ׳•׳›׳—׳™ ׳¡׳•׳’׳¨ ׳׳ ׳׳₪׳©׳¨׳•׳™׳•׳× ׳©׳›׳¨׳’׳¢ ׳¢׳•׳“ ׳׳ ׳¨׳׳™׳ ׳•.' },
 ]
 
 const MINDLAB_MAIN_STEPS = [
   {
     id: 'patient-source',
-    shortLabelHe: 'משפט מטופל',
-    titleHe: '1) מה המטופל אומר',
-    subtitleHe: 'מתחילים מהטקסט כפי שהוא, בלי לתקן אותו עדיין.',
+    shortLabelHe: '׳׳©׳₪׳˜ ׳׳˜׳•׳₪׳',
+    titleHe: '1) ׳׳” ׳”׳׳˜׳•׳₪׳ ׳׳•׳׳¨',
+    subtitleHe: '׳׳×׳—׳™׳׳™׳ ׳׳”׳˜׳§׳¡׳˜ ׳›׳₪׳™ ׳©׳”׳•׳, ׳‘׳׳™ ׳׳×׳§׳ ׳׳•׳×׳• ׳¢׳“׳™׳™׳.',
   },
   {
     id: 'therapist-script',
-    shortLabelHe: 'ניסוח מטפל',
-    titleHe: '2) טקסט מטפל שמזיז תודעה',
-    subtitleHe: 'ניסוח שמכבד חוויה ופותח שדה ואפשרויות.',
+    shortLabelHe: '׳ ׳™׳¡׳•׳— ׳׳˜׳₪׳',
+    titleHe: '2) ׳˜׳§׳¡׳˜ ׳׳˜׳₪׳ ׳©׳׳–׳™׳– ׳×׳•׳“׳¢׳”',
+    subtitleHe: '׳ ׳™׳¡׳•׳— ׳©׳׳›׳‘׳“ ׳—׳•׳•׳™׳” ׳•׳₪׳•׳×׳— ׳©׳“׳” ׳•׳׳₪׳©׳¨׳•׳™׳•׳×.',
   },
   {
     id: 'options-shift',
-    shortLabelHe: 'אופציות לפני/אחרי',
-    titleHe: '3) אילו אופציות לא נראו קודם, ואילו נפתחו אחרי השחרור',
-    subtitleHe: 'כאן מודדים שינוי בפועל במה שהמטופל מוכן לראות.',
+    shortLabelHe: '׳׳•׳₪׳¦׳™׳•׳× ׳׳₪׳ ׳™/׳׳—׳¨׳™',
+    titleHe: '3) ׳׳™׳׳• ׳׳•׳₪׳¦׳™׳•׳× ׳׳ ׳ ׳¨׳׳• ׳§׳•׳“׳, ׳•׳׳™׳׳• ׳ ׳₪׳×׳—׳• ׳׳—׳¨׳™ ׳”׳©׳—׳¨׳•׳¨',
+    subtitleHe: '׳›׳׳ ׳׳•׳“׳“׳™׳ ׳©׳™׳ ׳•׳™ ׳‘׳₪׳•׳¢׳ ׳‘׳׳” ׳©׳”׳׳˜׳•׳₪׳ ׳׳•׳›׳ ׳׳¨׳׳•׳×.',
   },
   {
     id: 'training-tools',
-    shortLabelHe: 'תרגול מתקדם',
-    titleHe: '4) מעבדות אימון מתקדמות',
-    subtitleHe: 'סימולטור + מאסטר רצפים לתרגול על יבש עם פידבק.',
+    shortLabelHe: '׳×׳¨׳’׳•׳ ׳׳×׳§׳“׳',
+    titleHe: '4) ׳׳¢׳‘׳“׳•׳× ׳׳™׳׳•׳ ׳׳×׳§׳“׳׳•׳×',
+    subtitleHe: '׳¡׳™׳׳•׳׳˜׳•׳¨ + ׳׳׳¡׳˜׳¨ ׳¨׳¦׳₪׳™׳ ׳׳×׳¨׳’׳•׳ ׳¢׳ ׳™׳‘׳© ׳¢׳ ׳₪׳™׳“׳‘׳§.',
   },
 ]
 
@@ -233,7 +233,7 @@ function playWebAudioCue(audioContextRef, cue = 'tap', muted = false) {
 
 function AlchemistCompanion({ mood, message, pulseKey }) {
   const face =
-    mood === 'dancing' ? '🧙‍♂️✨' : mood === 'surprised' ? '🧙‍♂️😲' : mood === 'clap' ? '🧙‍♂️👏' : '🧙‍♂️🙂'
+    mood === 'dancing' ? 'נ§™ג€ג™‚ן¸ג¨' : mood === 'surprised' ? 'נ§™ג€ג™‚ן¸נ˜²' : mood === 'clap' ? 'נ§™ג€ג™‚ן¸נ‘' : 'נ§™ג€ג™‚ן¸נ™‚'
   return (
     <aside className={`mindlab-companion mood-${mood || 'happy'}`} aria-live="polite" aria-label="Alchemist Companion">
       <div key={pulseKey} className="mindlab-companion__orb" aria-hidden="true">
@@ -241,7 +241,7 @@ function AlchemistCompanion({ mood, message, pulseKey }) {
       </div>
       <div className="mindlab-companion__bubble">
         <strong>Alchemist Companion</strong>
-        <span>{message || 'פותחים שדה, צעד אחד בכל פעם.'}</span>
+        <span>{message || '׳₪׳•׳×׳—׳™׳ ׳©׳“׳”, ׳¦׳¢׳“ ׳׳—׳“ ׳‘׳›׳ ׳₪׳¢׳.'}</span>
       </div>
     </aside>
   )
@@ -275,7 +275,7 @@ function uniqueList(items) {
 }
 
 function includesLooseningLanguage(text) {
-  return /(אולי|אפשר|כרגע|לפעמים|בחלק מהמקרים|יכול להיות)/.test(text)
+  return /(׳׳•׳׳™|׳׳₪׳©׳¨|׳›׳¨׳’׳¢|׳׳₪׳¢׳׳™׳|׳‘׳—׳׳§ ׳׳”׳׳§׳¨׳™׳|׳™׳›׳•׳ ׳׳”׳™׳•׳×)/.test(text)
 }
 
 function analyzePatientText(rawText) {
@@ -286,14 +286,14 @@ function analyzePatientText(rawText) {
       closureScore: 0,
       optionBlindnessScore: 0,
       opennessSignals: 0,
-      windowLabelHe: 'ממתין לטקסט',
+      windowLabelHe: '׳׳׳×׳™׳ ׳׳˜׳§׳¡׳˜',
       detectedClosures: [],
       detectedOpenings: [],
       releaseHintsHe: [
-        'הדבק/י משפט של המטופל כדי לזהות איפה הניסוח סוגר אפשרויות.',
-        "אחר כך נבנה ניסוח מטפל שמזיז מ'אין דרך' ל'יש לפחות בדיקה'.",
+        '׳”׳“׳‘׳§/׳™ ׳׳©׳₪׳˜ ׳©׳ ׳”׳׳˜׳•׳₪׳ ׳›׳“׳™ ׳׳–׳”׳•׳× ׳׳™׳₪׳” ׳”׳ ׳™׳¡׳•׳— ׳¡׳•׳’׳¨ ׳׳₪׳©׳¨׳•׳™׳•׳×.',
+        "׳׳—׳¨ ׳›׳ ׳ ׳‘׳ ׳” ׳ ׳™׳¡׳•׳— ׳׳˜׳₪׳ ׳©׳׳–׳™׳– ׳'׳׳™׳ ׳“׳¨׳' ׳'׳™׳© ׳׳₪׳—׳•׳× ׳‘׳“׳™׳§׳”'.",
       ],
-      summaryHe: 'אין עדיין טקסט מטופל.',
+      summaryHe: '׳׳™׳ ׳¢׳“׳™׳™׳ ׳˜׳§׳¡׳˜ ׳׳˜׳•׳₪׳.',
     }
   }
 
@@ -313,7 +313,7 @@ function analyzePatientText(rawText) {
     return { ...item, count, score: count * item.weight }
   }).filter((item) => item.count > 0)
 
-  const negationCount = countPatternMatches(text, /\bלא\b/g) + countPatternMatches(text, /\bאין\b/g)
+  const negationCount = countPatternMatches(text, /\b׳׳\b/g) + countPatternMatches(text, /\b׳׳™׳\b/g)
   const questionCount = countPatternMatches(text, /\?/g)
 
   const closureBase = detectedClosures.reduce((sum, item) => sum + item.score, 0) + negationCount * 4
@@ -327,21 +327,21 @@ function analyzePatientText(rawText) {
   )
   const opennessSignals = clamp(Math.round(100 - closureScore + opennessBase * 0.35), 0, 100)
 
-  let windowLabelHe = 'שדה פתוח יחסית'
-  if (closureScore >= 75) windowLabelHe = 'שדה סגור מאוד'
-  else if (closureScore >= 55) windowLabelHe = 'שדה צר / נעול'
-  else if (closureScore >= 35) windowLabelHe = 'שדה מעורב (יש נעילה ויש פתחים)'
+  let windowLabelHe = '׳©׳“׳” ׳₪׳×׳•׳— ׳™׳—׳¡׳™׳×'
+  if (closureScore >= 75) windowLabelHe = '׳©׳“׳” ׳¡׳’׳•׳¨ ׳׳׳•׳“'
+  else if (closureScore >= 55) windowLabelHe = '׳©׳“׳” ׳¦׳¨ / ׳ ׳¢׳•׳'
+  else if (closureScore >= 35) windowLabelHe = '׳©׳“׳” ׳׳¢׳•׳¨׳‘ (׳™׳© ׳ ׳¢׳™׳׳” ׳•׳™׳© ׳₪׳×׳—׳™׳)'
 
   const releaseHintsHe = uniqueList([
     ...detectedClosures.map((item) => item.releaseHintHe),
-    closureScore >= 65 ? 'התחל/י משינוי קטן בכימות לפני שינוי משמעות גדול.' : '',
-    optionBlindnessScore >= 60 ? 'שאל/י קודם על אופציה אחת קטנה שהמטופל רק מוכן לשקול.' : '',
-    detectedOpenings.length ? 'יש כבר ניצני פתיחה בטקסט. אפשר לחזק אותם במקום להילחם ישירות בתוכן.' : '',
+    closureScore >= 65 ? '׳”׳×׳—׳/׳™ ׳׳©׳™׳ ׳•׳™ ׳§׳˜׳ ׳‘׳›׳™׳׳•׳× ׳׳₪׳ ׳™ ׳©׳™׳ ׳•׳™ ׳׳©׳׳¢׳•׳× ׳’׳“׳•׳.' : '',
+    optionBlindnessScore >= 60 ? '׳©׳׳/׳™ ׳§׳•׳“׳ ׳¢׳ ׳׳•׳₪׳¦׳™׳” ׳׳—׳× ׳§׳˜׳ ׳” ׳©׳”׳׳˜׳•׳₪׳ ׳¨׳§ ׳׳•׳›׳ ׳׳©׳§׳•׳.' : '',
+    detectedOpenings.length ? '׳™׳© ׳›׳‘׳¨ ׳ ׳™׳¦׳ ׳™ ׳₪׳×׳™׳—׳” ׳‘׳˜׳§׳¡׳˜. ׳׳₪׳©׳¨ ׳׳—׳–׳§ ׳׳•׳×׳ ׳‘׳׳§׳•׳ ׳׳”׳™׳׳—׳ ׳™׳©׳™׳¨׳•׳× ׳‘׳×׳•׳›׳.' : '',
   ])
 
   const summaryHe = detectedClosures.length
-    ? `זוהו ${detectedClosures.length} דפוסי סגירה מרכזיים. המיקוד הוא להרחיב אפשרויות בלי להתווכח עם החוויה.`
-    : 'לא זוהו דפוסי סגירה מובהקים. אפשר לעבוד דרך דיוק, כימות ומשמעות.'
+    ? `׳–׳•׳”׳• ${detectedClosures.length} ׳“׳₪׳•׳¡׳™ ׳¡׳’׳™׳¨׳” ׳׳¨׳›׳–׳™׳™׳. ׳”׳׳™׳§׳•׳“ ׳”׳•׳ ׳׳”׳¨׳—׳™׳‘ ׳׳₪׳©׳¨׳•׳™׳•׳× ׳‘׳׳™ ׳׳”׳×׳•׳•׳›׳— ׳¢׳ ׳”׳—׳•׳•׳™׳”.`
+    : '׳׳ ׳–׳•׳”׳• ׳“׳₪׳•׳¡׳™ ׳¡׳’׳™׳¨׳” ׳׳•׳‘׳”׳§׳™׳. ׳׳₪׳©׳¨ ׳׳¢׳‘׳•׳“ ׳“׳¨׳ ׳“׳™׳•׳§, ׳›׳™׳׳•׳× ׳•׳׳©׳׳¢׳•׳×.'
 
   return {
     text,
@@ -369,20 +369,20 @@ function buildTherapistScript({
 
   const closureSummaryHe =
     analysis.closureScore >= 70
-      ? 'הניסוח כרגע נשמע מאוד סגור ומציג מעט מאוד אפשרויות.'
+      ? '׳”׳ ׳™׳¡׳•׳— ׳›׳¨׳’׳¢ ׳ ׳©׳׳¢ ׳׳׳•׳“ ׳¡׳’׳•׳¨ ׳•׳׳¦׳™׳’ ׳׳¢׳˜ ׳׳׳•׳“ ׳׳₪׳©׳¨׳•׳™׳•׳×.'
       : analysis.closureScore >= 45
-        ? 'יש כאן חוויה אמיתית, ובמקביל הניסוח כרגע מצמצם את שדה האפשרויות.'
-        : 'יש כאן כבר קצת מרחב, ואפשר לדייק אותו עוד.'
+        ? '׳™׳© ׳›׳׳ ׳—׳•׳•׳™׳” ׳׳׳™׳×׳™׳×, ׳•׳‘׳׳§׳‘׳™׳ ׳”׳ ׳™׳¡׳•׳— ׳›׳¨׳’׳¢ ׳׳¦׳׳¦׳ ׳׳× ׳©׳“׳” ׳”׳׳₪׳©׳¨׳•׳™׳•׳×.'
+        : '׳™׳© ׳›׳׳ ׳›׳‘׳¨ ׳§׳¦׳× ׳׳¨׳—׳‘, ׳•׳׳₪׳©׳¨ ׳׳“׳™׳™׳§ ׳׳•׳×׳• ׳¢׳•׳“.'
 
   return [
     therapistTone.openerHe,
-    `כשאני שומע/ת אותך אומר/ת: "${patient}"`,
+    `׳›׳©׳׳ ׳™ ׳©׳•׳׳¢/׳× ׳׳•׳×׳ ׳׳•׳׳¨/׳×: "${patient}"`,
     closureSummaryHe,
-    'אני לא מנסה לשכנע אותך שזה לא נכון, אלא לבדוק איפה יש עוד מרחב שלא קיבל מילים.',
+    '׳׳ ׳™ ׳׳ ׳׳ ׳¡׳” ׳׳©׳›׳ ׳¢ ׳׳•׳×׳ ׳©׳–׳” ׳׳ ׳ ׳›׳•׳, ׳׳׳ ׳׳‘׳“׳•׳§ ׳׳™׳₪׳” ׳™׳© ׳¢׳•׳“ ׳׳¨׳—׳‘ ׳©׳׳ ׳§׳™׳‘׳ ׳׳™׳׳™׳.',
     quantifierShift.promptHe,
     releaseChannel.promptHe,
     optionOpener.promptHe,
-    'אם ייפתח אפילו 5% יותר מרחב עכשיו, מה תהיה האפשרות הראשונה שתסכים/י לראות?',
+    '׳׳ ׳™׳™׳₪׳×׳— ׳׳₪׳™׳׳• 5% ׳™׳•׳×׳¨ ׳׳¨׳—׳‘ ׳¢׳›׳©׳™׳•, ׳׳” ׳×׳”׳™׳” ׳”׳׳₪׳©׳¨׳•׳× ׳”׳¨׳׳©׳•׳ ׳” ׳©׳×׳¡׳›׳™׳/׳™ ׳׳¨׳׳•׳×?',
   ]
     .filter(Boolean)
     .join(' ')
@@ -397,8 +397,8 @@ function scoreTone(score) {
 export default function MindLiberatingLanguagePage() {
   const lab = getLabConfig('mind-liberating-language') ?? {
     id: 'mind-liberating-language',
-    titleHe: 'מיינד ליברייטינג שפה',
-    descriptionHe: 'טקסט מטופל → שחרור תודעתי → אופציות חדשות',
+    titleHe: '׳׳™׳™׳ ׳“ ׳׳™׳‘׳¨׳™׳™׳˜׳™׳ ׳’ ׳©׳₪׳”',
+    descriptionHe: '׳˜׳§׳¡׳˜ ׳׳˜׳•׳₪׳ ג†’ ׳©׳—׳¨׳•׳¨ ׳×׳•׳“׳¢׳×׳™ ג†’ ׳׳•׳₪׳¦׳™׳•׳× ׳—׳“׳©׳•׳×',
   }
   const { state, upsertHistory, setLastVisitedLab } = useAppState()
 
@@ -416,7 +416,7 @@ export default function MindLiberatingLanguagePage() {
   const [activeStepId, setActiveStepId] = useState(MINDLAB_MAIN_STEPS[0].id)
   const [completedStepIds, setCompletedStepIds] = useState([])
   const [companionMood, setCompanionMood] = useState('happy')
-  const [companionMessage, setCompanionMessage] = useState('ברוך הבא למעבדה. מתחילים במשפט המטופל ומשם פותחים שדה.')
+  const [companionMessage, setCompanionMessage] = useState('׳‘׳¨׳•׳ ׳”׳‘׳ ׳׳׳¢׳‘׳“׳”. ׳׳×׳—׳™׳׳™׳ ׳‘׳׳©׳₪׳˜ ׳”׳׳˜׳•׳₪׳ ׳•׳׳©׳ ׳₪׳•׳×׳—׳™׳ ׳©׳“׳”.')
   const [companionPulseKey, setCompanionPulseKey] = useState(0)
   const [audioPrefs, setAudioPrefs] = useState(() => readMindlabAudioPrefs())
   const [showSoundConsent, setShowSoundConsent] = useState(() => !readMindlabAudioPrefs().dontAskAgain)
@@ -496,19 +496,19 @@ export default function MindLiberatingLanguagePage() {
     () => [
       {
         id: 'closure',
-        labelHe: 'סגירת תודעה',
+        labelHe: '׳¡׳’׳™׳¨׳× ׳×׳•׳“׳¢׳”',
         value: analysis.closureScore,
         tone: scoreTone(analysis.closureScore),
       },
       {
         id: 'blindness',
-        labelHe: 'עיוורון לאופציות',
+        labelHe: '׳¢׳™׳•׳•׳¨׳•׳ ׳׳׳•׳₪׳¦׳™׳•׳×',
         value: analysis.optionBlindnessScore,
         tone: scoreTone(analysis.optionBlindnessScore),
       },
       {
         id: 'opening',
-        labelHe: 'פתיחת שדה אחרי שחרור',
+        labelHe: '׳₪׳×׳™׳—׳× ׳©׳“׳” ׳׳—׳¨׳™ ׳©׳—׳¨׳•׳¨',
         value: opennessAfterReleaseScore,
         tone: scoreTone(100 - opennessAfterReleaseScore),
         positive: true,
@@ -536,6 +536,10 @@ export default function MindLiberatingLanguagePage() {
     [activeStepId],
   )
   const activeStepMeta = MINDLAB_MAIN_STEPS[activeStepIndex] ?? MINDLAB_MAIN_STEPS[0]
+  const overallProgressPercent = useMemo(
+    () => clamp(Math.round((completedStepIds.length / MINDLAB_MAIN_STEPS.length) * 100), 0, 100),
+    [completedStepIds],
+  )
   const mindHistoryItems = useMemo(
     () =>
       (state?.history ?? [])
@@ -543,6 +547,7 @@ export default function MindLiberatingLanguagePage() {
         .slice(0, 12),
     [state],
   )
+  const isSoundOn = audioPrefs.enabled && !audioPrefs.muted
 
   const triggerCompanion = (mood, message) => {
     setCompanionMood(mood)
@@ -566,9 +571,9 @@ export default function MindLiberatingLanguagePage() {
     setShowSoundConsent(false)
     if (enabled) {
       playCue('sparkle')
-      triggerCompanion('happy', 'יופי. המעבדה חיה ועדינה. אפשר להשתיק בכל רגע.')
+      triggerCompanion('happy', '׳™׳•׳₪׳™. ׳”׳׳¢׳‘׳“׳” ׳—׳™׳” ׳•׳¢׳“׳™׳ ׳”. ׳׳₪׳©׳¨ ׳׳”׳©׳×׳™׳§ ׳‘׳›׳ ׳¨׳’׳¢.')
     } else {
-      triggerCompanion('happy', 'מעולה. עובדים בשקט מלא, בלי סאונד.')
+      triggerCompanion('happy', '׳׳¢׳•׳׳”. ׳¢׳•׳‘׳“׳™׳ ׳‘׳©׳§׳˜ ׳׳׳, ׳‘׳׳™ ׳¡׳׳•׳ ׳“.')
     }
   }
 
@@ -588,6 +593,59 @@ export default function MindLiberatingLanguagePage() {
     }
   }
 
+  const handleTrainingSignal = (type, payload = {}) => {
+    if (type === 'simulator-next-statement' || type === 'pattern-next-statement') {
+      playCue('whoosh')
+      triggerCompanion('happy', 'נטען תרגול חדש. שים/י לב מה משתנה בניסוח ובתחושה.')
+      return
+    }
+    if (type === 'simulator-check') {
+      if (payload.level === 'great') {
+        playCue('harp')
+        triggerCompanion('dancing', 'וווו! פתחת את השדה יפה מאוד.')
+      } else if (payload.level === 'almost') {
+        playCue('sparkle')
+        triggerCompanion('surprised', 'כמעט. עוד כיוונון קטן בכימות/יחסים וזו קפיצה.')
+      } else {
+        playCue('tap')
+        triggerCompanion('happy', 'התחלה טובה. עכשיו בוא/י נוסיף שאלה שמקשרת בין משתנים.')
+      }
+      return
+    }
+    if (type === 'pattern-check') {
+      if ((payload.score ?? 0) >= 75 && payload.orderCorrect && payload.blankCorrect) {
+        playCue('harp')
+        triggerCompanion('clap', 'רצף יפה. עכשיו ליישם אותו על משפט חי.')
+      } else {
+        playCue('sparkle')
+        triggerCompanion('happy', 'יש בסיס טוב. עוד דיוק קטן בסדר/מילוי והזרימה תתחזק.')
+      }
+      return
+    }
+    if (type === 'simulator-save' || type === 'pattern-save') {
+      playCue('harp')
+      triggerCompanion('clap', 'נשמר להיסטוריה. זהב מצטבר.')
+    }
+  }
+
+  const handleSwitchMindTab = (tabId) => {
+    setActiveMindTabId(tabId)
+    playCue('tap')
+    if (tabId === 'simulator') {
+      triggerCompanion('happy', 'נכנסים לסימולטור. תרגול קצר, פידבק מיידי.')
+      return
+    }
+    if (tabId === 'pattern-master') {
+      triggerCompanion('surprised', 'מאסטר רצפים. כאן בונים רצף מדויק של פתיחת שדה.')
+      return
+    }
+    if (tabId === 'history') {
+      triggerCompanion('happy', 'היסטוריה היא זהב. כאן רואים למידה לאורך זמן.')
+      return
+    }
+    triggerCompanion('happy', 'חוזרים ל-workflow הראשי: משפט מטופל → שחרור → אופציות.')
+  }
+
   const markStepDoneAndAdvance = (stepId) => {
     setCompletedStepIds((current) => (current.includes(stepId) ? current : [...current, stepId]))
     playCue('sparkle')
@@ -596,48 +654,50 @@ export default function MindLiberatingLanguagePage() {
     if (nextStep) {
       setActiveStepId(nextStep.id)
       scrollToStep(nextStep.id)
-      triggerCompanion('clap', `סוגר/ת שלב ${currentIndex + 1} וממשיך/ה ל-${nextStep.shortLabelHe}.`)
-      setStatusMessage(`סיימת את ${currentIndex + 1}/${MINDLAB_MAIN_STEPS.length} • ממשיכים ל-${nextStep.shortLabelHe}.`)
+      triggerCompanion('clap', `׳¡׳•׳’׳¨/׳× ׳©׳׳‘ ${currentIndex + 1} ׳•׳׳׳©׳™׳/׳” ׳-${nextStep.shortLabelHe}.`)
+      setStatusMessage(`׳¡׳™׳™׳׳× ׳׳× ${currentIndex + 1}/${MINDLAB_MAIN_STEPS.length} ג€¢ ׳׳׳©׳™׳›׳™׳ ׳-${nextStep.shortLabelHe}.`)
       return
     }
-    setStatusMessage('סיימת את כל שלבי העבודה בעמוד. אפשר לשמור להיסטוריה או לחזור ולחדד שלב מסוים.')
+    playCue('gong')
+    triggerCompanion('dancing', 'סיימת את כל המסלול. השדה כבר נפתח.')
+    setStatusMessage('׳¡׳™׳™׳׳× ׳׳× ׳›׳ ׳©׳׳‘׳™ ׳”׳¢׳‘׳•׳“׳” ׳‘׳¢׳׳•׳“. ׳׳₪׳©׳¨ ׳׳©׳׳•׳¨ ׳׳”׳™׳¡׳˜׳•׳¨׳™׳” ׳׳• ׳׳—׳–׳•׳¨ ׳•׳׳—׳“׳“ ׳©׳׳‘ ׳׳¡׳•׳™׳.')
   }
 
   const getStepBadgeText = (stepId) => {
-    if (activeStepId === stepId) return 'כאן עכשיו'
-    if (completedStepIds.includes(stepId)) return 'הושלם'
-    return 'סגור'
+    if (activeStepId === stepId) return '׳›׳׳ ׳¢׳›׳©׳™׳•'
+    if (completedStepIds.includes(stepId)) return '׳”׳•׳©׳׳'
+    return '׳¡׳’׳•׳¨'
   }
 
   const handleUseGeneratedScript = () => {
     if (!generatedTherapistText) {
-      setStatusMessage('הדבק/י קודם משפט מטופל כדי לבנות ניסוח מטפל משחרר.')
+      setStatusMessage('׳”׳“׳‘׳§/׳™ ׳§׳•׳“׳ ׳׳©׳₪׳˜ ׳׳˜׳•׳₪׳ ׳›׳“׳™ ׳׳‘׳ ׳•׳× ׳ ׳™׳¡׳•׳— ׳׳˜׳₪׳ ׳׳©׳—׳¨׳¨.')
       return
     }
     setTherapistText(generatedTherapistText)
     playCue('whoosh')
-    triggerCompanion('happy', 'וווו! נבנה ניסוח שמזיז את התודעה ולא רק מסביר.')
-    setStatusMessage('נבנה ניסוח מטפל משחרר. אפשר לערוך אותו ידנית.')
+    triggerCompanion('happy', '׳•׳•׳•׳•! ׳ ׳‘׳ ׳” ׳ ׳™׳¡׳•׳— ׳©׳׳–׳™׳– ׳׳× ׳”׳×׳•׳“׳¢׳” ׳•׳׳ ׳¨׳§ ׳׳¡׳‘׳™׳¨.')
+    setStatusMessage('׳ ׳‘׳ ׳” ׳ ׳™׳¡׳•׳— ׳׳˜׳₪׳ ׳׳©׳—׳¨׳¨. ׳׳₪׳©׳¨ ׳׳¢׳¨׳•׳ ׳׳•׳×׳• ׳™׳“׳ ׳™׳×.')
   }
 
   const handleCopyTherapistText = async () => {
     if (!normalizeText(therapistText)) {
-      setStatusMessage('אין עדיין טקסט מטפל להעתקה.')
+      setStatusMessage('׳׳™׳ ׳¢׳“׳™׳™׳ ׳˜׳§׳¡׳˜ ׳׳˜׳₪׳ ׳׳”׳¢׳×׳§׳”.')
       return
     }
     try {
       await navigator.clipboard.writeText(therapistText)
       playCue('tap')
-      setStatusMessage('הטקסט של המטפל הועתק ללוח.')
+      setStatusMessage('׳”׳˜׳§׳¡׳˜ ׳©׳ ׳”׳׳˜׳₪׳ ׳”׳•׳¢׳×׳§ ׳׳׳•׳—.')
     } catch {
-      setStatusMessage('לא הצלחתי להעתיק ללוח.')
+      setStatusMessage('׳׳ ׳”׳¦׳׳—׳×׳™ ׳׳”׳¢׳×׳™׳§ ׳׳׳•׳—.')
     }
   }
 
   const handleSaveSession = () => {
     const finalTherapistText = normalizeText(therapistText)
     if (!analysis.text || !finalTherapistText) {
-      setStatusMessage('צריך גם טקסט מטופל וגם טקסט מטפל לפני שמירה.')
+      setStatusMessage('׳¦׳¨׳™׳ ׳’׳ ׳˜׳§׳¡׳˜ ׳׳˜׳•׳₪׳ ׳•׳’׳ ׳˜׳§׳¡׳˜ ׳׳˜׳₪׳ ׳׳₪׳ ׳™ ׳©׳׳™׳¨׳”.')
       return
     }
 
@@ -645,7 +705,7 @@ export default function MindLiberatingLanguagePage() {
       id: makeId('mll'),
       labId: lab.id,
       createdAt: new Date().toISOString(),
-      summaryHe: `סגירת תודעה ${analysis.closureScore}/100 | עיוורון לאופציות ${analysis.optionBlindnessScore}/100 | אופציות חדשות ${newOptionsAfterRelease.length}`,
+      summaryHe: `׳¡׳’׳™׳¨׳× ׳×׳•׳“׳¢׳” ${analysis.closureScore}/100 | ׳¢׳™׳•׳•׳¨׳•׳ ׳׳׳•׳₪׳¦׳™׳•׳× ${analysis.optionBlindnessScore}/100 | ׳׳•׳₪׳¦׳™׳•׳× ׳—׳“׳©׳•׳× ${newOptionsAfterRelease.length}`,
       sentenceText: finalTherapistText,
       patientText: analysis.text,
       metrics: {
@@ -657,7 +717,9 @@ export default function MindLiberatingLanguagePage() {
       afterOptions,
       newlyVisibleOptions: newOptionsAfterRelease,
     })
-    setStatusMessage('הסשן נשמר להיסטוריה.')
+    playCue('harp')
+    triggerCompanion('clap', 'נשמר. אפשר להשוות אחר כך בין גרסאות ולראות את השינוי.')
+    setStatusMessage('׳”׳¡׳©׳ ׳ ׳©׳׳¨ ׳׳”׳™׳¡׳˜׳•׳¨׳™׳”.')
   }
 
   const handleNewSession = () => {
@@ -673,7 +735,9 @@ export default function MindLiberatingLanguagePage() {
     setActiveMindTabId('workflow')
     setActiveStepId(MINDLAB_MAIN_STEPS[0].id)
     setCompletedStepIds([])
-    setStatusMessage('נפתחה עבודה חדשה.')
+    playCue('whoosh')
+    triggerCompanion('happy', 'סשן חדש. מתחילים מהמשפט כמו שהוא.')
+    setStatusMessage('׳ ׳₪׳×׳—׳” ׳¢׳‘׳•׳“׳” ׳—׳“׳©׳”.')
     scrollToStep(MINDLAB_MAIN_STEPS[0].id)
   }
 
@@ -681,7 +745,9 @@ export default function MindLiberatingLanguagePage() {
     setPatientText(text)
     setActiveMindTabId('workflow')
     setActiveStepId('patient-source')
-    setStatusMessage('נטענה דוגמת טקסט מטופל. עכשיו בנה/י ניסוח משחרר.')
+    playCue('tap')
+    triggerCompanion('surprised', 'מעולה. עכשיו רואים משפט חי מול העיניים, ואפשר להתחיל לשחרר.')
+    setStatusMessage('׳ ׳˜׳¢׳ ׳” ׳“׳•׳’׳׳× ׳˜׳§׳¡׳˜ ׳׳˜׳•׳₪׳. ׳¢׳›׳©׳™׳• ׳‘׳ ׳”/׳™ ׳ ׳™׳¡׳•׳— ׳׳©׳—׳¨׳¨.')
   }
 
   const loadPatientTextFromTrainingTool = (text) => {
@@ -692,11 +758,40 @@ export default function MindLiberatingLanguagePage() {
       current.includes('training-tools') ? current : [...current, 'training-tools'],
     )
     scrollToStep('patient-source')
-    setStatusMessage('נטען משפט מטופל מהמעבדה המתקדמת אל המיינד ליברטינג הראשי.')
+    playCue('whoosh')
+    triggerCompanion('happy', 'המשפט נטען מהתרגול. ממשיכים ממנו לתוך ה-workflow.')
+    setStatusMessage('׳ ׳˜׳¢׳ ׳׳©׳₪׳˜ ׳׳˜׳•׳₪׳ ׳׳”׳׳¢׳‘׳“׳” ׳”׳׳×׳§׳“׳׳× ׳׳ ׳”׳׳™׳™׳ ׳“ ׳׳™׳‘׳¨׳˜׳™׳ ׳’ ׳”׳¨׳׳©׳™.')
   }
 
   return (
-    <div className="page-stack">
+    <div className="page-stack mindlab-alchemy-page">
+      <div className="mindlab-particles" aria-hidden="true">
+        <span className="p-dot p-dot--1" />
+        <span className="p-dot p-dot--2" />
+        <span className="p-dot p-dot--3" />
+        <span className="p-dot p-dot--4" />
+        <span className="p-dot p-dot--5" />
+        <span className="p-dot p-dot--6" />
+      </div>
+      <button
+        type="button"
+        className="mindlab-sound-toggle"
+        aria-pressed={isSoundOn}
+        onClick={() => {
+          setAudioPrefs((current) => {
+            if (!current.enabled) {
+              return { ...current, enabled: true, muted: false }
+            }
+            return { ...current, muted: !current.muted }
+          })
+          playCue('tap')
+          triggerCompanion('happy', isSoundOn ? 'הצלילים הושתקו.' : 'הצלילים חזרו.')
+        }}
+        title={isSoundOn ? 'השתק צלילים' : 'הפעל צלילים'}
+      >
+        {isSoundOn ? <Volume2 size={18} aria-hidden="true" /> : <VolumeX size={18} aria-hidden="true" />}
+        <span>{isSoundOn ? 'Sound' : 'Muted'}</span>
+      </button>
       <section className="alchemy-card">
         <div className="alchemy-card__head">
           <div>
@@ -705,33 +800,33 @@ export default function MindLiberatingLanguagePage() {
           </div>
           <div className="alchemy-card__actions">
             <Link to="/" className="secondary-link-button">
-              חזרה למסך הכללי
+              ׳—׳–׳¨׳” ׳׳׳¡׳ ׳”׳›׳׳׳™
             </Link>
             <button type="button" onClick={handleNewSession}>
-              סשן חדש
+              ׳¡׳©׳ ׳—׳“׳©
             </button>
           </div>
         </div>
 
         <LabLessonPrompt labId={lab.id} />
 
-        <section className="mindlab-workspace-menu" aria-label="תפריטי משנה - שחרור תודעה על ידי שפה">
+        <section className="mindlab-workspace-menu" aria-label="׳×׳₪׳¨׳™׳˜׳™ ׳׳©׳ ׳” - ׳©׳—׳¨׳•׳¨ ׳×׳•׳“׳¢׳” ׳¢׳ ׳™׳“׳™ ׳©׳₪׳”">
           <div className="mindlab-workspace-menu__head">
             <div>
-              <h3>שחרור תודעה על ידי שפה</h3>
-              <p>בחר/י מוד עבודה אחד בכל פעם כדי לשמור פוקוס ולהימנע מגלילה ארוכה.</p>
+              <h3>׳©׳—׳¨׳•׳¨ ׳×׳•׳“׳¢׳” ׳¢׳ ׳™׳“׳™ ׳©׳₪׳”</h3>
+              <p>׳‘׳—׳¨/׳™ ׳׳•׳“ ׳¢׳‘׳•׳“׳” ׳׳—׳“ ׳‘׳›׳ ׳₪׳¢׳ ׳›׳“׳™ ׳׳©׳׳•׳¨ ׳₪׳•׳§׳•׳¡ ׳•׳׳”׳™׳׳ ׳¢ ׳׳’׳׳™׳׳” ׳׳¨׳•׳›׳”.</p>
             </div>
             <Link to="/" className="mindlab-workspace-menu__back">
-              חזרה למסך הכללי
+              ׳—׳–׳¨׳” ׳׳׳¡׳ ׳”׳›׳׳׳™
             </Link>
           </div>
 
-          <div className="mindlab-workspace-menu__tabs" role="tablist" aria-label="תפריטי משנה">
+          <div className="mindlab-workspace-menu__tabs" role="tablist" aria-label="׳×׳₪׳¨׳™׳˜׳™ ׳׳©׳ ׳”">
             {[
-              { id: 'workflow', labelHe: 'תרגילים', labelEn: 'Core Workflow' },
-              { id: 'simulator', labelHe: 'סימולטור', labelEn: 'Simulator' },
-              { id: 'pattern-master', labelHe: 'מאסטר רצפים', labelEn: 'Pattern Master' },
-              { id: 'history', labelHe: 'היסטוריה', labelEn: 'History' },
+              { id: 'workflow', labelHe: '׳×׳¨׳’׳™׳׳™׳', labelEn: 'Core Workflow' },
+              { id: 'simulator', labelHe: '׳¡׳™׳׳•׳׳˜׳•׳¨', labelEn: 'Simulator' },
+              { id: 'pattern-master', labelHe: '׳׳׳¡׳˜׳¨ ׳¨׳¦׳₪׳™׳', labelEn: 'Pattern Master' },
+              { id: 'history', labelHe: '׳”׳™׳¡׳˜׳•׳¨׳™׳”', labelEn: 'History' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -739,7 +834,7 @@ export default function MindLiberatingLanguagePage() {
                 role="tab"
                 aria-selected={activeMindTabId === tab.id}
                 className={`mindlab-workspace-menu__tab ${activeMindTabId === tab.id ? 'is-active' : ''}`}
-                onClick={() => setActiveMindTabId(tab.id)}
+                onClick={() => handleSwitchMindTab(tab.id)}
               >
                 <span>{tab.labelHe}</span>
                 <small>{tab.labelEn}</small>
@@ -748,15 +843,59 @@ export default function MindLiberatingLanguagePage() {
           </div>
         </section>
 
+        <section className="mindlab-hero-tools" aria-label="כלי תרגול מתקדמים">
+          <button
+            type="button"
+            className={`mindlab-training-card mindlab-training-card--hero ${
+              activeMindTabId === 'simulator' ? 'is-active' : ''
+            }`}
+            onClick={() => {
+              setActiveTrainingToolId('simulator')
+              handleSwitchMindTab('simulator')
+            }}
+          >
+            <div className="mindlab-training-card__icon">
+              <MessageCircle size={24} aria-hidden="true" />
+            </div>
+            <div className="mindlab-training-card__content">
+              <strong>סימולטור שיחות משחררות</strong>
+              <small>Mind Liberating Conversation Simulator</small>
+              <span>שני אנשים + גלים + משפט מטופל רנדומלי + פידבק מיידי</span>
+            </div>
+            <Sparkles size={18} aria-hidden="true" />
+          </button>
+
+          <button
+            type="button"
+            className={`mindlab-training-card mindlab-training-card--hero ${
+              activeMindTabId === 'pattern-master' ? 'is-active' : ''
+            }`}
+            onClick={() => {
+              setActiveTrainingToolId('pattern-master')
+              handleSwitchMindTab('pattern-master')
+            }}
+          >
+            <div className="mindlab-training-card__icon">
+              <Workflow size={24} aria-hidden="true" />
+            </div>
+            <div className="mindlab-training-card__content">
+              <strong>מאסטר רצפים</strong>
+              <small>Pattern Sequence Master</small>
+              <span>Flowchart + fill-in + סדר רצף + יישום על משפט</span>
+            </div>
+            <Wand2 size={18} aria-hidden="true" />
+          </button>
+        </section>
+
         {activeMindTabId === 'workflow' && (
         <div className="mindlab-layout">
           <div className="mindlab-main">
-            <section className="mindlab-stepper" aria-label="התקדמות בשלבי המעבדה">
+            <section className="mindlab-stepper" aria-label="׳”׳×׳§׳“׳׳•׳× ׳‘׳©׳׳‘׳™ ׳”׳׳¢׳‘׳“׳”">
               <div className="mindlab-stepper__head">
                 <div>
-                  <div className="mindlab-stepper__eyebrow">מסלול עבודה ממוקד</div>
+                  <div className="mindlab-stepper__eyebrow">׳׳¡׳׳•׳ ׳¢׳‘׳•׳“׳” ׳׳׳•׳§׳“</div>
                   <div className="mindlab-stepper__title">
-                    שלב {activeStepIndex + 1}/{MINDLAB_MAIN_STEPS.length} • {activeStepMeta.shortLabelHe}
+                    ׳©׳׳‘ {activeStepIndex + 1}/{MINDLAB_MAIN_STEPS.length} ג€¢ {activeStepMeta.shortLabelHe}
                   </div>
                 </div>
                 <button
@@ -767,8 +906,18 @@ export default function MindLiberatingLanguagePage() {
                     openStep(MINDLAB_MAIN_STEPS[0].id)
                   }}
                 >
-                  איפוס התקדמות
+                  ׳׳™׳₪׳•׳¡ ׳”׳×׳§׳“׳׳•׳×
                 </button>
+              </div>
+
+              <div className="mindlab-stepper__tube" aria-label="התקדמות כללית">
+                <div className="mindlab-stepper__tubeTrack" aria-hidden="true">
+                  <span style={{ width: `${overallProgressPercent}%` }} />
+                </div>
+                <div className="mindlab-stepper__tubeValue">
+                  <span>צינור אלכימי</span>
+                  <strong>{overallProgressPercent}%</strong>
+                </div>
               </div>
 
               <div className="mindlab-stepper__track" role="list">
@@ -797,14 +946,14 @@ export default function MindLiberatingLanguagePage() {
             <section className="mindlab-focus-strip" aria-live="polite">
               <div className="mindlab-focus-strip__head">
                 <div>
-                  <div className="mindlab-focus-strip__eyebrow">משפט מטופל פעיל</div>
+                  <div className="mindlab-focus-strip__eyebrow">׳׳©׳₪׳˜ ׳׳˜׳•׳₪׳ ׳₪׳¢׳™׳</div>
                   <div className="mindlab-focus-strip__status">
-                    <strong>מצב שדה:</strong> {analysis.windowLabelHe}
+                    <strong>׳׳¦׳‘ ׳©׳“׳”:</strong> {analysis.windowLabelHe}
                   </div>
                 </div>
-                <div className="mindlab-focus-strip__scores" aria-label="מדדי מצב שדה">
+                <div className="mindlab-focus-strip__scores" aria-label="׳׳“׳“׳™ ׳׳¦׳‘ ׳©׳“׳”">
                   <span className="mindlab-focus-strip__score current-step" title={activeStepMeta.titleHe}>
-                    עכשיו: {activeStepMeta.shortLabelHe}
+                    ׳¢׳›׳©׳™׳•: {activeStepMeta.shortLabelHe}
                   </span>
                   {compactEvaluationMeters.map((metric) => (
                     <span
@@ -819,7 +968,7 @@ export default function MindLiberatingLanguagePage() {
                 </div>
               </div>
               <blockquote className="mindlab-focus-strip__quote">
-                {analysis.text || 'הדבק/י כאן משפט מטופל כדי שהמשפט הפעיל יישאר מול העיניים לאורך כל העבודה.'}
+                {analysis.text || '׳”׳“׳‘׳§/׳™ ׳›׳׳ ׳׳©׳₪׳˜ ׳׳˜׳•׳₪׳ ׳›׳“׳™ ׳©׳”׳׳©׳₪׳˜ ׳”׳₪׳¢׳™׳ ׳™׳™׳©׳׳¨ ׳׳•׳ ׳”׳¢׳™׳ ׳™׳™׳ ׳׳׳•׳¨׳ ׳›׳ ׳”׳¢׳‘׳•׳“׳”.'}
               </blockquote>
             </section>
 
@@ -833,24 +982,24 @@ export default function MindLiberatingLanguagePage() {
             >
               <div className="panel-card__head">
                 <div>
-                  <h3>1) מה המטופל אומר</h3>
-                  <p>מתחילים מהטקסט כפי שהוא, בלי לתקן אותו עדיין.</p>
+                  <h3>1) ׳׳” ׳”׳׳˜׳•׳₪׳ ׳׳•׳׳¨</h3>
+                  <p>׳׳×׳—׳™׳׳™׳ ׳׳”׳˜׳§׳¡׳˜ ׳›׳₪׳™ ׳©׳”׳•׳, ׳‘׳׳™ ׳׳×׳§׳ ׳׳•׳×׳• ׳¢׳“׳™׳™׳.</p>
                 </div>
                 <div className="mindlab-step-card__headActions">
                   <span className={`mindlab-step-card__badge ${activeStepId === 'patient-source' ? 'is-active' : ''}`}>
                     {getStepBadgeText('patient-source')}
                   </span>
                   <button type="button" onClick={() => openStep('patient-source')}>
-                    {activeStepId === 'patient-source' ? 'פתוח עכשיו' : 'פתח תרגיל'}
+                    {activeStepId === 'patient-source' ? '׳₪׳×׳•׳— ׳¢׳›׳©׳™׳•' : '׳₪׳×׳— ׳×׳¨׳’׳™׳'}
                   </button>
                   <button type="button" className="secondary-button" onClick={() => markStepDoneAndAdvance('patient-source')}>
-                    סיימתי → סגור והמשך
+                    ׳¡׳™׳™׳׳×׳™ ג†’ ׳¡׳’׳•׳¨ ׳•׳”׳׳©׳
                   </button>
                 </div>
               </div>
 
               <label className="mindlab-field">
-                <span>טקסט מטופל (מקורי)</span>
+                <span>׳˜׳§׳¡׳˜ ׳׳˜׳•׳₪׳ (׳׳§׳•׳¨׳™)</span>
                 <textarea
                   rows={4}
                   className="mindlab-textarea"
@@ -859,12 +1008,12 @@ export default function MindLiberatingLanguagePage() {
                     setPatientText(event.target.value)
                     setStatusMessage('')
                   }}
-                  placeholder="לדוגמה: 'אני תמיד נתקע, אין לי דרך אחרת, זה פשוט לא אני...'"
+                  placeholder="׳׳“׳•׳’׳׳”: '׳׳ ׳™ ׳×׳׳™׳“ ׳ ׳×׳§׳¢, ׳׳™׳ ׳׳™ ׳“׳¨׳ ׳׳—׳¨׳×, ׳–׳” ׳₪׳©׳•׳˜ ׳׳ ׳׳ ׳™...'"
                 />
               </label>
 
               <div className="chip-bank">
-                <h4>דוגמאות מהירות</h4>
+                <h4>׳“׳•׳’׳׳׳•׳× ׳׳”׳™׳¨׳•׳×</h4>
                 <div className="chips-wrap">
                   {SAMPLE_PATIENT_TEXTS.map((sample) => (
                     <button key={sample} type="button" className="chip" onClick={() => loadSample(sample)}>
@@ -885,29 +1034,29 @@ export default function MindLiberatingLanguagePage() {
             >
               <div className="panel-card__head">
                 <div>
-                  <h3>2) טקסט מטפל שמזיז תודעה</h3>
-                  <p>בונים ניסוח שמכבד את החוויה, אבל פותח שדה ואפשרויות.</p>
+                  <h3>2) ׳˜׳§׳¡׳˜ ׳׳˜׳₪׳ ׳©׳׳–׳™׳– ׳×׳•׳“׳¢׳”</h3>
+                  <p>׳‘׳•׳ ׳™׳ ׳ ׳™׳¡׳•׳— ׳©׳׳›׳‘׳“ ׳׳× ׳”׳—׳•׳•׳™׳”, ׳׳‘׳ ׳₪׳•׳×׳— ׳©׳“׳” ׳•׳׳₪׳©׳¨׳•׳™׳•׳×.</p>
                 </div>
                 <div className="mindlab-step-card__headActions">
                   <span className={`mindlab-step-card__badge ${activeStepId === 'therapist-script' ? 'is-active' : ''}`}>
                     {getStepBadgeText('therapist-script')}
                   </span>
                   <button type="button" onClick={() => openStep('therapist-script')}>
-                    {activeStepId === 'therapist-script' ? 'פתוח עכשיו' : 'פתח תרגיל'}
+                    {activeStepId === 'therapist-script' ? '׳₪׳×׳•׳— ׳¢׳›׳©׳™׳•' : '׳₪׳×׳— ׳×׳¨׳’׳™׳'}
                   </button>
                   <button
                     type="button"
                     className="secondary-button"
                     onClick={() => markStepDoneAndAdvance('therapist-script')}
                   >
-                    סיימתי → סגור והמשך
+                    ׳¡׳™׳™׳׳×׳™ ג†’ ׳¡׳’׳•׳¨ ׳•׳”׳׳©׳
                   </button>
                 </div>
               </div>
 
               <div className="mindlab-prompt-grid">
                 <div className="chip-bank">
-                  <h4>טון מטפל</h4>
+                  <h4>׳˜׳•׳ ׳׳˜׳₪׳</h4>
                   <div className="chips-wrap">
                     {THERAPIST_TONES.map((tone) => (
                       <button
@@ -924,7 +1073,7 @@ export default function MindLiberatingLanguagePage() {
                 </div>
 
                 <div className="chip-bank">
-                  <h4>שחרור כימות / נעילה</h4>
+                  <h4>׳©׳—׳¨׳•׳¨ ׳›׳™׳׳•׳× / ׳ ׳¢׳™׳׳”</h4>
                   <div className="chips-wrap">
                     {QUANTIFIER_SHIFTS.map((item) => (
                       <button
@@ -941,7 +1090,7 @@ export default function MindLiberatingLanguagePage() {
                 </div>
 
                 <div className="chip-bank">
-                  <h4>ערוץ הרחבה (זמן/מרחב/גוף/משמעות)</h4>
+                  <h4>׳¢׳¨׳•׳¥ ׳”׳¨׳—׳‘׳” (׳–׳׳/׳׳¨׳—׳‘/׳’׳•׳£/׳׳©׳׳¢׳•׳×)</h4>
                   <div className="chips-wrap">
                     {RELEASE_CHANNELS.map((item) => (
                       <button
@@ -958,7 +1107,7 @@ export default function MindLiberatingLanguagePage() {
                 </div>
 
                 <div className="chip-bank">
-                  <h4>שאלת פתיחת אופציות</h4>
+                  <h4>׳©׳׳׳× ׳₪׳×׳™׳—׳× ׳׳•׳₪׳¦׳™׳•׳×</h4>
                   <div className="chips-wrap">
                     {OPTION_OPENERS.map((item) => (
                       <button
@@ -977,16 +1126,16 @@ export default function MindLiberatingLanguagePage() {
 
               <div className="mindlab-script-preview">
                 <div className="mindlab-script-preview__head">
-                  <strong>טיוטת ניסוח מטפל (מוצעת)</strong>
+                  <strong>׳˜׳™׳•׳˜׳× ׳ ׳™׳¡׳•׳— ׳׳˜׳₪׳ (׳׳•׳¦׳¢׳×)</strong>
                   <button type="button" onClick={handleUseGeneratedScript}>
-                    בנה ניסוח מוצע
+                    ׳‘׳ ׳” ׳ ׳™׳¡׳•׳— ׳׳•׳¦׳¢
                   </button>
                 </div>
-                <p>{generatedTherapistText || 'הדבק/י טקסט מטופל כדי לקבל טיוטה.'}</p>
+                <p>{generatedTherapistText || '׳”׳“׳‘׳§/׳™ ׳˜׳§׳¡׳˜ ׳׳˜׳•׳₪׳ ׳›׳“׳™ ׳׳§׳‘׳ ׳˜׳™׳•׳˜׳”.'}</p>
               </div>
 
               <label className="mindlab-field">
-                <span>טקסט מטפל סופי (ניתן לעריכה)</span>
+                <span>׳˜׳§׳¡׳˜ ׳׳˜׳₪׳ ׳¡׳•׳₪׳™ (׳ ׳™׳×׳ ׳׳¢׳¨׳™׳›׳”)</span>
                 <textarea
                   rows={6}
                   className="mindlab-textarea"
@@ -995,16 +1144,16 @@ export default function MindLiberatingLanguagePage() {
                     setTherapistText(event.target.value)
                     setStatusMessage('')
                   }}
-                  placeholder="הטקסט שהמטפל בונה כדי להזיז את התודעה, לפתוח שדה ולהזמין אופציות."
+                  placeholder="׳”׳˜׳§׳¡׳˜ ׳©׳”׳׳˜׳₪׳ ׳‘׳•׳ ׳” ׳›׳“׳™ ׳׳”׳–׳™׳– ׳׳× ׳”׳×׳•׳“׳¢׳”, ׳׳₪׳×׳•׳— ׳©׳“׳” ׳•׳׳”׳–׳׳™׳ ׳׳•׳₪׳¦׳™׳•׳×."
                 />
               </label>
 
               <div className="controls-row">
                 <button type="button" onClick={handleCopyTherapistText}>
-                  העתק טקסט מטפל
+                  ׳”׳¢׳×׳§ ׳˜׳§׳¡׳˜ ׳׳˜׳₪׳
                 </button>
                 <button type="button" onClick={handleSaveSession}>
-                  שמור להיסטוריה
+                  ׳©׳׳•׳¨ ׳׳”׳™׳¡׳˜׳•׳¨׳™׳”
                 </button>
               </div>
             </section>
@@ -1019,82 +1168,82 @@ export default function MindLiberatingLanguagePage() {
             >
               <div className="panel-card__head">
                 <div>
-                  <h3>3) אילו אופציות לא נראו קודם, ואילו נפתחו אחרי השחרור</h3>
-                  <p>זה הלב של העבודה: לא רק “ניסוח יפה”, אלא שינוי במה שהמטופל מוכן לראות.</p>
+                  <h3>3) ׳׳™׳׳• ׳׳•׳₪׳¦׳™׳•׳× ׳׳ ׳ ׳¨׳׳• ׳§׳•׳“׳, ׳•׳׳™׳׳• ׳ ׳₪׳×׳—׳• ׳׳—׳¨׳™ ׳”׳©׳—׳¨׳•׳¨</h3>
+                  <p>׳–׳” ׳”׳׳‘ ׳©׳ ׳”׳¢׳‘׳•׳“׳”: ׳׳ ׳¨׳§ ג€׳ ׳™׳¡׳•׳— ׳™׳₪׳”ג€, ׳׳׳ ׳©׳™׳ ׳•׳™ ׳‘׳׳” ׳©׳”׳׳˜׳•׳₪׳ ׳׳•׳›׳ ׳׳¨׳׳•׳×.</p>
                 </div>
                 <div className="mindlab-step-card__headActions">
                   <span className={`mindlab-step-card__badge ${activeStepId === 'options-shift' ? 'is-active' : ''}`}>
                     {getStepBadgeText('options-shift')}
                   </span>
                   <button type="button" onClick={() => openStep('options-shift')}>
-                    {activeStepId === 'options-shift' ? 'פתוח עכשיו' : 'פתח תרגיל'}
+                    {activeStepId === 'options-shift' ? '׳₪׳×׳•׳— ׳¢׳›׳©׳™׳•' : '׳₪׳×׳— ׳×׳¨׳’׳™׳'}
                   </button>
                   <button
                     type="button"
                     className="secondary-button"
                     onClick={() => markStepDoneAndAdvance('options-shift')}
                   >
-                    סיימתי → סגור והמשך
+                    ׳¡׳™׳™׳׳×׳™ ג†’ ׳¡׳’׳•׳¨ ׳•׳”׳׳©׳
                   </button>
                 </div>
               </div>
 
               <div className="mindlab-options-grid">
                 <label className="mindlab-field">
-                  <span>לפני השחרור: אילו אופציות המטופל לא רואה / פוסל מיד?</span>
+                  <span>׳׳₪׳ ׳™ ׳”׳©׳—׳¨׳•׳¨: ׳׳™׳׳• ׳׳•׳₪׳¦׳™׳•׳× ׳”׳׳˜׳•׳₪׳ ׳׳ ׳¨׳•׳׳” / ׳₪׳•׳¡׳ ׳׳™׳“?</span>
                   <textarea
                     rows={5}
                     className="mindlab-textarea"
                     value={beforeOptionsText}
                     onChange={(event) => setBeforeOptionsText(event.target.value)}
-                    placeholder={'שורה לכל אופציה, למשל:\nלבקש עזרה\nלדחות החלטה ביום\nלעשות גרסה חלקית'}
+                    placeholder={'׳©׳•׳¨׳” ׳׳›׳ ׳׳•׳₪׳¦׳™׳”, ׳׳׳©׳:\n׳׳‘׳§׳© ׳¢׳–׳¨׳”\n׳׳“׳—׳•׳× ׳”׳—׳׳˜׳” ׳‘׳™׳•׳\n׳׳¢׳©׳•׳× ׳’׳¨׳¡׳” ׳—׳׳§׳™׳×'}
                   />
                 </label>
 
                 <label className="mindlab-field">
-                  <span>אחרי השחרור: אילו אופציות הוא פתאום מסכים לראות / לשקול?</span>
+                  <span>׳׳—׳¨׳™ ׳”׳©׳—׳¨׳•׳¨: ׳׳™׳׳• ׳׳•׳₪׳¦׳™׳•׳× ׳”׳•׳ ׳₪׳×׳׳•׳ ׳׳¡׳›׳™׳ ׳׳¨׳׳•׳× / ׳׳©׳§׳•׳?</span>
                   <textarea
                     rows={5}
                     className="mindlab-textarea"
                     value={afterOptionsText}
                     onChange={(event) => setAfterOptionsText(event.target.value)}
-                    placeholder={'שורה לכל אופציה, למשל:\nלבדוק חריגים\nלבקש תיאום ציפיות\nלנסות צעד קטן אחד'}
+                    placeholder={'׳©׳•׳¨׳” ׳׳›׳ ׳׳•׳₪׳¦׳™׳”, ׳׳׳©׳:\n׳׳‘׳“׳•׳§ ׳—׳¨׳™׳’׳™׳\n׳׳‘׳§׳© ׳×׳™׳׳•׳ ׳¦׳™׳₪׳™׳•׳×\n׳׳ ׳¡׳•׳× ׳¦׳¢׳“ ׳§׳˜׳ ׳׳—׳“'}
                   />
                 </label>
               </div>
 
               <div className="mindlab-delta-grid">
                 <div className="mini-card">
-                  <h4>לפני השחרור</h4>
-                  <p>{beforeOptions.length} אופציות מזוהות</p>
+                  <h4>׳׳₪׳ ׳™ ׳”׳©׳—׳¨׳•׳¨</h4>
+                  <p>{beforeOptions.length} ׳׳•׳₪׳¦׳™׳•׳× ׳׳–׳•׳”׳•׳×</p>
                   <ul>
                     {beforeOptions.slice(0, 6).map((item) => (
                       <li key={`before-${item}`}>{item}</li>
                     ))}
-                    {!beforeOptions.length && <li>עדיין לא הוזנו אופציות.</li>}
+                    {!beforeOptions.length && <li>׳¢׳“׳™׳™׳ ׳׳ ׳”׳•׳–׳ ׳• ׳׳•׳₪׳¦׳™׳•׳×.</li>}
                   </ul>
                 </div>
                 <div className="mini-card">
-                  <h4>אחרי השחרור</h4>
-                  <p>{afterOptions.length} אופציות מזוהות</p>
+                  <h4>׳׳—׳¨׳™ ׳”׳©׳—׳¨׳•׳¨</h4>
+                  <p>{afterOptions.length} ׳׳•׳₪׳¦׳™׳•׳× ׳׳–׳•׳”׳•׳×</p>
                   <ul>
                     {afterOptions.slice(0, 6).map((item) => (
                       <li key={`after-${item}`}>{item}</li>
                     ))}
-                    {!afterOptions.length && <li>עדיין לא הוזנו אופציות.</li>}
+                    {!afterOptions.length && <li>׳¢׳“׳™׳™׳ ׳׳ ׳”׳•׳–׳ ׳• ׳׳•׳₪׳¦׳™׳•׳×.</li>}
                   </ul>
                 </div>
                 <div className="mini-card">
-                  <h4>מה נפתח</h4>
-                  <p>אופציות חדשות שנוספו: {newOptionsAfterRelease.length}</p>
+                  <h4>׳׳” ׳ ׳₪׳×׳—</h4>
+                  <p>׳׳•׳₪׳¦׳™׳•׳× ׳—׳“׳©׳•׳× ׳©׳ ׳•׳¡׳₪׳•: {newOptionsAfterRelease.length}</p>
                   <ul>
                     {newOptionsAfterRelease.slice(0, 6).map((item) => (
                       <li key={`new-${item}`}>{item}</li>
                     ))}
-                    {!newOptionsAfterRelease.length && <li>עדיין אין אופציות חדשות מסומנות.</li>}
+                    {!newOptionsAfterRelease.length && <li>׳¢׳“׳™׳™׳ ׳׳™׳ ׳׳•׳₪׳¦׳™׳•׳× ׳—׳“׳©׳•׳× ׳׳¡׳•׳׳ ׳•׳×.</li>}
                   </ul>
                   {optionsDropped.length > 0 && (
-                    <p className="muted-text">אופציות שהוסרו/פחות רלוונטיות: {optionsDropped.join(', ')}</p>
+                    <p className="muted-text">׳׳•׳₪׳¦׳™׳•׳× ׳©׳”׳•׳¡׳¨׳•/׳₪׳—׳•׳× ׳¨׳׳•׳•׳ ׳˜׳™׳•׳×: {optionsDropped.join(', ')}</p>
                   )}
                 </div>
               </div>
@@ -1110,9 +1259,9 @@ export default function MindLiberatingLanguagePage() {
             >
               <div className="panel-card__head">
                 <div>
-                  <h3>4) מעבדות אימון מתקדמות</h3>
+                  <h3>4) ׳׳¢׳‘׳“׳•׳× ׳׳™׳׳•׳ ׳׳×׳§׳“׳׳•׳×</h3>
                   <p>
-                    תרגול "על יבש" של שפה משחררת: בוחרים הקשר, מקבלים משפט, ובונים תגובה/רצף עם פידבק מיידי.
+                    ׳×׳¨׳’׳•׳ "׳¢׳ ׳™׳‘׳©" ׳©׳ ׳©׳₪׳” ׳׳©׳—׳¨׳¨׳×: ׳‘׳•׳—׳¨׳™׳ ׳”׳§׳©׳¨, ׳׳§׳‘׳׳™׳ ׳׳©׳₪׳˜, ׳•׳‘׳•׳ ׳™׳ ׳×׳’׳•׳‘׳”/׳¨׳¦׳£ ׳¢׳ ׳₪׳™׳“׳‘׳§ ׳׳™׳™׳“׳™.
                   </p>
                 </div>
                 <div className="mindlab-step-card__headActions">
@@ -1120,14 +1269,14 @@ export default function MindLiberatingLanguagePage() {
                     {getStepBadgeText('training-tools')}
                   </span>
                   <button type="button" onClick={() => openStep('training-tools')}>
-                    {activeStepId === 'training-tools' ? 'פתוח עכשיו' : 'פתח תרגיל'}
+                    {activeStepId === 'training-tools' ? '׳₪׳×׳•׳— ׳¢׳›׳©׳™׳•' : '׳₪׳×׳— ׳×׳¨׳’׳™׳'}
                   </button>
                   <button
                     type="button"
                     className="secondary-button"
                     onClick={() => markStepDoneAndAdvance('training-tools')}
                   >
-                    סיימתי שלב תרגול
+                    ׳¡׳™׳™׳׳×׳™ ׳©׳׳‘ ׳×׳¨׳’׳•׳
                   </button>
                 </div>
               </div>
@@ -1142,7 +1291,7 @@ export default function MindLiberatingLanguagePage() {
                     setActiveTrainingToolId((current) => {
                       const next = current === 'simulator' ? '' : 'simulator'
                       if (next) {
-                        setActiveMindTabId('simulator')
+                        handleSwitchMindTab('simulator')
                       }
                       return next
                     })
@@ -1153,9 +1302,9 @@ export default function MindLiberatingLanguagePage() {
                     <MessageCircle size={20} aria-hidden="true" />
                   </div>
                   <div className="mindlab-training-card__content">
-                    <strong>סימולטור שיחות משחררות</strong>
+                    <strong>׳¡׳™׳׳•׳׳˜׳•׳¨ ׳©׳™׳—׳•׳× ׳׳©׳—׳¨׳¨׳•׳×</strong>
                     <small>Mind Liberating Conversation Simulator</small>
-                    <span>משפט מטופל רנדומלי + תגובת מטפל + בדיקה + דוגמאות אידיאליות</span>
+                    <span>׳׳©׳₪׳˜ ׳׳˜׳•׳₪׳ ׳¨׳ ׳“׳•׳׳׳™ + ׳×׳’׳•׳‘׳× ׳׳˜׳₪׳ + ׳‘׳“׳™׳§׳” + ׳“׳•׳’׳׳׳•׳× ׳׳™׳“׳™׳׳׳™׳•׳×</span>
                   </div>
                   <Sparkles size={18} aria-hidden="true" />
                 </button>
@@ -1169,7 +1318,7 @@ export default function MindLiberatingLanguagePage() {
                     setActiveTrainingToolId((current) => {
                       const next = current === 'pattern-master' ? '' : 'pattern-master'
                       if (next) {
-                        setActiveMindTabId('pattern-master')
+                        handleSwitchMindTab('pattern-master')
                       }
                       return next
                     })
@@ -1180,9 +1329,9 @@ export default function MindLiberatingLanguagePage() {
                     <Workflow size={20} aria-hidden="true" />
                   </div>
                   <div className="mindlab-training-card__content">
-                    <strong>מאסטר רצפים</strong>
+                    <strong>׳׳׳¡׳˜׳¨ ׳¨׳¦׳₪׳™׳</strong>
                     <small>Pattern Sequence Master</small>
-                    <span>פאטרנים, flowchart, fill-in-blanks, סדר רצף ויישום על משפט רנדומלי</span>
+                    <span>׳₪׳׳˜׳¨׳ ׳™׳, flowchart, fill-in-blanks, ׳¡׳“׳¨ ׳¨׳¦׳£ ׳•׳™׳™׳©׳•׳ ׳¢׳ ׳׳©׳₪׳˜ ׳¨׳ ׳“׳•׳׳׳™</span>
                   </div>
                   <Sparkles size={18} aria-hidden="true" />
                 </button>
@@ -1190,27 +1339,27 @@ export default function MindLiberatingLanguagePage() {
 
               <div className="mindlab-training-panel mindlab-training-panel--launcher">
                 <p className="muted-text">
-                  התרגול המלא נפתח עכשיו בטאבים העליונים כדי לשמור את זרימת העבודה קצרה וממוקדת.
+                  ׳”׳×׳¨׳’׳•׳ ׳”׳׳׳ ׳ ׳₪׳×׳— ׳¢׳›׳©׳™׳• ׳‘׳˜׳׳‘׳™׳ ׳”׳¢׳׳™׳•׳ ׳™׳ ׳›׳“׳™ ׳׳©׳׳•׳¨ ׳׳× ׳–׳¨׳™׳׳× ׳”׳¢׳‘׳•׳“׳” ׳§׳¦׳¨׳” ׳•׳׳׳•׳§׳“׳×.
                 </p>
                 <div className="controls-row">
                   <button
                     type="button"
                     onClick={() => {
-                      setActiveMindTabId('simulator')
+                      handleSwitchMindTab('simulator')
                       setActiveTrainingToolId('simulator')
                     }}
                   >
-                    פתח סימולטור בטאב נפרד
+                    ׳₪׳×׳— ׳¡׳™׳׳•׳׳˜׳•׳¨ ׳‘׳˜׳׳‘ ׳ ׳₪׳¨׳“
                   </button>
                   <button
                     type="button"
                     className="secondary-button"
                     onClick={() => {
-                      setActiveMindTabId('pattern-master')
+                      handleSwitchMindTab('pattern-master')
                       setActiveTrainingToolId('pattern-master')
                     }}
                   >
-                    פתח מאסטר רצפים בטאב נפרד
+                    ׳₪׳×׳— ׳׳׳¡׳˜׳¨ ׳¨׳¦׳₪׳™׳ ׳‘׳˜׳׳‘ ׳ ׳₪׳¨׳“
                   </button>
                 </div>
               </div>
@@ -1225,26 +1374,26 @@ export default function MindLiberatingLanguagePage() {
             <div className="mindlab-rail__sticky">
               <section className="panel-card panel-card--soft">
                 <div className="panel-card__head">
-                  <h3>מה המטופל אומר עכשיו</h3>
+                  <h3>׳׳” ׳”׳׳˜׳•׳₪׳ ׳׳•׳׳¨ ׳¢׳›׳©׳™׳•</h3>
                 </div>
                 <blockquote className="mindlab-quote">
-                  {analysis.text || 'הדבק/י כאן משפט מטופל כדי לנתח את רמת הסגירה.'}
+                  {analysis.text || '׳”׳“׳‘׳§/׳™ ׳›׳׳ ׳׳©׳₪׳˜ ׳׳˜׳•׳₪׳ ׳›׳“׳™ ׳׳ ׳×׳— ׳׳× ׳¨׳׳× ׳”׳¡׳’׳™׳¨׳”.'}
                 </blockquote>
               </section>
 
               <section className="panel-card">
                 <div className="panel-card__head">
                   <div>
-                    <h3>מה חשוב לראות כאן</h3>
-                    <p>לא רק התוכן, אלא כמה התודעה סגורה וכמה אופציות נעלמות.</p>
+                    <h3>׳׳” ׳—׳©׳•׳‘ ׳׳¨׳׳•׳× ׳›׳׳</h3>
+                    <p>׳׳ ׳¨׳§ ׳”׳×׳•׳›׳, ׳׳׳ ׳›׳׳” ׳”׳×׳•׳“׳¢׳” ׳¡׳’׳•׳¨׳” ׳•׳›׳׳” ׳׳•׳₪׳¦׳™׳•׳× ׳ ׳¢׳׳׳•׳×.</p>
                   </div>
                 </div>
 
                 <div className="mindlab-eval-compact">
-                  <div className="mindlab-eval-compact__barCard" aria-label="מד שדה קומפקטי">
+                  <div className="mindlab-eval-compact__barCard" aria-label="׳׳“ ׳©׳“׳” ׳§׳•׳׳₪׳§׳˜׳™">
                     <div className="mindlab-eval-compact__barLabels">
-                      <span>סגור</span>
-                      <span>פתוח</span>
+                      <span>׳¡׳’׳•׳¨</span>
+                      <span>׳₪׳×׳•׳—</span>
                     </div>
                     <div className="mindlab-eval-compact__fieldBar" aria-hidden="true">
                       <div
@@ -1255,7 +1404,7 @@ export default function MindLiberatingLanguagePage() {
                     <div className="mindlab-eval-compact__barValue">{fieldPressureScore}/100</div>
                   </div>
 
-                  <div className="mindlab-eval-compact__meters" role="list" aria-label="מדדי אבחון">
+                  <div className="mindlab-eval-compact__meters" role="list" aria-label="׳׳“׳“׳™ ׳׳‘׳—׳•׳">
                     {compactEvaluationMeters.map((metric) => (
                       <div
                         key={metric.id}
@@ -1277,15 +1426,15 @@ export default function MindLiberatingLanguagePage() {
                 </div>
 
                 <div className="callout-line">
-                  <strong>מצב שדה:</strong> {analysis.windowLabelHe}
+                  <strong>׳׳¦׳‘ ׳©׳“׳”:</strong> {analysis.windowLabelHe}
                 </div>
                 <p className="muted-text">{analysis.summaryHe}</p>
 
                 <MenuSection
                   compact
                   className="mindlab-detail-menu"
-                  title="אבחון מפורט"
-                  subtitle="דפוסי סגירה, ניצני פתיחה וכיווני שחרור"
+                  title="׳׳‘׳—׳•׳ ׳׳₪׳•׳¨׳˜"
+                  subtitle="׳“׳₪׳•׳¡׳™ ׳¡׳’׳™׳¨׳”, ׳ ׳™׳¦׳ ׳™ ׳₪׳×׳™׳—׳” ׳•׳›׳™׳•׳•׳ ׳™ ׳©׳—׳¨׳•׳¨"
                   badgeText={`${
                     analysis.detectedClosures.length +
                     analysis.detectedOpenings.length +
@@ -1294,7 +1443,7 @@ export default function MindLiberatingLanguagePage() {
                 >
                   <div className="mindlab-chip-lists">
                     <div className="chip-bank">
-                      <h4>דפוסי סגירה שזוהו</h4>
+                      <h4>׳“׳₪׳•׳¡׳™ ׳¡׳’׳™׳¨׳” ׳©׳–׳•׳”׳•</h4>
                       <div className="chips-wrap">
                         {analysis.detectedClosures.length ? (
                           analysis.detectedClosures.map((item) => (
@@ -1303,13 +1452,13 @@ export default function MindLiberatingLanguagePage() {
                             </span>
                           ))
                         ) : (
-                          <span className="chip">לא זוהו דפוסי סגירה מובהקים</span>
+                          <span className="chip">׳׳ ׳–׳•׳”׳• ׳“׳₪׳•׳¡׳™ ׳¡׳’׳™׳¨׳” ׳׳•׳‘׳”׳§׳™׳</span>
                         )}
                       </div>
                     </div>
 
                     <div className="chip-bank">
-                      <h4>ניצני פתיחה שכבר קיימים</h4>
+                      <h4>׳ ׳™׳¦׳ ׳™ ׳₪׳×׳™׳—׳” ׳©׳›׳‘׳¨ ׳§׳™׳™׳׳™׳</h4>
                       <div className="chips-wrap">
                         {analysis.detectedOpenings.length ? (
                           analysis.detectedOpenings.map((item) => (
@@ -1318,14 +1467,14 @@ export default function MindLiberatingLanguagePage() {
                             </span>
                           ))
                         ) : (
-                          <span className="chip">כמעט אין כרגע שפה פותחת</span>
+                          <span className="chip">׳›׳׳¢׳˜ ׳׳™׳ ׳›׳¨׳’׳¢ ׳©׳₪׳” ׳₪׳•׳×׳—׳×</span>
                         )}
                       </div>
                     </div>
                   </div>
 
                   <div className="mindlab-hints">
-                    <h4>כיווני שחרור מומלצים</h4>
+                    <h4>׳›׳™׳•׳•׳ ׳™ ׳©׳—׳¨׳•׳¨ ׳׳•׳׳׳¦׳™׳</h4>
                     <ul>
                       {analysis.releaseHintsHe.map((hint) => (
                         <li key={hint}>{hint}</li>
@@ -1340,12 +1489,12 @@ export default function MindLiberatingLanguagePage() {
                   compact
                   defaultOpen={false}
                   className="mindlab-detail-menu"
-                  title="מה המטופל מסכים לראות אחרי השחרור"
-                  subtitle="אופציות חדשות שהופכות מ'לא רלוונטי' ל'אפשר לשקול'"
+                  title="׳׳” ׳”׳׳˜׳•׳₪׳ ׳׳¡׳›׳™׳ ׳׳¨׳׳•׳× ׳׳—׳¨׳™ ׳”׳©׳—׳¨׳•׳¨"
+                  subtitle="׳׳•׳₪׳¦׳™׳•׳× ׳—׳“׳©׳•׳× ׳©׳”׳•׳₪׳›׳•׳× ׳'׳׳ ׳¨׳׳•׳•׳ ׳˜׳™' ׳'׳׳₪׳©׳¨ ׳׳©׳§׳•׳'"
                   badgeText={`${newOptionsAfterRelease.length}`}
                 >
                   <p className="muted-text">
-                    כאן אתה מודד/ת שינוי תודעתי בפועל: אילו אופציות נעשות “אפשר לשקול”.
+                    ׳›׳׳ ׳׳×׳” ׳׳•׳“׳“/׳× ׳©׳™׳ ׳•׳™ ׳×׳•׳“׳¢׳×׳™ ׳‘׳₪׳•׳¢׳: ׳׳™׳׳• ׳׳•׳₪׳¦׳™׳•׳× ׳ ׳¢׳©׳•׳× ג€׳׳₪׳©׳¨ ׳׳©׳§׳•׳ג€.
                   </p>
                   <div className="mindlab-consent-list">
                     {newOptionsAfterRelease.length ? (
@@ -1355,7 +1504,7 @@ export default function MindLiberatingLanguagePage() {
                         </div>
                       ))
                     ) : (
-                      <div className="mini-pill">עדיין לא סומנו אופציות חדשות</div>
+                      <div className="mini-pill">׳¢׳“׳™׳™׳ ׳׳ ׳¡׳•׳׳ ׳• ׳׳•׳₪׳¦׳™׳•׳× ׳—׳“׳©׳•׳×</div>
                     )}
                   </div>
                 </MenuSection>
@@ -1369,11 +1518,14 @@ export default function MindLiberatingLanguagePage() {
           <section className="panel-card mindlab-workspace-panel">
             <div className="panel-card__head">
               <div>
-                <h3>סימולטור שיחות משחררות</h3>
-                <p>תרגול ממוקד בלי להעמיס את שאר חלקי הדף. אפשר לטעון משפט חזרה לזרימת העבודה.</p>
+                <h3>׳¡׳™׳׳•׳׳˜׳•׳¨ ׳©׳™׳—׳•׳× ׳׳©׳—׳¨׳¨׳•׳×</h3>
+                <p>׳×׳¨׳’׳•׳ ׳׳׳•׳§׳“ ׳‘׳׳™ ׳׳”׳¢׳׳™׳¡ ׳׳× ׳©׳׳¨ ׳—׳׳§׳™ ׳”׳“׳£. ׳׳₪׳©׳¨ ׳׳˜׳¢׳•׳ ׳׳©׳₪׳˜ ׳—׳–׳¨׳” ׳׳–׳¨׳™׳׳× ׳”׳¢׳‘׳•׳“׳”.</p>
               </div>
             </div>
-            <LiberatingConversationSimulator onLoadPatientText={loadPatientTextFromTrainingTool} />
+            <LiberatingConversationSimulator
+              onLoadPatientText={loadPatientTextFromTrainingTool}
+              onSignal={handleTrainingSignal}
+            />
           </section>
         )}
 
@@ -1381,11 +1533,14 @@ export default function MindLiberatingLanguagePage() {
           <section className="panel-card mindlab-workspace-panel">
             <div className="panel-card__head">
               <div>
-                <h3>מאסטר רצפים</h3>
-                <p>כאן עובדים רק על רצפים ו-flowchart. טעינת משפט תחזיר אותך לזרימת העבודה כשצריך.</p>
+                <h3>׳׳׳¡׳˜׳¨ ׳¨׳¦׳₪׳™׳</h3>
+                <p>׳›׳׳ ׳¢׳•׳‘׳“׳™׳ ׳¨׳§ ׳¢׳ ׳¨׳¦׳₪׳™׳ ׳•-flowchart. ׳˜׳¢׳™׳ ׳× ׳׳©׳₪׳˜ ׳×׳—׳–׳™׳¨ ׳׳•׳×׳ ׳׳–׳¨׳™׳׳× ׳”׳¢׳‘׳•׳“׳” ׳›׳©׳¦׳¨׳™׳.</p>
               </div>
             </div>
-            <PatternSequenceMaster onLoadPatientText={loadPatientTextFromTrainingTool} />
+            <PatternSequenceMaster
+              onLoadPatientText={loadPatientTextFromTrainingTool}
+              onSignal={handleTrainingSignal}
+            />
           </section>
         )}
 
@@ -1393,12 +1548,12 @@ export default function MindLiberatingLanguagePage() {
           <section className="panel-card mindlab-workspace-panel">
             <div className="panel-card__head">
               <div>
-                <h3>היסטוריה - Mind Liberating</h3>
-                <p>דוגמאות, רצפים וסשנים שנשמרו תחת מעבדת שחרור התודעה.</p>
+                <h3>׳”׳™׳¡׳˜׳•׳¨׳™׳” - Mind Liberating</h3>
+                <p>׳“׳•׳’׳׳׳•׳×, ׳¨׳¦׳₪׳™׳ ׳•׳¡׳©׳ ׳™׳ ׳©׳ ׳©׳׳¨׳• ׳×׳—׳× ׳׳¢׳‘׳“׳× ׳©׳—׳¨׳•׳¨ ׳”׳×׳•׳“׳¢׳”.</p>
               </div>
               <div className="alchemy-card__actions">
                 <Link to="/library" className="secondary-link-button">
-                  פתח ספרייה מלאה
+                  ׳₪׳×׳— ׳¡׳₪׳¨׳™׳™׳” ׳׳׳׳”
                 </Link>
               </div>
             </div>
@@ -1408,7 +1563,7 @@ export default function MindLiberatingLanguagePage() {
                 mindHistoryItems.map((item) => (
                   <article key={item.id} className="mindlab-history-item">
                     <div className="mindlab-history-item__head">
-                      <strong>{item.summaryHe ?? 'פריט היסטוריה'}</strong>
+                      <strong>{item.summaryHe ?? '׳₪׳¨׳™׳˜ ׳”׳™׳¡׳˜׳•׳¨׳™׳”'}</strong>
                       <time dateTime={item.createdAt}>
                         {new Date(item.createdAt).toLocaleString('he-IL', {
                           dateStyle: 'short',
@@ -1416,12 +1571,12 @@ export default function MindLiberatingLanguagePage() {
                         })}
                       </time>
                     </div>
-                    {item.patientText ? <p className="mindlab-history-item__patient">מטופל: {item.patientText}</p> : null}
-                    {item.sentenceText ? <p className="mindlab-history-item__response">תגובה/רצף: {item.sentenceText}</p> : null}
+                    {item.patientText ? <p className="mindlab-history-item__patient">׳׳˜׳•׳₪׳: {item.patientText}</p> : null}
+                    {item.sentenceText ? <p className="mindlab-history-item__response">׳×׳’׳•׳‘׳”/׳¨׳¦׳£: {item.sentenceText}</p> : null}
                     <div className="mindlab-history-item__actions">
                       {item.patientText ? (
                         <button type="button" onClick={() => loadPatientTextFromTrainingTool(item.patientText)}>
-                          טען משפט לזרימת העבודה
+                          ׳˜׳¢׳ ׳׳©׳₪׳˜ ׳׳–׳¨׳™׳׳× ׳”׳¢׳‘׳•׳“׳”
                         </button>
                       ) : null}
                     </div>
@@ -1430,7 +1585,7 @@ export default function MindLiberatingLanguagePage() {
               ) : (
                 <div className="panel-card panel-card--soft">
                   <p className="muted-text">
-                    עדיין אין פריטים בהיסטוריה של מעבדה זו. שמור/י סשן, דוגמה מהסימולטור או רצף מהמאסטר.
+                    ׳¢׳“׳™׳™׳ ׳׳™׳ ׳₪׳¨׳™׳˜׳™׳ ׳‘׳”׳™׳¡׳˜׳•׳¨׳™׳” ׳©׳ ׳׳¢׳‘׳“׳” ׳–׳•. ׳©׳׳•׳¨/׳™ ׳¡׳©׳, ׳“׳•׳’׳׳” ׳׳”׳¡׳™׳׳•׳׳˜׳•׳¨ ׳׳• ׳¨׳¦׳£ ׳׳”׳׳׳¡׳˜׳¨.
                   </p>
                 </div>
               )}
@@ -1438,6 +1593,40 @@ export default function MindLiberatingLanguagePage() {
           </section>
         )}
       </section>
+
+      {showSoundConsent && (
+        <div className="mindlab-sound-consent" role="dialog" aria-modal="true" aria-label="הפעלת צלילים במעבדה">
+          <div className="mindlab-sound-consent__card">
+            <h3>להפעיל צלילים קסומים של המעבדה?</h3>
+            <p>
+              מוזיקת ambient עדינה + צלילי פעולה קלים (sparkle / whoosh / harp).
+              אפשר להשתיק בכל רגע.
+            </p>
+            <div className="mindlab-sound-consent__actions">
+              <button type="button" onClick={() => applySoundConsent({ enabled: true })}>
+                כן, תפעיל
+              </button>
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => applySoundConsent({ enabled: false })}
+              >
+                לא עכשיו
+              </button>
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => applySoundConsent({ enabled: false, dontAskAgain: true })}
+              >
+                אל תשאל שוב
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <AlchemistCompanion mood={companionMood} message={companionMessage} pulseKey={companionPulseKey} />
     </div>
   )
 }
+

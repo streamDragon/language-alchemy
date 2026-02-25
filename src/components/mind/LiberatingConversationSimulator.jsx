@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import {
   Brain,
   CheckCircle2,
@@ -38,19 +38,19 @@ function evaluateResponse(responseText, statement) {
     return {
       score: 0,
       level: 'none',
-      labelHe: 'עדיין לא נבדק',
+      labelHe: '׳¢׳“׳™׳™׳ ׳׳ ׳ ׳‘׳“׳§',
       accent: 'neutral',
-      feedbackHe: ['כתבו תגובה קצרה ואז לחצו "בדוק תגובה".'],
+      feedbackHe: ['׳›׳×׳‘׳• ׳×׳’׳•׳‘׳” ׳§׳¦׳¨׳” ׳•׳׳– ׳׳—׳¦׳• "׳‘׳“׳•׳§ ׳×׳’׳•׳‘׳”".'],
       detectedStrengths: [],
     }
   }
 
-  const hasQuestion = /[?؟]/.test(text)
-  const hasRelationship = includesAny(text, [/מה הקשר/, /איך .*מתקשר/, /בין .* ל/])
-  const hasLoosening = includesAny(text, [/אולי/, /יכול/, /לפעמים/, /כרגע/, /אפשר/, /בחלק/])
-  const hasQuantifierShift = includesAny(text, [/תמיד/, /אף פעם/, /בחלק/, /לפעמים/, /כלום/, /שום/])
-  const hasNotKnowing = includesAny(text, [/לא יודע/, /לא יודע שאתה לא יודע/, /מה עוד/, /אפשרי/])
-  const hasSomaticOrAttention = includesAny(text, [/מרגיש/, /שם לב/, /בגוף/, /עכשיו/])
+  const hasQuestion = /[?״]/.test(text)
+  const hasRelationship = includesAny(text, [/׳׳” ׳”׳§׳©׳¨/, /׳׳™׳ .*׳׳×׳§׳©׳¨/, /׳‘׳™׳ .* ׳/])
+  const hasLoosening = includesAny(text, [/׳׳•׳׳™/, /׳™׳›׳•׳/, /׳׳₪׳¢׳׳™׳/, /׳›׳¨׳’׳¢/, /׳׳₪׳©׳¨/, /׳‘׳—׳׳§/])
+  const hasQuantifierShift = includesAny(text, [/׳×׳׳™׳“/, /׳׳£ ׳₪׳¢׳/, /׳‘׳—׳׳§/, /׳׳₪׳¢׳׳™׳/, /׳›׳׳•׳/, /׳©׳•׳/])
+  const hasNotKnowing = includesAny(text, [/׳׳ ׳™׳•׳“׳¢/, /׳׳ ׳™׳•׳“׳¢ ׳©׳׳×׳” ׳׳ ׳™׳•׳“׳¢/, /׳׳” ׳¢׳•׳“/, /׳׳₪׳©׳¨׳™/])
+  const hasSomaticOrAttention = includesAny(text, [/׳׳¨׳’׳™׳©/, /׳©׳ ׳׳‘/, /׳‘׳’׳•׳£/, /׳¢׳›׳©׳™׳•/])
   const mentionsClientWords = statement
     ? normalize(statement.statement)
         .split(/\s+/)
@@ -62,64 +62,64 @@ function evaluateResponse(responseText, statement) {
 
   if (hasQuestion) {
     score += 16
-    strengths.push('שאלה פותחת')
+    strengths.push('׳©׳׳׳” ׳₪׳•׳×׳—׳×')
   } else {
-    feedback.push('התגובה עדיין נשמעת יותר כמו תשובה/הסבר. נסו להפוך אותה לשאלה פותחת.')
+    feedback.push('׳”׳×׳’׳•׳‘׳” ׳¢׳“׳™׳™׳ ׳ ׳©׳׳¢׳× ׳™׳•׳×׳¨ ׳›׳׳• ׳×׳©׳•׳‘׳”/׳”׳¡׳‘׳¨. ׳ ׳¡׳• ׳׳”׳₪׳•׳ ׳׳•׳×׳” ׳׳©׳׳׳” ׳₪׳•׳×׳—׳×.')
   }
   if (hasRelationship) {
     score += 28
-    strengths.push('יחסים בין משתנים')
+    strengths.push('׳™׳—׳¡׳™׳ ׳‘׳™׳ ׳׳©׳×׳ ׳™׳')
   } else {
-    feedback.push("כמעט! חסר ציר של 'מה הקשר / איך X מתקשר ל-Y' כדי להזיז תודעה.")
+    feedback.push("׳›׳׳¢׳˜! ׳—׳¡׳¨ ׳¦׳™׳¨ ׳©׳ '׳׳” ׳”׳§׳©׳¨ / ׳׳™׳ X ׳׳×׳§׳©׳¨ ׳-Y' ׳›׳“׳™ ׳׳”׳–׳™׳– ׳×׳•׳“׳¢׳”.")
   }
   if (hasLoosening) {
     score += 14
-    strengths.push('שפה מרככת/פותחת שדה')
+    strengths.push('׳©׳₪׳” ׳׳¨׳›׳›׳×/׳₪׳•׳×׳—׳× ׳©׳“׳”')
   } else {
-    feedback.push("אפשר לפתוח עוד שדה: הוסיפו 'אולי/כרגע/לפעמים/אפשר'.")
+    feedback.push("׳׳₪׳©׳¨ ׳׳₪׳×׳•׳— ׳¢׳•׳“ ׳©׳“׳”: ׳”׳•׳¡׳™׳₪׳• '׳׳•׳׳™/׳›׳¨׳’׳¢/׳׳₪׳¢׳׳™׳/׳׳₪׳©׳¨'.")
   }
   if (hasQuantifierShift) {
     score += 14
-    strengths.push('כימות / UQ')
-  } else if (statement && /תמיד|אף פעם|לא|אין/.test(statement.statement)) {
-    feedback.push("שווה לבדוק Universal Quantifier: 'תמיד/אף פעם/אין' -> 'לפעמים/בחלק מהמקרים'.")
+    strengths.push('׳›׳™׳׳•׳× / UQ')
+  } else if (statement && /׳×׳׳™׳“|׳׳£ ׳₪׳¢׳|׳׳|׳׳™׳/.test(statement.statement)) {
+    feedback.push("׳©׳•׳•׳” ׳׳‘׳“׳•׳§ Universal Quantifier: '׳×׳׳™׳“/׳׳£ ׳₪׳¢׳/׳׳™׳' -> '׳׳₪׳¢׳׳™׳/׳‘׳—׳׳§ ׳׳”׳׳§׳¨׳™׳'.")
   }
   if (hasNotKnowing) {
     score += 12
-    strengths.push('פתיחת אי-ידיעה')
+    strengths.push('׳₪׳×׳™׳—׳× ׳׳™-׳™׳“׳™׳¢׳”')
   }
   if (hasSomaticOrAttention) {
     score += 10
-    strengths.push('קשב/תחושה')
+    strengths.push('׳§׳©׳‘/׳×׳—׳•׳©׳”')
   }
   if (mentionsClientWords) {
     score += 6
-    strengths.push('הדבקה לשפת המטופל')
+    strengths.push('׳”׳“׳‘׳§׳” ׳׳©׳₪׳× ׳”׳׳˜׳•׳₪׳')
   } else {
-    feedback.push('נסו לעגן את השאלה במילים של המטופל (למשל "הורס", "תקוע", "לא מאמין").')
+    feedback.push('׳ ׳¡׳• ׳׳¢׳’׳ ׳׳× ׳”׳©׳׳׳” ׳‘׳׳™׳׳™׳ ׳©׳ ׳”׳׳˜׳•׳₪׳ (׳׳׳©׳ "׳”׳•׳¨׳¡", "׳×׳§׳•׳¢", "׳׳ ׳׳׳׳™׳").')
   }
 
   score = Math.min(100, Math.round(score))
 
   let level = 'needs-work'
-  let labelHe = 'צריך לפתוח עוד'
+  let labelHe = '׳¦׳¨׳™׳ ׳׳₪׳×׳•׳— ׳¢׳•׳“'
   let accent = 'warn'
   if (score >= 76) {
     level = 'great'
-    labelHe = 'מעולה'
+    labelHe = '׳׳¢׳•׳׳”'
     accent = 'good'
   } else if (score >= 52) {
     level = 'almost'
-    labelHe = 'כמעט'
+    labelHe = '׳›׳׳¢׳˜'
     accent = 'mid'
   }
 
   if (level === 'great') {
-    feedback.unshift("מעולה! התגובה שלך פותחת את השדה במקום להתווכח עם התוכן.")
+    feedback.unshift("׳׳¢׳•׳׳”! ׳”׳×׳’׳•׳‘׳” ׳©׳׳ ׳₪׳•׳×׳—׳× ׳׳× ׳”׳©׳“׳” ׳‘׳׳§׳•׳ ׳׳”׳×׳•׳•׳›׳— ׳¢׳ ׳”׳×׳•׳›׳.")
   } else if (level === 'almost') {
-    feedback.unshift("כמעט! יש פתיחה טובה, ועכשיו שווה להוסיף עוד יחס/כימות/אי-ידיעה.")
+    feedback.unshift("׳›׳׳¢׳˜! ׳™׳© ׳₪׳×׳™׳—׳” ׳˜׳•׳‘׳”, ׳•׳¢׳›׳©׳™׳• ׳©׳•׳•׳” ׳׳”׳•׳¡׳™׳£ ׳¢׳•׳“ ׳™׳—׳¡/׳›׳™׳׳•׳×/׳׳™-׳™׳“׳™׳¢׳”.")
   } else {
-    feedback.unshift("התחלה טובה. עכשיו נזיז את התודעה עם שאלה שמקשרת בין משתנים ולא רק מסבירה.")
+    feedback.unshift("׳”׳×׳—׳׳” ׳˜׳•׳‘׳”. ׳¢׳›׳©׳™׳• ׳ ׳–׳™׳– ׳׳× ׳”׳×׳•׳“׳¢׳” ׳¢׳ ׳©׳׳׳” ׳©׳׳§׳©׳¨׳× ׳‘׳™׳ ׳׳©׳×׳ ׳™׳ ׳•׳׳ ׳¨׳§ ׳׳¡׳‘׳™׳¨׳”.")
   }
 
   return {
@@ -135,6 +135,7 @@ function evaluateResponse(responseText, statement) {
 export default function LiberatingConversationSimulator({
   className = '',
   onLoadPatientText,
+  onSignal,
 }) {
   const { upsertHistory } = useAppState()
   const initialContextId = liberatingContexts[0]?.id ?? ''
@@ -197,12 +198,13 @@ export default function LiberatingConversationSimulator({
     setUserResponse('')
     setShowEvaluation(false)
     setShowFullSequence(false)
-    setStatusMessage('נטען משפט חדש לתרגול.')
+    onSignal?.('simulator-next-statement')
+    setStatusMessage('׳ ׳˜׳¢׳ ׳׳©׳₪׳˜ ׳—׳“׳© ׳׳×׳¨׳’׳•׳.')
   }
 
   const handleCheckResponse = () => {
     if (!normalize(userResponse)) {
-      setStatusMessage('כתבו תגובה קצרה לפני הבדיקה.')
+      setStatusMessage('׳›׳×׳‘׳• ׳×׳’׳•׳‘׳” ׳§׳¦׳¨׳” ׳׳₪׳ ׳™ ׳”׳‘׳“׳™׳§׳”.')
       return
     }
 
@@ -212,17 +214,18 @@ export default function LiberatingConversationSimulator({
     if (evaluation.level === 'great') {
       setSuccessCount((count) => count + 1)
     }
+    onSignal?.('simulator-check', { level: evaluation.level, score: evaluation.score })
   }
 
   const handleTryAgain = () => {
     setShowEvaluation(false)
     setShowFullSequence(false)
-    setStatusMessage('אפשר לחדד את התגובה ולבדוק שוב.')
+    setStatusMessage('׳׳₪׳©׳¨ ׳׳—׳“׳“ ׳׳× ׳”׳×׳’׳•׳‘׳” ׳•׳׳‘׳“׳•׳§ ׳©׳•׳‘.')
   }
 
   const handleSaveExample = () => {
     if (!currentStatement || !normalize(userResponse)) {
-      setStatusMessage('צריך משפט מטופל ותגובה שלך כדי לשמור דוגמה.')
+      setStatusMessage('׳¦׳¨׳™׳ ׳׳©׳₪׳˜ ׳׳˜׳•׳₪׳ ׳•׳×׳’׳•׳‘׳” ׳©׳׳ ׳›׳“׳™ ׳׳©׳׳•׳¨ ׳“׳•׳’׳׳”.')
       return
     }
 
@@ -237,7 +240,8 @@ export default function LiberatingConversationSimulator({
       evaluation,
       idealResponses: currentStatement.idealResponses,
     })
-    setStatusMessage('נשמרה דוגמה להיסטוריה.')
+    onSignal?.('simulator-save', { score: evaluation.score })
+    setStatusMessage('׳ ׳©׳׳¨׳” ׳“׳•׳’׳׳” ׳׳”׳™׳¡׳˜׳•׳¨׳™׳”.')
   }
 
   const badgeClass =
@@ -255,25 +259,25 @@ export default function LiberatingConversationSimulator({
         <div>
           <h3 className="feature-heading">
             <MessageCircle size={18} aria-hidden="true" />
-            <span>סימולטור שיחות משחררות</span>
+            <span>׳¡׳™׳׳•׳׳˜׳•׳¨ ׳©׳™׳—׳•׳× ׳׳©׳—׳¨׳¨׳•׳×</span>
           </h3>
           <p className="feature-heading__sub">Mind Liberating Conversation Simulator</p>
         </div>
         <div className="simulator-progress">
           <span className="simulator-progress__pill">
             <Target size={14} aria-hidden="true" />
-            {successCount}/5 הצלחות
+            {successCount}/5 ׳”׳¦׳׳—׳•׳×
           </span>
           {successCount >= 5 && (
             <span className="simulator-progress__pill is-master">
               <Trophy size={14} aria-hidden="true" />
-              מאסטר
+              ׳׳׳¡׳˜׳¨
             </span>
           )}
         </div>
       </div>
 
-      <div className="simulator-context-grid" role="tablist" aria-label="הקשר לתרגול">
+      <div className="simulator-context-grid" role="tablist" aria-label="׳”׳§׳©׳¨ ׳׳×׳¨׳’׳•׳">
         {liberatingContexts.map((context) => (
           <button
             key={context.id}
@@ -292,27 +296,27 @@ export default function LiberatingConversationSimulator({
 
       <div className="simulator-statement">
         <div className="simulator-statement__head">
-          <strong>משפט מטופל לתרגול</strong>
+          <strong>׳׳©׳₪׳˜ ׳׳˜׳•׳₪׳ ׳׳×׳¨׳’׳•׳</strong>
           <div className="simulator-statement__actions">
             <button type="button" onClick={pickNextStatement}>
               <Shuffle size={14} aria-hidden="true" />
-              משפט אחר
+              ׳׳©׳₪׳˜ ׳׳—׳¨
             </button>
             {onLoadPatientText && currentStatement && (
               <button type="button" onClick={() => onLoadPatientText(currentStatement.statement)}>
                 <ChevronRight size={14} aria-hidden="true" />
-                טען למעבדה הראשית
+                ׳˜׳¢׳ ׳׳׳¢׳‘׳“׳” ׳”׳¨׳׳©׳™׳×
               </button>
             )}
           </div>
         </div>
         <blockquote className="mindlab-quote">
-          {currentStatement?.statement ?? 'אין כרגע משפטים בהקשר הזה.'}
+          {currentStatement?.statement ?? '׳׳™׳ ׳›׳¨׳’׳¢ ׳׳©׳₪׳˜׳™׳ ׳‘׳”׳§׳©׳¨ ׳”׳–׳”.'}
         </blockquote>
       </div>
 
       <label className="mindlab-field">
-        <span>התגובה שלך (מטפל/מאמן)</span>
+        <span>׳”׳×׳’׳•׳‘׳” ׳©׳׳ (׳׳˜׳₪׳/׳׳׳׳)</span>
         <textarea
           rows={5}
           className="mindlab-textarea"
@@ -322,26 +326,26 @@ export default function LiberatingConversationSimulator({
             if (showEvaluation) setShowEvaluation(false)
             setStatusMessage('')
           }}
-          placeholder='נסו לשאול שאלה שמזיזה תודעה: קשרים, כימות, אי-ידיעה, קשב/תחושה...'
+          placeholder='׳ ׳¡׳• ׳׳©׳׳•׳ ׳©׳׳׳” ׳©׳׳–׳™׳–׳” ׳×׳•׳“׳¢׳”: ׳§׳©׳¨׳™׳, ׳›׳™׳׳•׳×, ׳׳™-׳™׳“׳™׳¢׳”, ׳§׳©׳‘/׳×׳—׳•׳©׳”...'
         />
       </label>
 
       <div className="controls-row">
         <button type="button" onClick={handleCheckResponse}>
           <CheckCircle2 size={14} aria-hidden="true" />
-          בדוק תגובה
+          ׳‘׳“׳•׳§ ׳×׳’׳•׳‘׳”
         </button>
         <button type="button" onClick={handleTryAgain}>
           <RotateCcw size={14} aria-hidden="true" />
-          נסה שוב
+          ׳ ׳¡׳” ׳©׳•׳‘
         </button>
         <button type="button" onClick={() => setShowFullSequence((value) => !value)}>
           <Sparkles size={14} aria-hidden="true" />
-          {showFullSequence ? 'הסתר רצף מלא' : 'הצג רצף מלא'}
+          {showFullSequence ? '׳”׳¡׳×׳¨ ׳¨׳¦׳£ ׳׳׳' : '׳”׳¦׳’ ׳¨׳¦׳£ ׳׳׳'}
         </button>
         <button type="button" onClick={handleSaveExample}>
           <Save size={14} aria-hidden="true" />
-          שמור כדוגמה
+          ׳©׳׳•׳¨ ׳›׳“׳•׳’׳׳”
         </button>
       </div>
 
@@ -350,12 +354,12 @@ export default function LiberatingConversationSimulator({
           <div className="simulator-feedback__head">
             <div>
               <strong>{evaluation.labelHe}</strong>
-              <small>ציון: {evaluation.score}/100</small>
+              <small>׳¦׳™׳•׳: {evaluation.score}/100</small>
             </div>
             {evaluation.level === 'great' && (
               <span className="simulator-feedback__badge">
                 <CheckCircle2 size={14} aria-hidden="true" />
-                פתיחת שדה טובה
+                ׳₪׳×׳™׳—׳× ׳©׳“׳” ׳˜׳•׳‘׳”
               </span>
             )}
           </div>
@@ -377,9 +381,9 @@ export default function LiberatingConversationSimulator({
       )}
 
       <MenuSection
-        title="תגובות אידיאליות (מה-PDF / סגנון Overdurf)"
-        subtitle={currentStatement ? `${currentStatement.idealResponses.length} דוגמאות` : undefined}
-        badgeText={showFullSequence ? 'פתוח' : 'אופציונלי'}
+        title="׳×׳’׳•׳‘׳•׳× ׳׳™׳“׳™׳׳׳™׳•׳× (׳׳”-PDF / ׳¡׳’׳ ׳•׳ Overdurf)"
+        subtitle={currentStatement ? `${currentStatement.idealResponses.length} ׳“׳•׳’׳׳׳•׳×` : undefined}
+        badgeText={showFullSequence ? '׳₪׳×׳•׳—' : '׳׳•׳₪׳¦׳™׳•׳ ׳׳™'}
         isOpen={showFullSequence}
         onToggle={() => setShowFullSequence((value) => !value)}
         className="simulator-ideal-menu"
@@ -401,8 +405,8 @@ export default function LiberatingConversationSimulator({
         <div className="simulator-master-callout">
           <Trophy size={18} aria-hidden="true" />
           <div>
-            <strong>אתה כבר מאסטר של השפה המשחררת!</strong>
-            <p>צברת 5 הצלחות. עכשיו נסו לעבור ל"מאסטר רצפים" ולבנות רצף מלא על משפט חדש.</p>
+            <strong>׳׳×׳” ׳›׳‘׳¨ ׳׳׳¡׳˜׳¨ ׳©׳ ׳”׳©׳₪׳” ׳”׳׳©׳—׳¨׳¨׳×!</strong>
+            <p>׳¦׳‘׳¨׳× 5 ׳”׳¦׳׳—׳•׳×. ׳¢׳›׳©׳™׳• ׳ ׳¡׳• ׳׳¢׳‘׳•׳¨ ׳"׳׳׳¡׳˜׳¨ ׳¨׳¦׳₪׳™׳" ׳•׳׳‘׳ ׳•׳× ׳¨׳¦׳£ ׳׳׳ ׳¢׳ ׳׳©׳₪׳˜ ׳—׳“׳©.</p>
           </div>
         </div>
       )}
@@ -413,3 +417,4 @@ export default function LiberatingConversationSimulator({
     </section>
   )
 }
+
