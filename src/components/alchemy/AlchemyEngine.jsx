@@ -103,6 +103,8 @@ const SOURCE_TOPICS_BY_LAB = {
   ],
 }
 
+const ALCHEMY_UI_VERSION = 'Alchemy Lab UI • v2026.02.25-setup-modal'
+
 function getSourceTopicsForLab(labId) {
   return SOURCE_TOPICS_BY_LAB[labId] ?? SOURCE_TOPICS_BY_LAB.default
 }
@@ -189,6 +191,7 @@ export default function AlchemyEngine({
   const [openSourceTopicId, setOpenSourceTopicId] = useState('')
   const [isSourceContextMenuOpen, setIsSourceContextMenuOpen] = useState(() => !sourceSummary)
   const [isCoachMenuOpen, setIsCoachMenuOpen] = useState(false)
+  const [isPreTaskModalOpen, setIsPreTaskModalOpen] = useState(false)
   const resolvedOpenBankId =
     openBankId && banks.some((bank) => bank.id === openBankId) ? openBankId : ''
   const resolvedOpenSourceTopicId =
@@ -205,6 +208,17 @@ export default function AlchemyEngine({
       tags,
     })
   }, [onSentenceChange, lab, draft, sentence, tags, labId])
+
+  useEffect(() => {
+    if (!isPreTaskModalOpen) return
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsPreTaskModalOpen(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isPreTaskModalOpen])
 
   if (!lab || !draft) {
     return null
@@ -407,6 +421,17 @@ export default function AlchemyEngine({
           <p>{lab.descriptionHe}</p>
         </div>
         <div className="alchemy-card__actions">
+          {!compact && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsSourceContextMenuOpen(true)
+                setIsPreTaskModalOpen(true)
+              }}
+            >
+              טרום-משימה / סטינג
+            </button>
+          )}
           <button type="button" onClick={() => setDraft((current) => resetAlchemyDraft(lab, current))}>
             איפוס
           </button>
@@ -419,7 +444,27 @@ export default function AlchemyEngine({
         </div>
       </div>
 
-      {!compact && lab.route && <LabLessonPrompt labId={lab.id} />}
+      {!compact && (
+        <div className="alchemy-version-banner" aria-label="גרסה נוכחית">
+          <div className="alchemy-version-banner__main">
+            <strong>גרסה נוכחית</strong>
+            <span>{ALCHEMY_UI_VERSION}</span>
+          </div>
+          <div className="alchemy-version-banner__meta">
+            <span>טרום-משימה וסטינג במודאל</span>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => {
+                setIsSourceContextMenuOpen(true)
+                setIsPreTaskModalOpen(true)
+              }}
+            >
+              פתח טרום-משימה
+            </button>
+          </div>
+        </div>
+      )}
 
       {lab.templates.length > 1 && (
         <div className="template-switcher" role="tablist" aria-label="מבני ניסוח">
@@ -440,7 +485,7 @@ export default function AlchemyEngine({
         </div>
       )}
 
-      {!compact && (
+      {!compact && false && (
         <MenuSection
           title="טקסט מקור / משפט המטופל"
           subtitle={
@@ -665,6 +710,163 @@ export default function AlchemyEngine({
             sourceText={sourceSummary}
           />
         </MenuSection>
+      )}
+
+      {!compact && isPreTaskModalOpen && (
+        <div
+          className="alchemy-pretask-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-label="טרום-משימה וסטינג"
+        >
+          <div className="alchemy-pretask-modal__backdrop" onClick={() => setIsPreTaskModalOpen(false)} />
+          <div className="alchemy-pretask-modal__card">
+            <div className="alchemy-pretask-modal__header">
+              <div>
+                <div className="alchemy-pretask-modal__eyebrow">טרום-משימה / סטינג</div>
+                <h3>הגדרות לפני כניסה למשימה</h3>
+                <p>מגדירים הקשר, טקסט מקור, וסיפורי דוגמה. אחר כך סוגרים ונשארים בפוקוס על המשימה.</p>
+              </div>
+              <button
+                type="button"
+                className="alchemy-pretask-modal__close"
+                onClick={() => setIsPreTaskModalOpen(false)}
+                aria-label="סגור חלון טרום-משימה"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="alchemy-pretask-modal__body">
+              {lab.route && <LabLessonPrompt labId={lab.id} />}
+
+              <MenuSection
+                title="טקסט מקור / משפט המטופל"
+                subtitle={
+                  sourceSummary ||
+                  'הדביקו משפט של מטופל/לקוח או טענו סיפור מוכן מתוך נושא רלוונטי.'
+                }
+                badgeText={sourceSummary ? 'פעיל' : 'אופציונלי'}
+                isOpen={isSourceContextMenuOpen}
+                onToggle={() => setIsSourceContextMenuOpen((current) => !current)}
+                className="source-context-menu"
+              >
+                <div className="source-context-panel">
+                  <label className="source-context-panel__field">
+                    <span>משפט המטופל / סיפור מקור</span>
+                    <textarea
+                      className="source-context-panel__textarea"
+                      rows={4}
+                      placeholder="לדוגמה: 'כל פעם שמשנים לי דברים ברגע האחרון אני נסגר ולא יודע מאיפה להתחיל...'"
+                      value={sourceContext.patientText}
+                      onChange={(event) => handleSourceTextChange(event.target.value)}
+                      onBlur={handleSourceTextBlur}
+                    />
+                  </label>
+
+                  <div className="source-context-panel__toolbar">
+                    <label className="source-context-panel__topic">
+                      <span>נושא פעיל</span>
+                      <select
+                        value={activeSourceTopicId}
+                        onChange={(event) => handleSelectSourceTopic(event.target.value)}
+                      >
+                        {sourceTopics.map((topic) => (
+                          <option key={topic.id} value={topic.id}>
+                            {topic.labelHe}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <div className="source-context-panel__actions">
+                      <button type="button" onClick={() => setIsSourceContextMenuOpen(false)}>
+                        סיימתי מקור
+                      </button>
+                      <button type="button" onClick={handleSaveSourceAsStory}>
+                        שמור כסיפור
+                      </button>
+                      <button type="button" onClick={clearSourceText}>
+                        נקה טקסט
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="source-context-topics">
+                    {sourceTopicsWithStories.map((topic) => (
+                      <MenuSection
+                        key={topic.id}
+                        title={topic.labelHe}
+                        subtitle={`${topic.items.length} סיפורים זמינים`}
+                        badgeText={topic.customCount ? `+${topic.customCount} שלי` : 'מוכן'}
+                        compact
+                        isOpen={resolvedOpenSourceTopicId === topic.id}
+                        onToggle={() =>
+                          setOpenSourceTopicId((currentId) => (currentId === topic.id ? '' : topic.id))
+                        }
+                        className="source-topic-menu"
+                      >
+                        <div className="source-story-list">
+                          {topic.items.map((item) => (
+                            <div key={item.id} className="source-story-item">
+                              <button
+                                type="button"
+                                className="source-story-item__text"
+                                onClick={() => {
+                                  setOpenSourceTopicId(topic.id)
+                                  loadStoryIntoSource(item.text, 'replace', topic.id)
+                                }}
+                                title="טען לטקסט המקור"
+                              >
+                                {item.text}
+                              </button>
+                              <div className="source-story-item__meta">
+                                <span
+                                  className={`source-story-item__badge ${
+                                    item.origin === 'custom' ? 'is-custom' : ''
+                                  }`}
+                                >
+                                  {item.origin === 'custom' ? 'שלי' : 'מוכן'}
+                                </span>
+                                <button
+                                  type="button"
+                                  className="source-story-item__append"
+                                  onClick={() => {
+                                    setOpenSourceTopicId(topic.id)
+                                    loadStoryIntoSource(item.text, 'append', topic.id)
+                                  }}
+                                >
+                                  הוסף
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </MenuSection>
+                    ))}
+                  </div>
+                </div>
+              </MenuSection>
+            </div>
+
+            <div className="alchemy-pretask-modal__footer">
+              <div className="alchemy-pretask-modal__status">
+                {sourceSummary ? `מקור פעיל: ${sourceSummary}` : 'אין מקור פעיל עדיין (אופציונלי)'}
+              </div>
+              <div className="alchemy-pretask-modal__actions">
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => setIsPreTaskModalOpen(false)}
+                >
+                  סגור
+                </button>
+                <button type="button" onClick={() => setIsPreTaskModalOpen(false)}>
+                  כניסה למשימה
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </section>
   )

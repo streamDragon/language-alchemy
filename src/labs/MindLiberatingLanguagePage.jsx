@@ -7,8 +7,24 @@ import LabLessonPrompt from '../components/layout/LabLessonPrompt'
 import MenuSection from '../components/layout/MenuSection'
 import LiberatingConversationSimulator from '../components/mind/LiberatingConversationSimulator'
 import PatternSequenceMaster from '../components/mind/PatternSequenceMaster'
-import { MessageCircle, Sparkles, Volume2, VolumeX, Wand2, Workflow } from 'lucide-react'
+import {
+  CheckCircle2,
+  MessageCircle,
+  Shuffle,
+  Sparkles,
+  Target,
+  Volume2,
+  VolumeX,
+  Wand2,
+  Workflow,
+} from 'lucide-react'
 import { emitAlchemySignal } from '../utils/alchemySignals'
+import {
+  liberatingClientStatements,
+  liberatingPatterns,
+  randomItem,
+  statementsForContext,
+} from '../data/mindLiberatingTraining'
 
 const SAMPLE_PATIENT_TEXTS = [
   'אני תמיד נתקע כשצריך לדבר מול אנשים, זה פשוט לא אני.',
@@ -151,7 +167,161 @@ const MINDLAB_MAIN_STEPS = [
   },
 ]
 
+const MINDLAB_WORK_TONES = [
+  {
+    id: 'therapist',
+    icon: '🧠',
+    labelHe: 'מטפל',
+    subtitleHe: 'קליניקה / החזקת חוויה',
+    lensHe: 'מכבדים חוויה, מרככים נעילה, פותחים שדה ואפשרויות.',
+    patientInputLabelHe: 'משפט מטופל (כמו שנאמר)',
+    patientInputPlaceholderHe: "לדוגמה: 'אני תמיד נתקע, אין לי דרך אחרת, זה פשוט לא אני...'",
+    sampleTexts: SAMPLE_PATIENT_TEXTS,
+    simulatorIntroHe: 'תרגול תגובת מטפל/ת שמרככת סגירה בלי לבטל את החוויה.',
+    patternIntroHe: 'רצפי שאלות טיפוליים לפתיחת שדה והזמנת אופציות.',
+    roleLabelHe: 'מטופל/ת',
+  },
+  {
+    id: 'coach',
+    icon: '🚀',
+    labelHe: "קואץ'",
+    subtitleHe: 'בהירות / תנועה / אחריות',
+    lensHe: 'ממירים מוחלטות לדיוק פעולה, צעד הבא ואפשרויות בחירה.',
+    patientInputLabelHe: 'משפט מתאמן/ת / לקוח/ה',
+    patientInputPlaceholderHe: "לדוגמה: 'אני תמיד מתחיל חזק ואז נופל, כנראה אני לא עקבי...'",
+    sampleTexts: [
+      'אני תמיד מתחיל חזק ואז נופל, כנראה אני פשוט לא עקבי.',
+      'אין לי זמן באמת לעבוד על זה, הכל שורף אותי.',
+      'אם זה לא מושלם אין טעם להתחיל.',
+    ],
+    simulatorIntroHe: 'תרגול שיח שמכוון לבהירות, בחירה וצעד קטן ישים.',
+    patternIntroHe: 'רצפי שאלות קואצ׳ינג לפתיחת אופציות ותנועה קדימה.',
+    roleLabelHe: 'מתאמן/ת',
+  },
+  {
+    id: 'self-work',
+    icon: '🌿',
+    labelHe: 'עבודה עצמית',
+    subtitleHe: 'קול פנימי / חמלה / דיוק',
+    lensHe: 'עובדים עם הדיאלוג הפנימי: פחות שיפוט, יותר דיוק ואפשרות תנועה.',
+    patientInputLabelHe: 'המשפט שאני אומר/ת לעצמי',
+    patientInputPlaceholderHe: "לדוגמה: 'אני תמיד הורס/ת לעצמי ברגע האחרון...'",
+    sampleTexts: [
+      'אני תמיד הורס/ת לעצמי ברגע האחרון.',
+      'אני לא יכולה להשתנות, ככה המוח שלי עובד.',
+      'אם אני נחה רגע אז אני עצלנ/ית.',
+    ],
+    simulatorIntroHe: 'אפשר להשתמש בסימולטור כתרגול ניסוח מחדש לקול פנימי.',
+    patternIntroHe: 'רצפים שמתרגמים שיפוט עצמי לשפה פתוחה ומדויקת יותר.',
+    roleLabelHe: 'אני',
+  },
+  {
+    id: 'relationship-family',
+    icon: '❤️',
+    labelHe: 'זוגיות/משפחה',
+    subtitleHe: 'דינמיקה / תקשורת / גבולות',
+    lensHe: 'מורידים מוחלטות ביחסים ומחזירים מקום לניואנס, צורך וגבול.',
+    patientInputLabelHe: 'משפט מתוך קשר / משפחה',
+    patientInputPlaceholderHe: "לדוגמה: 'אצלנו בבית אף אחד לא באמת מקשיב לי...'",
+    sampleTexts: [
+      'אצלנו בבית אף אחד לא באמת מקשיב לי.',
+      'הוא תמיד סוגר אותי בכל שיחה חשובה.',
+      'אין מצב שנצליח לדבר על זה בלי ריב.',
+    ],
+    simulatorIntroHe: 'תרגול ניסוח תגובה שמפחיתה הסלמה ומרחיבה אפשרויות שיח.',
+    patternIntroHe: 'רצפי פתיחה לדיאלוג במצבי זוגיות/משפחה טעונים.',
+    roleLabelHe: 'אדם בקשר',
+  },
+  {
+    id: 'identity-change',
+    icon: '✨',
+    labelHe: 'זהות ושינוי',
+    subtitleHe: 'TCU style / זהות בתנועה',
+    lensHe: 'עובדים על משפטי זהות קשיחים ומתרגמים אותם לשפה של תהליך ושינוי.',
+    patientInputLabelHe: 'משפט זהות / שינוי',
+    patientInputPlaceholderHe: "לדוגמה: 'ככה אני, אני לא בן אדם שמשתנה...'",
+    sampleTexts: [
+      'ככה אני, אני לא בן אדם שמשתנה.',
+      'זה פשוט מי שאני - אני תמיד נתקע/ת מול אנשים.',
+      'אם שיניתי משהו, זה אומר שלא הייתי אני.',
+    ],
+    simulatorIntroHe: 'תרגול שפה שמפרידה בין זהות לבין מצב/דפוס רגעי.',
+    patternIntroHe: 'רצפים לפתיחת זהות קשיחה לתהליך, טווח ואפשרות.',
+    roleLabelHe: 'אדם בתהליך שינוי',
+  },
+]
+
+const MINDLAB_EXERCISE_PRESETS = [
+  {
+    id: 'preset-quantifier-soften',
+    icon: '🪶',
+    titleHe: 'ריכוך "תמיד/אף פעם"',
+    familyHe: 'כימות',
+    summaryHe: 'מעבירים ניסוח מוחלט לשפה חלקית ומדויקת יותר.',
+    quantifierId: 'q-soften',
+    releaseChannelId: 'time',
+    optionOpenerId: 'micro-step',
+    exampleHe: 'מתי זה קורה רק בחלק מהמקרים? מה כבר שונה לפעמים?',
+  },
+  {
+    id: 'preset-exception-hunt',
+    icon: '🔍',
+    titleHe: 'ציד חריגים',
+    familyHe: 'חריגים',
+    summaryHe: 'מחפשים רגע אחד שלא תואם את הסיפור הסגור.',
+    quantifierId: 'q-exception',
+    releaseChannelId: 'space',
+    optionOpenerId: 'consent',
+    exampleHe: 'האם היה רגע אחד, אפילו קטן, שבו זה היה קצת אחרת?',
+  },
+  {
+    id: 'preset-scale-language',
+    icon: '📏',
+    titleHe: 'סקאלה במקום הכול/כלום',
+    familyHe: 'דיוק',
+    summaryHe: 'מחליפים שחור-לבן בסקאלה, מידה ואחוזים.',
+    quantifierId: 'q-scale',
+    releaseChannelId: 'meaning',
+    optionOpenerId: 'micro-step',
+    exampleHe: 'אם זה לא 100%, אז כמה זה כרגע? ומה מוריד 5%?',
+  },
+  {
+    id: 'preset-time-window',
+    icon: '⏳',
+    titleHe: 'חלון זמן',
+    familyHe: 'זמן',
+    summaryHe: 'שינוי דרך "מתי", "לפני", "אחרי" והופעת תנאים.',
+    quantifierId: 'q-soften',
+    releaseChannelId: 'time',
+    optionOpenerId: 'support',
+    exampleHe: 'מתי זה פחות חזק? מה קורה רגע לפני שהדפוס נסגר?',
+  },
+  {
+    id: 'preset-context-body',
+    icon: '🌐',
+    titleHe: 'הקשר + גוף',
+    familyHe: 'מרחב/גוף',
+    summaryHe: 'פותחים שדה דרך מקום, אנשים וגוף שמחזיק את הסיפור.',
+    quantifierId: 'q-exception',
+    releaseChannelId: 'energy',
+    optionOpenerId: 'support',
+    exampleHe: 'עם מי/איפה זה קצת אחרת? מה משתנה בגוף אם זה מתרכך ב-5%?',
+  },
+  {
+    id: 'preset-identity-shift',
+    icon: '✨',
+    titleHe: 'שינוי זהות לצעד',
+    familyHe: 'זהות → תהליך',
+    summaryHe: 'מפרידים בין "מי אני" לבין דפוס/מצב ופותחים צעד אפשרי.',
+    quantifierId: 'q-scale',
+    releaseChannelId: 'meaning',
+    optionOpenerId: 'non-negotiable-shift',
+    exampleHe: 'איזו משמעות אחרת אפשר לתת לזה בלי לנעול את הזהות שלך?',
+  },
+]
+
 const MINDLAB_AUDIO_PREFS_KEY = 'la.v1.mindlabAudioPrefs'
+const MINDLAB_UI_PREFS_KEY = 'la.v1.mindlabUiPrefs'
 
 function readMindlabAudioPrefs() {
   if (typeof window === 'undefined') {
@@ -178,6 +348,70 @@ function writeMindlabAudioPrefs(nextPrefs) {
   } catch {
     // no-op
   }
+}
+
+function readMindlabUiPrefs() {
+  if (typeof window === 'undefined') {
+    return { addressGender: 'masc' }
+  }
+  try {
+    const raw = window.localStorage.getItem(MINDLAB_UI_PREFS_KEY)
+    if (!raw) return { addressGender: 'masc' }
+    const parsed = JSON.parse(raw)
+    return { addressGender: parsed?.addressGender === 'fem' ? 'fem' : 'masc' }
+  } catch {
+    return { addressGender: 'masc' }
+  }
+}
+
+function writeMindlabUiPrefs(nextPrefs) {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(MINDLAB_UI_PREFS_KEY, JSON.stringify(nextPrefs))
+  } catch {
+    // no-op
+  }
+}
+
+function genderizeUiHe(text, addressGender = 'masc') {
+  const value = String(text ?? '')
+  if (!value || !value.includes('/')) return value
+
+  let next = value
+  const exactReplacements = {
+    'בדוק/י': addressGender === 'fem' ? 'בדקי' : 'בדוק',
+    'בחר/י': addressGender === 'fem' ? 'בחרי' : 'בחר',
+    'הדבק/י': addressGender === 'fem' ? 'הדביקי' : 'הדבק',
+    'רכך/י': addressGender === 'fem' ? 'רככי' : 'רכך',
+    'הכנס/י': addressGender === 'fem' ? 'הכניסי' : 'הכנס',
+    'הפרד/י': addressGender === 'fem' ? 'הפרידי' : 'הפרד',
+    'התחל/י': addressGender === 'fem' ? 'התחילי' : 'התחל',
+    'שאל/י': addressGender === 'fem' ? 'שאלי' : 'שאל',
+    'בנה/י': addressGender === 'fem' ? 'בני' : 'בנה',
+    'בוא/י': addressGender === 'fem' ? 'בואי' : 'בוא',
+    'שים/י': addressGender === 'fem' ? 'שימי' : 'שים',
+    'פתח/י': addressGender === 'fem' ? 'פתחי' : 'פתח',
+    'טען/י': addressGender === 'fem' ? 'טעני' : 'טען',
+    'שלח/י': addressGender === 'fem' ? 'שלחי' : 'שלח',
+    'עבוד/י': addressGender === 'fem' ? 'עבדי' : 'עבוד',
+    'השלם/י': addressGender === 'fem' ? 'השלימי' : 'השלם',
+    'לחץ/י': addressGender === 'fem' ? 'לחצי' : 'לחץ',
+    'נסו': addressGender === 'fem' ? 'נסי' : 'נסה',
+    'נסה/י': addressGender === 'fem' ? 'נסי' : 'נסה',
+    'כתוב/כתבי': addressGender === 'fem' ? 'כתבי' : 'כתוב',
+    'מטופל/ת': addressGender === 'fem' ? 'מטופלת' : 'מטופל',
+    'מתאמן/ת': addressGender === 'fem' ? 'מתאמנת' : 'מתאמן',
+    'לקוח/ה': addressGender === 'fem' ? 'לקוחה' : 'לקוח',
+  }
+
+  Object.entries(exactReplacements).forEach(([pattern, replacement]) => {
+    next = next.split(pattern).join(replacement)
+  })
+
+  next = next.replace(/([א-ת"׳]+)\/ת\b/g, (_, base) => (addressGender === 'fem' ? `${base}ת` : base))
+  next = next.replace(/([א-ת"׳]+)\/ה\b/g, (_, base) => (addressGender === 'fem' ? `${base}ה` : base))
+
+  return next
 }
 
 function playWebAudioCue(audioContextRef, cue = 'tap', muted = false) {
@@ -232,9 +466,15 @@ function playWebAudioCue(audioContextRef, cue = 'tap', muted = false) {
   })
 }
 
+function alchemistFaceForMood(mood) {
+  if (mood === 'dancing') return '🧙‍♂️✨'
+  if (mood === 'surprised') return '🧙‍♂️😲'
+  if (mood === 'clap') return '🧙‍♂️👏'
+  return '🧙‍♂️🙂'
+}
+
 function AlchemistCompanion({ mood, message, pulseKey }) {
-  const face =
-    mood === 'dancing' ? '🧙‍♂️✨' : mood === 'surprised' ? '🧙‍♂️😲' : mood === 'clap' ? '🧙‍♂️👏' : '🧙‍♂️🙂'
+  const face = alchemistFaceForMood(mood)
   return (
     <aside className={`mindlab-companion mood-${mood || 'happy'}`} aria-live="polite" aria-label="Alchemist Companion">
       <div key={pulseKey} className="mindlab-companion__orb" aria-hidden="true">
@@ -395,6 +635,76 @@ function scoreTone(score) {
   return 'low'
 }
 
+const WORK_TONE_TO_CONTEXT_IDS = {
+  therapist: ['therapy'],
+  coach: ['self-coaching', 'career', 'daily'],
+  'self-work': ['self-coaching', 'daily'],
+  'relationship-family': ['relationships'],
+  'identity-change': ['identity'],
+}
+
+function matchesAnyPattern(text, patterns) {
+  return patterns.some((pattern) => pattern.test(text))
+}
+
+function evaluateMiniSimulatorResponse(responseText, statementText = '') {
+  const text = normalizeText(responseText)
+  if (!text) {
+    return {
+      score: 0,
+      level: 'none',
+      labelHe: 'עדיין לא נבדק',
+      feedbackHe: ['כתבו תגובה ואז לחצו "בדוק תגובה".'],
+    }
+  }
+
+  let score = 20
+  const feedback = []
+  const hasQuestion = /[?؟]/.test(text)
+  const hasRelationship = matchesAnyPattern(text, [/מה הקשר/, /איך .*מתקשר/, /בין .* ל/])
+  const hasLoosening = matchesAnyPattern(text, [/אולי/, /יכול/, /לפעמים/, /כרגע/, /אפשר/, /בחלק/])
+  const hasClientWords = normalizeText(statementText)
+    .split(/\s+/)
+    .filter((word) => word.length > 2)
+    .some((word) => text.includes(word))
+
+  if (hasQuestion) {
+    score += 18
+  } else {
+    feedback.push('הפכו את התגובה לשאלה פותחת.')
+  }
+  if (hasRelationship) {
+    score += 28
+  } else {
+    feedback.push("הוסיפו ציר יחס: 'מה הקשר / איך X מתקשר ל-Y'.")
+  }
+  if (hasLoosening) {
+    score += 20
+  } else {
+    feedback.push("הוסיפו שפה פותחת: 'אולי / כרגע / לפעמים / אפשר'.")
+  }
+  if (hasClientWords) {
+    score += 10
+  } else {
+    feedback.push('עבדו עם מילים מתוך המשפט של המטופל.')
+  }
+  if (matchesAnyPattern(text, [/מרגיש/, /שם לב/, /בגוף/, /עכשיו/])) {
+    score += 12
+  }
+
+  score = clamp(Math.round(score), 0, 100)
+  const level = score >= 76 ? 'great' : score >= 52 ? 'almost' : 'needs-work'
+  return {
+    score,
+    level,
+    labelHe: level === 'great' ? 'מעולה' : level === 'almost' ? 'כמעט' : 'צריך לפתוח עוד',
+    feedbackHe:
+      feedback.length > 0
+        ? feedback
+        : ['מעולה. שימרת חוויה, פתחת שדה ושאלת שאלה שמזיזה תודעה.'],
+  }
+}
+
 export default function MindLiberatingLanguagePage() {
   const lab = getLabConfig('mind-liberating-language') ?? {
     id: 'mind-liberating-language',
@@ -407,18 +717,31 @@ export default function MindLiberatingLanguagePage() {
   const [selectedQuantifierId, setSelectedQuantifierId] = useState(QUANTIFIER_SHIFTS[0].id)
   const [selectedReleaseChannelId, setSelectedReleaseChannelId] = useState(RELEASE_CHANNELS[0].id)
   const [selectedOptionOpenerId, setSelectedOptionOpenerId] = useState(OPTION_OPENERS[0].id)
+  const [selectedWorkToneId, setSelectedWorkToneId] = useState(MINDLAB_WORK_TONES[0].id)
   const [selectedToneId, setSelectedToneId] = useState(THERAPIST_TONES[1].id)
   const [therapistText, setTherapistText] = useState('')
   const [beforeOptionsText, setBeforeOptionsText] = useState('')
   const [afterOptionsText, setAfterOptionsText] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
   const [activeTrainingToolId, setActiveTrainingToolId] = useState('')
-  const [activeMindTabId, setActiveMindTabId] = useState('workflow')
+  const [activeMindTabId, setActiveMindTabId] = useState('simulator')
   const [activeStepId, setActiveStepId] = useState(MINDLAB_MAIN_STEPS[0].id)
   const [completedStepIds, setCompletedStepIds] = useState([])
+  const [miniSimulatorContextId, setMiniSimulatorContextId] = useState('therapy')
+  const [miniSimulatorStatementId, setMiniSimulatorStatementId] = useState(null)
+  const [miniSimulatorResponse, setMiniSimulatorResponse] = useState('')
+  const [miniSimulatorChecked, setMiniSimulatorChecked] = useState(false)
+  const [selectedExercisePatternId, setSelectedExercisePatternId] = useState(() => liberatingPatterns[0]?.id ?? '')
+  const [exerciseFillAnswer, setExerciseFillAnswer] = useState('')
+  const [exerciseFillChecked, setExerciseFillChecked] = useState(false)
+  const [exerciseApplicationText, setExerciseApplicationText] = useState('')
+  const [exerciseApplicationChecked, setExerciseApplicationChecked] = useState(false)
+  const [showAdvancedSimulator, setShowAdvancedSimulator] = useState(false)
+  const [showAdvancedPatternMaster, setShowAdvancedPatternMaster] = useState(false)
   const [companionMood, setCompanionMood] = useState('happy')
-  const [companionMessage, setCompanionMessage] = useState('ברוך הבא למעבדה. מתחילים במשפט המטופל ומשם פותחים שדה.')
+  const [companionMessage, setCompanionMessage] = useState('ברוך/ה הבא/ה למעבדה. מתחילים במשפט המטופל ומשם פותחים שדה.')
   const [companionPulseKey, setCompanionPulseKey] = useState(0)
+  const [addressGender, setAddressGender] = useState(() => readMindlabUiPrefs().addressGender)
   const [audioPrefs, setAudioPrefs] = useState(() => readMindlabAudioPrefs())
   const [showSoundConsent, setShowSoundConsent] = useState(() => !readMindlabAudioPrefs().dontAskAgain)
   const stepRefs = useRef({})
@@ -432,6 +755,10 @@ export default function MindLiberatingLanguagePage() {
   useEffect(() => {
     writeMindlabAudioPrefs(audioPrefs)
   }, [audioPrefs])
+
+  useEffect(() => {
+    writeMindlabUiPrefs({ addressGender })
+  }, [addressGender])
 
   useEffect(() => {
     if (ambientTimerRef.current) {
@@ -457,8 +784,20 @@ export default function MindLiberatingLanguagePage() {
     RELEASE_CHANNELS.find((item) => item.id === selectedReleaseChannelId) ?? RELEASE_CHANNELS[0]
   const optionOpener =
     OPTION_OPENERS.find((item) => item.id === selectedOptionOpenerId) ?? OPTION_OPENERS[0]
+  const activeWorkTone =
+    MINDLAB_WORK_TONES.find((tone) => tone.id === selectedWorkToneId) ?? MINDLAB_WORK_TONES[0]
   const therapistTone =
     THERAPIST_TONES.find((item) => item.id === selectedToneId) ?? THERAPIST_TONES[0]
+  const exercisePresetCards = useMemo(
+    () =>
+      MINDLAB_EXERCISE_PRESETS.map((preset) => ({
+        ...preset,
+        quantifierShift: QUANTIFIER_SHIFTS.find((item) => item.id === preset.quantifierId) ?? QUANTIFIER_SHIFTS[0],
+        releaseChannel: RELEASE_CHANNELS.find((item) => item.id === preset.releaseChannelId) ?? RELEASE_CHANNELS[0],
+        optionOpener: OPTION_OPENERS.find((item) => item.id === preset.optionOpenerId) ?? OPTION_OPENERS[0],
+      })),
+    [],
+  )
 
   const generatedTherapistText = useMemo(
     () =>
@@ -548,12 +887,72 @@ export default function MindLiberatingLanguagePage() {
         .slice(0, 12),
     [state],
   )
+  const preferredContextIdsForTone = WORK_TONE_TO_CONTEXT_IDS[selectedWorkToneId] ?? ['therapy']
+  const miniSimulatorContextStatements = useMemo(
+    () =>
+      liberatingClientStatements.filter(
+        (item) => item?.context === miniSimulatorContextId,
+      ),
+    [miniSimulatorContextId],
+  )
+  const miniSimulatorStatement = useMemo(
+    () =>
+      miniSimulatorContextStatements.find((item) => String(item.id) === String(miniSimulatorStatementId)) ??
+      miniSimulatorContextStatements[0] ??
+      null,
+    [miniSimulatorContextStatements, miniSimulatorStatementId],
+  )
+  const miniSimulatorExamples = useMemo(
+    () => (miniSimulatorStatement?.idealResponses ?? []).slice(0, 4),
+    [miniSimulatorStatement],
+  )
+  const miniSimulatorEvaluation = useMemo(
+    () => evaluateMiniSimulatorResponse(miniSimulatorResponse, miniSimulatorStatement?.statement ?? ''),
+    [miniSimulatorResponse, miniSimulatorStatement],
+  )
+  const selectedExercisePattern = useMemo(
+    () => liberatingPatterns.find((pattern) => pattern.id === selectedExercisePatternId) ?? liberatingPatterns[0] ?? null,
+    [selectedExercisePatternId],
+  )
+  const exerciseFillCorrect = useMemo(
+    () =>
+      normalizeText(exerciseFillAnswer).toLowerCase().includes(
+        normalizeText(selectedExercisePattern?.fillBlankAnswer).toLowerCase(),
+      ),
+    [exerciseFillAnswer, selectedExercisePattern],
+  )
+  const exerciseApplicationScore = useMemo(
+    () => evaluateMiniSimulatorResponse(exerciseApplicationText, patientText).score,
+    [exerciseApplicationText, patientText],
+  )
   const isSoundOn = audioPrefs.enabled && !audioPrefs.muted
+  const uiHe = (text) => genderizeUiHe(text, addressGender)
+  const g = (masc, fem) => (addressGender === 'fem' ? fem : masc)
+
+  useEffect(() => {
+    const preferred = preferredContextIdsForTone[0] ?? 'therapy'
+    if (!preferredContextIdsForTone.includes(miniSimulatorContextId)) {
+      setMiniSimulatorContextId(preferred)
+    }
+  }, [preferredContextIdsForTone, miniSimulatorContextId])
+
+  useEffect(() => {
+    const statements = miniSimulatorContextStatements
+    if (!statements.length) {
+      setMiniSimulatorStatementId(null)
+      return
+    }
+    const exists = statements.some((item) => String(item.id) === String(miniSimulatorStatementId))
+    if (!exists) {
+      const next = randomItem(statements) ?? statements[0]
+      setMiniSimulatorStatementId(next?.id ?? null)
+    }
+  }, [miniSimulatorContextStatements, miniSimulatorStatementId])
 
   const triggerCompanion = (mood, message) => {
     setCompanionMood(mood)
     if (message) {
-      setCompanionMessage(message)
+      setCompanionMessage(uiHe(message))
     }
     setCompanionPulseKey((current) => current + 1)
   }
@@ -562,6 +961,27 @@ export default function MindLiberatingLanguagePage() {
     if (!audioPrefs.enabled) return
     if (typeof window !== 'undefined' && window.__LA_GLOBAL_ALCHEMY_AUDIO__) return
     playWebAudioCue(audioContextRef, cue, audioPrefs.muted)
+  }
+
+  const toggleMindlabSound = () => {
+    setAudioPrefs((current) => {
+      if (!current.enabled) {
+        return { ...current, enabled: true, muted: false }
+      }
+      return { ...current, muted: !current.muted }
+    })
+    playCue('tap')
+    triggerCompanion('happy', isSoundOn ? 'הצלילים הושתקו.' : 'הצלילים חזרו.')
+  }
+
+  const handleSelectWorkTone = (toneId) => {
+    if (toneId === selectedWorkToneId) return
+    const nextTone = MINDLAB_WORK_TONES.find((tone) => tone.id === toneId) ?? MINDLAB_WORK_TONES[0]
+    setSelectedWorkToneId(nextTone.id)
+    playCue('sparkle')
+    triggerCompanion('happy', `טון העבודה הוחלף ל-${nextTone.labelHe}. שומרים על פוקוס.`)
+    emitAlchemySignal('success', { message: `טון עבודה: ${nextTone.labelHe}` })
+    setStatusMessage(`טון עבודה פעיל: ${nextTone.labelHe} • ${nextTone.subtitleHe}`)
   }
 
   const applySoundConsent = ({ enabled, dontAskAgain = false }) => {
@@ -592,6 +1012,33 @@ export default function MindLiberatingLanguagePage() {
     setActiveStepId(stepId)
     if (scroll) {
       scrollToStep(stepId)
+    }
+  }
+
+  const jumpToWorkflowStep = (stepId) => {
+    if (activeMindTabId !== 'workflow') {
+      setActiveMindTabId('workflow')
+    }
+    setActiveStepId(stepId)
+    playCue('tap')
+    if (typeof window !== 'undefined') {
+      window.setTimeout(() => scrollToStep(stepId), 40)
+    }
+  }
+
+  const applyExercisePreset = (preset) => {
+    if (!preset) return
+    setSelectedQuantifierId(preset.quantifierShift.id)
+    setSelectedReleaseChannelId(preset.releaseChannel.id)
+    setSelectedOptionOpenerId(preset.optionOpener.id)
+    setActiveMindTabId('workflow')
+    openStep('therapist-script', { scroll: false })
+    playCue('whoosh')
+    triggerCompanion('happy', `נטען תרגיל: ${preset.titleHe}. עכשיו בונים ניסוח משחרר.`)
+    emitAlchemySignal('whoosh', { message: `נטען תרגיל: ${preset.titleHe}` })
+    setStatusMessage(`נטען תרגיל: ${preset.titleHe}`)
+    if (typeof window !== 'undefined') {
+      window.setTimeout(() => scrollToStep('therapist-script'), 40)
     }
   }
 
@@ -660,6 +1107,15 @@ export default function MindLiberatingLanguagePage() {
       return
     }
     triggerCompanion('happy', 'חוזרים ל-workflow הראשי: משפט מטופל → שחרור → אופציות.')
+  }
+
+  const handleOpenWorkspaceTab = (tabId) => {
+    if (tabId === 'simulator') {
+      setActiveTrainingToolId('simulator')
+    } else if (tabId === 'pattern-master') {
+      setActiveTrainingToolId('pattern-master')
+    }
+    handleSwitchMindTab(tabId)
   }
 
   const markStepDoneAndAdvance = (stepId) => {
@@ -753,11 +1209,21 @@ export default function MindLiberatingLanguagePage() {
     setSelectedQuantifierId(QUANTIFIER_SHIFTS[0].id)
     setSelectedReleaseChannelId(RELEASE_CHANNELS[0].id)
     setSelectedOptionOpenerId(OPTION_OPENERS[0].id)
+    setSelectedWorkToneId(MINDLAB_WORK_TONES[0].id)
     setSelectedToneId(THERAPIST_TONES[1].id)
     setActiveTrainingToolId('')
-    setActiveMindTabId('workflow')
+    setActiveMindTabId('simulator')
     setActiveStepId(MINDLAB_MAIN_STEPS[0].id)
     setCompletedStepIds([])
+    setMiniSimulatorContextId('therapy')
+    setMiniSimulatorStatementId(null)
+    setMiniSimulatorResponse('')
+    setMiniSimulatorChecked(false)
+    setSelectedExercisePatternId(liberatingPatterns[0]?.id ?? '')
+    setExerciseFillAnswer('')
+    setExerciseFillChecked(false)
+    setExerciseApplicationText('')
+    setExerciseApplicationChecked(false)
     playCue('whoosh')
     triggerCompanion('happy', 'סשן חדש. מתחילים מהמשפט כמו שהוא.')
     emitAlchemySignal('success', { message: 'נפתחה עבודה חדשה.' })
@@ -789,6 +1255,75 @@ export default function MindLiberatingLanguagePage() {
     setStatusMessage('נטען משפט מטופל מהמעבדה המתקדמת אל המיינד ליברטינג הראשי.')
   }
 
+  const pickMiniSimulatorStatement = () => {
+    const pool = miniSimulatorContextStatements
+    if (!pool.length) return
+    let next = randomItem(pool) ?? pool[0]
+    let attempts = 0
+    while (pool.length > 1 && String(next?.id) === String(miniSimulatorStatementId) && attempts < 6) {
+      next = randomItem(pool) ?? pool[0]
+      attempts += 1
+    }
+    setMiniSimulatorStatementId(next?.id ?? null)
+    setMiniSimulatorResponse('')
+    setMiniSimulatorChecked(false)
+    playCue('whoosh')
+    emitAlchemySignal('whoosh', { message: 'נטען משפט חדש לסימולטור.' })
+    triggerCompanion('happy', 'משפט חדש. תגובה קצרה, שאלה פותחת, ואז בדיקה.')
+  }
+
+  const handleCheckMiniSimulator = () => {
+    if (!normalizeText(miniSimulatorResponse)) {
+      setStatusMessage('כתבו תגובה קצרה לפני הבדיקה.')
+      return
+    }
+    setMiniSimulatorChecked(true)
+    setStatusMessage('')
+    handleTrainingSignal('simulator-check', { level: miniSimulatorEvaluation.level, score: miniSimulatorEvaluation.score })
+  }
+
+  const handleUseMiniSimulatorStatementInExercises = () => {
+    if (!miniSimulatorStatement?.statement) return
+    setPatientText(miniSimulatorStatement.statement)
+    setActiveMindTabId('workflow')
+    setActiveStepId('patient-source')
+    setStatusMessage('המשפט נטען מהסימולטור לתרגיל.')
+    playCue('tap')
+    triggerCompanion('happy', 'המשפט עבר לתרגילים. עכשיו עובדים על פאטרן אחד נקי.')
+  }
+
+  const openCleanExercisePattern = (patternId, options = {}) => {
+    const { fromPatternMaster = false } = options
+    setSelectedExercisePatternId(patternId)
+    setExerciseFillAnswer('')
+    setExerciseFillChecked(false)
+    setExerciseApplicationText('')
+    setExerciseApplicationChecked(false)
+    setActiveMindTabId('workflow')
+    if (fromPatternMaster) {
+      playCue('whoosh')
+      triggerCompanion('surprised', 'מעולה. עוברים לתרגול נקי של פאטרן אחד.')
+    } else {
+      playCue('tap')
+    }
+  }
+
+  const handleCheckCleanExercise = () => {
+    const score = clamp(
+      Math.round((exerciseFillCorrect ? 45 : 10) + Math.min(55, exerciseApplicationScore * 0.55)),
+      0,
+      100,
+    )
+    setExerciseFillChecked(true)
+    setExerciseApplicationChecked(true)
+    handleTrainingSignal('pattern-check', {
+      score,
+      orderCorrect: score >= 60,
+      blankCorrect: exerciseFillCorrect,
+    })
+    setStatusMessage(`בדיקה הושלמה • ציון משוער: ${score}/100`)
+  }
+
   return (
     <div className="page-stack mindlab-alchemy-page">
       <div className="mindlab-particles" aria-hidden="true">
@@ -799,122 +1334,461 @@ export default function MindLiberatingLanguagePage() {
         <span className="p-dot p-dot--5" />
         <span className="p-dot p-dot--6" />
       </div>
-      <button
-        type="button"
-        className="mindlab-sound-toggle"
-        aria-pressed={isSoundOn}
-        onClick={() => {
-          setAudioPrefs((current) => {
-            if (!current.enabled) {
-              return { ...current, enabled: true, muted: false }
-            }
-            return { ...current, muted: !current.muted }
-          })
-          playCue('tap')
-          triggerCompanion('happy', isSoundOn ? 'הצלילים הושתקו.' : 'הצלילים חזרו.')
-        }}
-        title={isSoundOn ? 'השתק צלילים' : 'הפעל צלילים'}
-      >
-        {isSoundOn ? <Volume2 size={18} aria-hidden="true" /> : <VolumeX size={18} aria-hidden="true" />}
-        <span>{isSoundOn ? 'Sound' : 'Muted'}</span>
-      </button>
-      <section className="alchemy-card">
-        <div className="alchemy-card__head">
-          <div>
-            <h2>{lab.titleHe}</h2>
-            <p>{lab.descriptionHe}</p>
-          </div>
-          <div className="alchemy-card__actions">
-            <Link to="/" className="secondary-link-button">
-              חזרה למסך הכללי
-            </Link>
-            <button type="button" onClick={handleNewSession}>
-              סשן חדש
-            </button>
-          </div>
-        </div>
+      <section className="alchemy-card mindlab-dashboard-card">
+        <div className="mindlab-dashboard">
+          <aside className="mindlab-dashboard__sidebar" aria-label="Mind Liberating Lab sidebar">
+            <div className="mindlab-dashboard__sidebarSticky">
+              <div className="mindlab-dashboard-logo">
+                <div className="mindlab-dashboard-logo__orb" aria-hidden="true">
+                  <Sparkles size={16} />
+                </div>
+                <div className="mindlab-dashboard-logo__text">
+                  <strong>Mind Liberating Lab</strong>
+                  <span>{activeWorkTone.subtitleHe}</span>
+                </div>
+              </div>
 
-        <LabLessonPrompt labId={lab.id} />
+              <section className="mindlab-sidebar-block" aria-label="בחירת טון">
+                <div className="mindlab-sidebar-block__title">בחר טון</div>
+                <div className="mindlab-tone-segmented" role="tablist" aria-label="טון עבודה">
+                  {MINDLAB_WORK_TONES.map((tone) => (
+                    <button
+                      key={tone.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={selectedWorkToneId === tone.id}
+                      className={`mindlab-tone-segmented__item ${
+                        selectedWorkToneId === tone.id ? 'is-active' : ''
+                      }`}
+                      onClick={() => handleSelectWorkTone(tone.id)}
+                    >
+                      <span className="mindlab-tone-segmented__emoji" aria-hidden="true">
+                        {tone.icon}
+                      </span>
+                      <span className="mindlab-tone-segmented__label">{tone.labelHe}</span>
+                      {tone.id === 'identity-change' ? (
+                        <span className="mindlab-tone-segmented__tag">TCU</span>
+                      ) : null}
+                    </button>
+                  ))}
+                </div>
+                <p className="mindlab-tone-segmented__hint">{uiHe(activeWorkTone.lensHe)}</p>
+              </section>
 
-        <section className="mindlab-workspace-menu" aria-label="תפריטי משנה - שחרור תודעה על ידי שפה">
-          <div className="mindlab-workspace-menu__head">
-            <div>
-              <h3>שחרור תודעה על ידי שפה</h3>
-              <p>בחר/י מוד עבודה אחד בכל פעם כדי לשמור פוקוס ולהימנע מגלילה ארוכה.</p>
+              <section className="mindlab-sidebar-block" aria-label="הגדרות פנייה">
+                <div className="mindlab-sidebar-block__title">פנייה</div>
+                <div className="mindlab-gender-toggle" role="radiogroup" aria-label="פנייה בלשון">
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={addressGender === 'masc'}
+                    className={`mindlab-gender-toggle__item ${addressGender === 'masc' ? 'is-active' : ''}`}
+                    onClick={() => setAddressGender('masc')}
+                  >
+                    זכר
+                  </button>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={addressGender === 'fem'}
+                    className={`mindlab-gender-toggle__item ${addressGender === 'fem' ? 'is-active' : ''}`}
+                    onClick={() => setAddressGender('fem')}
+                  >
+                    נקבה
+                  </button>
+                </div>
+                <p className="mindlab-tone-segmented__hint">
+                  {addressGender === 'fem' ? 'הטקסטים מוצגים בלשון נקבה.' : 'הטקסטים מוצגים בלשון זכר.'}
+                </p>
+              </section>
+
+              <nav className="mindlab-sidebar-nav" aria-label="ניווט">
+                {[
+                  { id: 'simulator', title: 'Simulator', subtitle: 'סימולטור שיחות', Icon: MessageCircle },
+                  { id: 'pattern-master', title: 'Pattern Master', subtitle: 'מאסטר רצפים', Icon: Workflow },
+                  { id: 'workflow', title: 'תרגילים', subtitle: '6 פאטרנים + workflow', Icon: Wand2 },
+                  { id: 'history', title: 'היסטוריה', subtitle: 'סשנים ותרגולים', Icon: Sparkles },
+                ].map(({ id, title, subtitle, Icon }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className={`mindlab-sidebar-nav__item ${activeMindTabId === id ? 'is-active' : ''}`}
+                    onClick={() => handleOpenWorkspaceTab(id)}
+                    aria-current={activeMindTabId === id ? 'page' : undefined}
+                  >
+                    <span className="mindlab-sidebar-nav__icon" aria-hidden="true">
+                      <Icon size={16} />
+                    </span>
+                    <span className="mindlab-sidebar-nav__copy">
+                      <strong>{title}</strong>
+                      <small>{subtitle}</small>
+                    </span>
+                  </button>
+                ))}
+              </nav>
+
+              <div className="mindlab-sidebar-actions">
+                <button type="button" onClick={handleNewSession}>
+                  {uiHe('סשן חדש')}
+                </button>
+                <Link to="/" className="secondary-link-button">
+                  חזרה למסך הכללי
+                </Link>
+              </div>
             </div>
-            <Link to="/" className="mindlab-workspace-menu__back">
-              חזרה למסך הכללי
-            </Link>
-          </div>
+          </aside>
 
-          <div className="mindlab-workspace-menu__tabs" role="tablist" aria-label="תפריטי משנה">
-            {[
-              { id: 'workflow', labelHe: 'תרגילים', labelEn: 'Core Workflow' },
-              { id: 'simulator', labelHe: 'סימולטור', labelEn: 'Simulator' },
-              { id: 'pattern-master', labelHe: 'מאסטר רצפים', labelEn: 'Pattern Master' },
-              { id: 'history', labelHe: 'היסטוריה', labelEn: 'History' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                aria-selected={activeMindTabId === tab.id}
-                className={`mindlab-workspace-menu__tab ${activeMindTabId === tab.id ? 'is-active' : ''}`}
-                onClick={() => handleSwitchMindTab(tab.id)}
-              >
-                <span>{tab.labelHe}</span>
-                <small>{tab.labelEn}</small>
-              </button>
-            ))}
-          </div>
-        </section>
+          <div className="mindlab-dashboard__content">
+            <header className="mindlab-dashboard-topbar" aria-label="סרגל עליון">
+              <div className="mindlab-dashboard-topbar__progress">
+                <div className="mindlab-dashboard-topbar__label">
+                  <strong>Progress</strong>
+                  <span>
+                    {overallProgressPercent}% · שלב {activeStepIndex + 1}/{MINDLAB_MAIN_STEPS.length}
+                  </span>
+                </div>
+                <div className="mindlab-dashboard-topbar__steps" role="list">
+                  {MINDLAB_MAIN_STEPS.map((step, index) => {
+                    const isActive = activeStepId === step.id
+                    const isDone = completedStepIds.includes(step.id)
+                    return (
+                      <button
+                        key={step.id}
+                        type="button"
+                        role="listitem"
+                        className={`mindlab-dashboard-topbar__step ${isActive ? 'is-active' : ''} ${
+                          isDone ? 'is-done' : ''
+                        }`}
+                        onClick={() => jumpToWorkflowStep(step.id)}
+                        title={step.titleHe}
+                      >
+                        <span>{index + 1}</span>
+                        <small>{step.shortLabelHe}</small>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
 
-        <section className="mindlab-hero-tools" aria-label="כלי תרגול מתקדמים">
-          <button
-            type="button"
-            className={`mindlab-training-card mindlab-training-card--hero ${
-              activeMindTabId === 'simulator' ? 'is-active' : ''
-            }`}
-            onClick={() => {
-              setActiveTrainingToolId('simulator')
-              handleSwitchMindTab('simulator')
-            }}
-          >
-            <div className="mindlab-training-card__icon">
-              <MessageCircle size={24} aria-hidden="true" />
-            </div>
-            <div className="mindlab-training-card__content">
-              <strong>סימולטור שיחות משחררות</strong>
-              <small>Mind Liberating Conversation Simulator</small>
-              <span>שני אנשים + גלים + משפט מטופל רנדומלי + פידבק מיידי</span>
-            </div>
-            <Sparkles size={18} aria-hidden="true" />
-          </button>
+              <div className="mindlab-dashboard-topbar__actions">
+                <button
+                  type="button"
+                  className="mindlab-dashboard-topbar__sound"
+                  aria-pressed={isSoundOn}
+                  onClick={toggleMindlabSound}
+                  title={isSoundOn ? 'השתק צלילים' : 'הפעל צלילים'}
+                >
+                  {isSoundOn ? <Volume2 size={16} aria-hidden="true" /> : <VolumeX size={16} aria-hidden="true" />}
+                  <span>{isSoundOn ? 'Mute Sound' : 'Unmute Sound'}</span>
+                </button>
 
-          <button
-            type="button"
-            className={`mindlab-training-card mindlab-training-card--hero ${
-              activeMindTabId === 'pattern-master' ? 'is-active' : ''
-            }`}
-            onClick={() => {
-              setActiveTrainingToolId('pattern-master')
-              handleSwitchMindTab('pattern-master')
-            }}
-          >
-            <div className="mindlab-training-card__icon">
-              <Workflow size={24} aria-hidden="true" />
-            </div>
-            <div className="mindlab-training-card__content">
-              <strong>מאסטר רצפים</strong>
-              <small>Pattern Sequence Master</small>
-              <span>Flowchart + fill-in + סדר רצף + יישום על משפט</span>
-            </div>
-            <Wand2 size={18} aria-hidden="true" />
-          </button>
-        </section>
+                <div className="mindlab-dashboard-topbar__companion" aria-live="polite">
+                  <span className="mindlab-dashboard-topbar__companionOrb" aria-hidden="true">
+                    {alchemistFaceForMood(companionMood)}
+                  </span>
+                  <div className="mindlab-dashboard-topbar__companionCopy">
+                    <strong>Alchemist Companion</strong>
+                    <span>
+                      {uiHe(companionMessage).length > 74
+                        ? `${uiHe(companionMessage).slice(0, 74)}...`
+                        : uiHe(companionMessage)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </header>
 
-        {activeMindTabId === 'workflow' && (
-        <div className="mindlab-layout">
+            <section className="panel-card panel-card--soft mindlab-dashboard-hero" aria-live="polite">
+              <div className="mindlab-dashboard-hero__head">
+                <div>
+                  <div className="mindlab-dashboard-hero__eyebrow">{lab.titleHe}</div>
+                  <h2>{activeWorkTone.labelHe} · Dashboard אלכימי ממוקד</h2>
+                  <p>{uiHe(activeWorkTone.lensHe)}</p>
+                </div>
+                <div className="mindlab-dashboard-hero__chips">
+                  <span className="mindlab-dashboard-chip">טון: {activeWorkTone.labelHe}</span>
+                  <span className="mindlab-dashboard-chip">מסך: {activeMindTabId === 'workflow' ? 'תרגילים' : activeMindTabId === 'pattern-master' ? 'מאסטר רצפים' : activeMindTabId === 'history' ? 'היסטוריה' : 'סימולטור'}</span>
+                  <span className="mindlab-dashboard-chip">מצב שדה: {analysis.windowLabelHe}</span>
+                </div>
+              </div>
+              <blockquote className="mindlab-quote">
+                {analysis.text || uiHe(`הדבק/י ${activeWorkTone.patientInputLabelHe.toLowerCase()} כדי להתחיל.`)}
+              </blockquote>
+              <div className="status-line" aria-live="polite">
+                {uiHe(statusMessage)}
+              </div>
+            </section>
+
+            <div className="mindlab-main-tabs" role="tablist" aria-label="טאבים ראשיים">
+              {[
+                { id: 'simulator', labelHe: 'סימולטור שיחות משחררות', Icon: MessageCircle },
+                { id: 'pattern-master', labelHe: 'מאסטר רצפים', Icon: Workflow },
+                { id: 'workflow', labelHe: 'תרגילים', Icon: Wand2 },
+              ].map(({ id, labelHe, Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeMindTabId === id}
+                  className={`mindlab-main-tabs__item ${activeMindTabId === id ? 'is-active' : ''}`}
+                  onClick={() => handleOpenWorkspaceTab(id)}
+                >
+                  <Icon size={18} aria-hidden="true" />
+                  <span>{labelHe}</span>
+                </button>
+              ))}
+            </div>
+
+            {activeMindTabId === 'workflow' && (
+              <section className="panel-card mindlab-clean-exercises" aria-label="תרגילים נקיים">
+                <div className="panel-card__head">
+                  <div>
+                    <h3>תרגילים · פאטרן אחד בכל פעם</h3>
+                    <p>{uiHe('בחר/י פאטרן מהרשימה, פתח/י תרגיל נקי, ועבוד/י רק על מה שחשוב עכשיו.')}</p>
+                  </div>
+                </div>
+
+                <div className="mindlab-clean-exercises__layout">
+                  <aside className="mindlab-clean-exercises__list" aria-label="רשימת פאטרנים">
+                    {liberatingPatterns.map((pattern) => (
+                      <button
+                        key={pattern.id}
+                        type="button"
+                        className={`mindlab-clean-exercises__item ${
+                          selectedExercisePatternId === pattern.id ? 'is-active' : ''
+                        }`}
+                        onClick={() => openCleanExercisePattern(pattern.id)}
+                      >
+                        <span className="mindlab-clean-exercises__itemEmoji" aria-hidden="true">
+                          {pattern.emoji ?? '✨'}
+                        </span>
+                        <span className="mindlab-clean-exercises__itemCopy">
+                          <strong>{pattern.titleHe}</strong>
+                          <small>{pattern.name}</small>
+                        </span>
+                      </button>
+                    ))}
+                  </aside>
+
+                  <div className="mindlab-clean-exercises__panel">
+                    {selectedExercisePattern ? (
+                      <>
+                        <div className="mindlab-clean-exercises__header">
+                          <div className="mindlab-clean-exercises__title">
+                            <span className="mindlab-clean-exercises__heroEmoji" aria-hidden="true">
+                              {selectedExercisePattern.emoji ?? '✨'}
+                            </span>
+                            <div>
+                              <h4>{selectedExercisePattern.titleHe}</h4>
+                              <p>{selectedExercisePattern.descriptionHe}</p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            className="secondary-button"
+                            onClick={() => {
+                              if (miniSimulatorStatement?.statement) {
+                                setPatientText(miniSimulatorStatement.statement)
+                              }
+                            }}
+                          >
+                            טען משפט מהסימולטור
+                          </button>
+                        </div>
+
+                        <div className="mindlab-clean-exercises__focusGrid">
+                          <div className="mindlab-clean-card">
+                            <div className="mindlab-clean-card__eyebrow">משפט מקור לתרגול</div>
+                            <textarea
+                              rows={4}
+                              className="mindlab-textarea"
+                              value={patientText}
+                              onChange={(event) => {
+                                setPatientText(event.target.value)
+                                setStatusMessage('')
+                              }}
+                              placeholder={uiHe(activeWorkTone.patientInputPlaceholderHe)}
+                            />
+                          </div>
+
+                          <div className="mindlab-clean-card">
+                            <div className="mindlab-clean-card__eyebrow">Fill-in מהיר</div>
+                            <p className="mindlab-clean-card__prompt">
+                              {selectedExercisePattern.fillBlankPrompt}
+                            </p>
+                            <input
+                              className="mindlab-clean-input"
+                              value={exerciseFillAnswer}
+                              onChange={(event) => {
+                                setExerciseFillAnswer(event.target.value)
+                                setExerciseFillChecked(false)
+                              }}
+                              placeholder={g('כתוב את המילה/השלמה', 'כתבי את המילה/השלמה')}
+                            />
+                            {exerciseFillChecked && (
+                              <div
+                                className={`mindlab-clean-feedback ${
+                                  exerciseFillCorrect ? 'is-good' : 'is-warn'
+                                }`}
+                              >
+                                {exerciseFillCorrect
+                                  ? 'יפה. ההשלמה קולעת לרוח הפאטרן.'
+                                  : `כיוון מומלץ: ${selectedExercisePattern.fillBlankAnswer}`}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="mindlab-clean-card">
+                          <div className="mindlab-clean-card__eyebrow">יישום על המשפט</div>
+                          <p className="mindlab-clean-card__prompt">
+                            {g('כתוב תגובה/רצף קצר שמשתמש ברוח הפאטרן על המשפט שנבחר.', 'כתבי תגובה/רצף קצר שמשתמש ברוח הפאטרן על המשפט שנבחר.')}
+                          </p>
+                          <textarea
+                            rows={5}
+                            className="mindlab-textarea mindlab-clean-textarea--lg"
+                            value={exerciseApplicationText}
+                            onChange={(event) => {
+                              setExerciseApplicationText(event.target.value)
+                              setExerciseApplicationChecked(false)
+                            }}
+                            placeholder={
+                              selectedExercisePattern.example ||
+                              g('נסח שאלה/רצף פתיחה קצר.', 'נסחי שאלה/רצף פתיחה קצר.')
+                            }
+                          />
+
+                          <div className="mindlab-clean-exercises__actions">
+                            <button type="button" className="mindlab-big-action" onClick={handleCheckCleanExercise}>
+                              <CheckCircle2 size={18} aria-hidden="true" />
+                              <span>{g('בדוק תרגיל', 'בדקי תרגיל')}</span>
+                            </button>
+                            <button
+                              type="button"
+                              className="secondary-button"
+                              onClick={() => {
+                                setExerciseFillAnswer('')
+                                setExerciseFillChecked(false)
+                                setExerciseApplicationText('')
+                                setExerciseApplicationChecked(false)
+                              }}
+                            >
+                              איפוס תרגיל
+                            </button>
+                          </div>
+
+                          {exerciseApplicationChecked && (
+                            <div
+                              className={`mindlab-clean-feedback ${
+                                exerciseApplicationScore >= 70 ? 'is-good' : 'is-warn'
+                              }`}
+                            >
+                              ציון יישום משוער: {exerciseApplicationScore}/100
+                            </div>
+                          )}
+                        </div>
+
+                        <details className="mindlab-clean-details">
+                          <summary>דוגמה + שאלות הפאטרן (ללמוד לפני תרגול)</summary>
+                          <div className="mindlab-clean-details__body">
+                            <p className="muted-text">{selectedExercisePattern.feedbackHe}</p>
+                            <p className="mindlab-clean-card__prompt">{selectedExercisePattern.example}</p>
+                            <ul>
+                              {(selectedExercisePattern.questions ?? []).map((question) => (
+                                <li key={question}>{question}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </details>
+                      </>
+                    ) : null}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {activeMindTabId === 'workflow' && false && (
+        <>
+          <section className="panel-card mindlab-exercises-deck" aria-label="6 פאטרנים">
+            <div className="panel-card__head">
+              <div>
+                <h3>תרגילים · 6 פאטרנים גדולים</h3>
+                <p>
+                  התוכן ממוקד לטון <strong>{activeWorkTone.labelHe}</strong>. טען/י preset אחד ואז המשך/י ל-workflow.
+                </p>
+              </div>
+            </div>
+
+            <div className="mindlab-pattern-grid">
+              {exercisePresetCards.map((preset) => {
+                const isPresetActive =
+                  preset.quantifierShift.id === selectedQuantifierId &&
+                  preset.releaseChannel.id === selectedReleaseChannelId &&
+                  preset.optionOpener.id === selectedOptionOpenerId
+                return (
+                  <article
+                    key={preset.id}
+                    className={`mindlab-pattern-card ${isPresetActive ? 'is-active' : ''}`}
+                  >
+                    <div className="mindlab-pattern-card__head">
+                      <span className="mindlab-pattern-card__icon" aria-hidden="true">
+                        {preset.icon}
+                      </span>
+                      <div>
+                        <strong>{preset.titleHe}</strong>
+                        <small>{preset.familyHe}</small>
+                      </div>
+                    </div>
+
+                    <p className="mindlab-pattern-card__summary">{preset.summaryHe}</p>
+
+                    <div className="mindlab-pattern-card__lens">
+                      <span>{activeWorkTone.icon}</span>
+                      <span>{activeWorkTone.labelHe}: {activeWorkTone.subtitleHe}</span>
+                    </div>
+
+                    <div className="mindlab-pattern-card__chips">
+                      <span className="mini-pill">{preset.quantifierShift.labelHe}</span>
+                      <span className="mini-pill">{preset.releaseChannel.labelHe}</span>
+                      <span className="mini-pill">{preset.optionOpener.labelHe}</span>
+                    </div>
+
+                    <div className="mindlab-pattern-card__actions">
+                      <button type="button" onClick={() => applyExercisePreset(preset)}>
+                        טען לתרגיל
+                      </button>
+                      <button
+                        type="button"
+                        className="secondary-button"
+                        onClick={() => jumpToWorkflowStep('therapist-script')}
+                      >
+                        פתח ניסוח
+                      </button>
+                    </div>
+
+                    <details className="mindlab-pattern-card__details">
+                      <summary>רמז מהיר</summary>
+                      <p>{preset.exampleHe}</p>
+                    </details>
+                  </article>
+                )
+              })}
+            </div>
+          </section>
+
+          <section className="panel-card panel-card--soft mindlab-dashboard-lesson">
+            <MenuSection
+              compact
+              defaultOpen={false}
+              title="לפני שמתחילים"
+              subtitle="תזכורת קצרה לשיעור ולכוונת המעבדה"
+              badgeText="Guide"
+            >
+              <LabLessonPrompt labId={lab.id} compact />
+            </MenuSection>
+          </section>
+
+        <div className="mindlab-layout mindlab-layout--dashboard">
           <div className="mindlab-main">
             <section className="mindlab-stepper" aria-label="התקדמות בשלבי המעבדה">
               <div className="mindlab-stepper__head">
@@ -1008,8 +1882,11 @@ export default function MindLiberatingLanguagePage() {
             >
               <div className="panel-card__head">
                 <div>
-                  <h3>1) מה המטופל אומר</h3>
-                  <p>מתחילים מהטקסט כפי שהוא, בלי לתקן אותו עדיין.</p>
+                  <h3>1) המשפט שנאמר עכשיו</h3>
+                  <p>
+                    מתחילים מהטקסט כפי שהוא, בלי לתקן אותו עדיין. כרגע עובדים בטון{' '}
+                    <strong>{activeWorkTone.labelHe}</strong>.
+                  </p>
                 </div>
                 <div className="mindlab-step-card__headActions">
                   <span className={`mindlab-step-card__badge ${activeStepId === 'patient-source' ? 'is-active' : ''}`}>
@@ -1025,7 +1902,7 @@ export default function MindLiberatingLanguagePage() {
               </div>
 
               <label className="mindlab-field">
-                <span>טקסט מטופל (מקורי)</span>
+                <span>{activeWorkTone.patientInputLabelHe}</span>
                 <textarea
                   rows={4}
                   className="mindlab-textarea"
@@ -1034,14 +1911,14 @@ export default function MindLiberatingLanguagePage() {
                     setPatientText(event.target.value)
                     setStatusMessage('')
                   }}
-                  placeholder="לדוגמה: 'אני תמיד נתקע, אין לי דרך אחרת, זה פשוט לא אני...'"
+                  placeholder={activeWorkTone.patientInputPlaceholderHe}
                 />
               </label>
 
               <div className="chip-bank">
                 <h4>דוגמאות מהירות</h4>
                 <div className="chips-wrap">
-                  {SAMPLE_PATIENT_TEXTS.map((sample) => (
+                  {(activeWorkTone.sampleTexts ?? SAMPLE_PATIENT_TEXTS).map((sample) => (
                     <button key={sample} type="button" className="chip" onClick={() => loadSample(sample)}>
                       {sample}
                     </button>
@@ -1060,8 +1937,8 @@ export default function MindLiberatingLanguagePage() {
             >
               <div className="panel-card__head">
                 <div>
-                  <h3>2) טקסט מטפל שמזיז תודעה</h3>
-                  <p>בונים ניסוח שמכבד את החוויה, אבל פותח שדה ואפשרויות.</p>
+                  <h3>2) ניסוח משחרר שמזיז תודעה</h3>
+                  <p>בונים ניסוח שמכבד את החוויה, אבל פותח שדה ואפשרויות בטון שנבחר.</p>
                 </div>
                 <div className="mindlab-step-card__headActions">
                   <span className={`mindlab-step-card__badge ${activeStepId === 'therapist-script' ? 'is-active' : ''}`}>
@@ -1082,7 +1959,7 @@ export default function MindLiberatingLanguagePage() {
 
               <div className="mindlab-prompt-grid">
                 <div className="chip-bank">
-                  <h4>טון מטפל</h4>
+                  <h4>אופן הובלה (בתוך הטון הנבחר)</h4>
                   <div className="chips-wrap">
                     {THERAPIST_TONES.map((tone) => (
                       <button
@@ -1161,7 +2038,7 @@ export default function MindLiberatingLanguagePage() {
               </div>
 
               <label className="mindlab-field">
-                <span>טקסט מטפל סופי (ניתן לעריכה)</span>
+                <span>ניסוח משחרר סופי (ניתן לעריכה)</span>
                 <textarea
                   rows={6}
                   className="mindlab-textarea"
@@ -1170,7 +2047,7 @@ export default function MindLiberatingLanguagePage() {
                     setTherapistText(event.target.value)
                     setStatusMessage('')
                   }}
-                  placeholder="הטקסט שהמטפל בונה כדי להזיז את התודעה, לפתוח שדה ולהזמין אופציות."
+                  placeholder="הניסוח שמכבד את החוויה, מרכך נעילה ומזמין אפשרויות."
                 />
               </label>
 
@@ -1538,35 +2415,218 @@ export default function MindLiberatingLanguagePage() {
             </div>
           </aside>
         </div>
+        </>
         )}
 
         {activeMindTabId === 'simulator' && (
-          <section className="panel-card mindlab-workspace-panel">
+          <section className="panel-card mindlab-workspace-panel mindlab-clean-simulator">
             <div className="panel-card__head">
               <div>
                 <h3>סימולטור שיחות משחררות</h3>
-                <p>תרגול ממוקד בלי להעמיס את שאר חלקי הדף. אפשר לטעון משפט חזרה לזרימת העבודה.</p>
+                <p>{uiHe(activeWorkTone.simulatorIntroHe)}</p>
               </div>
             </div>
-            <LiberatingConversationSimulator
-              onLoadPatientText={loadPatientTextFromTrainingTool}
-              onSignal={handleTrainingSignal}
-            />
+
+            <div className="mindlab-clean-simulator__toolbar">
+              <div className="mindlab-clean-simulator__contexts" role="tablist" aria-label="הקשר סימולטור">
+                {preferredContextIdsForTone.map((contextId) => {
+                  const label =
+                    liberatingClientStatements.find((item) => item.context === contextId)?.context ?? contextId
+                  return (
+                    <button
+                      key={contextId}
+                      type="button"
+                      role="tab"
+                      aria-selected={miniSimulatorContextId === contextId}
+                      className={`chip ${miniSimulatorContextId === contextId ? 'chip--selected' : ''}`}
+                      onClick={() => {
+                        setMiniSimulatorContextId(contextId)
+                        setMiniSimulatorResponse('')
+                        setMiniSimulatorChecked(false)
+                      }}
+                    >
+                      {label}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <div className="mindlab-clean-simulator__toolbarActions">
+                <button type="button" className="secondary-button" onClick={pickMiniSimulatorStatement}>
+                  <Shuffle size={16} aria-hidden="true" />
+                  <span>משפט חדש</span>
+                </button>
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={handleUseMiniSimulatorStatementInExercises}
+                  disabled={!miniSimulatorStatement?.statement}
+                >
+                  <Target size={16} aria-hidden="true" />
+                  <span>טען לתרגילים</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="mindlab-clean-simulator__statement" aria-live="polite">
+              <div className="mindlab-clean-simulator__statementLabel">{uiHe(activeWorkTone.patientInputLabelHe)}</div>
+              <blockquote>{miniSimulatorStatement?.statement || 'לא נמצא משפט בהקשר הזה כרגע.'}</blockquote>
+            </div>
+
+            <label className="mindlab-field">
+              <span>{g('התגובה המשחררת שלך', 'התגובה המשחררת שלך')}</span>
+              <textarea
+                rows={7}
+                className="mindlab-textarea mindlab-clean-textarea--xl"
+                value={miniSimulatorResponse}
+                onChange={(event) => {
+                  setMiniSimulatorResponse(event.target.value)
+                  setMiniSimulatorChecked(false)
+                }}
+                placeholder={uiHe('כתוב/כתבי כאן שאלה פותחת שמכבדת את החוויה ומזיזה תודעה...')}
+              />
+            </label>
+
+            <div className="mindlab-clean-simulator__actions">
+              <button type="button" className="mindlab-big-action" onClick={handleCheckMiniSimulator}>
+                <CheckCircle2 size={20} aria-hidden="true" />
+                <span>{g('בדוק תגובה', 'בדקי תגובה')}</span>
+              </button>
+            </div>
+
+            {miniSimulatorChecked && (
+              <section className="mindlab-clean-simulator__result" aria-live="polite">
+                <div className="mindlab-clean-simulator__resultHead">
+                  <strong>
+                    {miniSimulatorEvaluation.labelHe} · {miniSimulatorEvaluation.score}/100
+                  </strong>
+                </div>
+                <ul>
+                  {miniSimulatorEvaluation.feedbackHe.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            <details className="mindlab-clean-details">
+              <summary>דוגמאות תגובה (3-4) + השראה</summary>
+              <div className="mindlab-clean-details__body">
+                {miniSimulatorExamples.length ? (
+                  <div className="mindlab-clean-simulator__examples">
+                    {miniSimulatorExamples.map((example, index) => (
+                      <article key={`${example.pattern}-${index}`} className="mindlab-clean-simulator__example">
+                        <strong>{example.pattern}</strong>
+                        <p>{example.response}</p>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="muted-text">{g('אין דוגמאות מוכנות למשפט הזה, נסה משפט חדש.', 'אין דוגמאות מוכנות למשפט הזה, נסי משפט חדש.')}</p>
+                )}
+              </div>
+            </details>
+
+            <details className="mindlab-clean-details">
+              <summary>מצב מתקדם (הסימולטור המלא)</summary>
+              <div className="mindlab-clean-details__body">
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => setShowAdvancedSimulator((current) => !current)}
+                >
+                  {showAdvancedSimulator ? 'הסתר סימולטור מלא' : 'פתח סימולטור מלא'}
+                </button>
+                {showAdvancedSimulator && (
+                  <div className="mindlab-clean-advanced">
+                    <LiberatingConversationSimulator
+                      onLoadPatientText={loadPatientTextFromTrainingTool}
+                      onSignal={handleTrainingSignal}
+                    />
+                  </div>
+                )}
+              </div>
+            </details>
           </section>
         )}
 
         {activeMindTabId === 'pattern-master' && (
-          <section className="panel-card mindlab-workspace-panel">
+          <section className="panel-card mindlab-workspace-panel mindlab-clean-pattern-master">
             <div className="panel-card__head">
               <div>
                 <h3>מאסטר רצפים</h3>
-                <p>כאן עובדים רק על רצפים ו-flowchart. טעינת משפט תחזיר אותך לזרימת העבודה כשצריך.</p>
+                <p>{activeWorkTone.patternIntroHe}</p>
               </div>
             </div>
-            <PatternSequenceMaster
-              onLoadPatientText={loadPatientTextFromTrainingTool}
-              onSignal={handleTrainingSignal}
-            />
+
+            <div className="mindlab-sequence-grid" role="list" aria-label="פאטרני רצף">
+              {liberatingPatterns.map((pattern) => (
+                <article key={pattern.id} className="mindlab-sequence-card" role="listitem">
+                  <div className="mindlab-sequence-card__hero" aria-hidden="true">
+                    <span>{pattern.emoji ?? '✨'}</span>
+                  </div>
+                  <div className="mindlab-sequence-card__copy">
+                    <strong>{pattern.titleHe}</strong>
+                    <small>{pattern.name}</small>
+                    <p>{pattern.descriptionHe}</p>
+                  </div>
+                  <div className="mindlab-sequence-card__actions">
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      onClick={() => {
+                        setSelectedExercisePatternId(pattern.id)
+                        setExerciseFillAnswer('')
+                        setExerciseApplicationText('')
+                        setExerciseFillChecked(false)
+                        setExerciseApplicationChecked(false)
+                      }}
+                    >
+                      {g('לחץ ללמוד', 'לחצי ללמוד')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openCleanExercisePattern(pattern.id, { fromPatternMaster: true })}
+                    >
+                      {g('לחץ לתרגל', 'לחצי לתרגל')}
+                    </button>
+                  </div>
+                  <details className="mindlab-sequence-card__details">
+                    <summary>תצוגת לימוד מהירה</summary>
+                    <div className="mindlab-sequence-card__detailsBody">
+                      <p className="muted-text">{pattern.feedbackHe}</p>
+                      <p>{pattern.example}</p>
+                      <ul>
+                        {(pattern.questions ?? []).slice(0, 4).map((question) => (
+                          <li key={question}>{question}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </details>
+                </article>
+              ))}
+            </div>
+
+            <details className="mindlab-clean-details">
+              <summary>מצב מתקדם (Pattern Sequence Master המלא)</summary>
+              <div className="mindlab-clean-details__body">
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => setShowAdvancedPatternMaster((current) => !current)}
+                >
+                  {showAdvancedPatternMaster ? 'הסתר מצב מתקדם' : 'פתח מצב מתקדם'}
+                </button>
+                {showAdvancedPatternMaster && (
+                  <div className="mindlab-clean-advanced">
+                    <PatternSequenceMaster
+                      onLoadPatientText={loadPatientTextFromTrainingTool}
+                      onSignal={handleTrainingSignal}
+                    />
+                  </div>
+                )}
+              </div>
+            </details>
           </section>
         )}
 
@@ -1575,7 +2635,7 @@ export default function MindLiberatingLanguagePage() {
             <div className="panel-card__head">
               <div>
                 <h3>היסטוריה - Mind Liberating</h3>
-                <p>דוגמאות, רצפים וסשנים שנשמרו תחת מעבדת שחרור התודעה.</p>
+                <p>דוגמאות, רצפים וסשנים שנשמרו תחת מעבדת שחרור התודעה (לכל הטונים).</p>
               </div>
               <div className="alchemy-card__actions">
                 <Link to="/library" className="secondary-link-button">
@@ -1597,7 +2657,7 @@ export default function MindLiberatingLanguagePage() {
                         })}
                       </time>
                     </div>
-                    {item.patientText ? <p className="mindlab-history-item__patient">מטופל: {item.patientText}</p> : null}
+                    {item.patientText ? <p className="mindlab-history-item__patient">משפט מקור: {item.patientText}</p> : null}
                     {item.sentenceText ? <p className="mindlab-history-item__response">תגובה/רצף: {item.sentenceText}</p> : null}
                     <div className="mindlab-history-item__actions">
                       {item.patientText ? (
@@ -1611,13 +2671,15 @@ export default function MindLiberatingLanguagePage() {
               ) : (
                 <div className="panel-card panel-card--soft">
                   <p className="muted-text">
-                    עדיין אין פריטים בהיסטוריה של מעבדה זו. שמור/י סשן, דוגמה מהסימולטור או רצף מהמאסטר.
+                    {uiHe('עדיין אין פריטים בהיסטוריה של מעבדה זו. שמור/י סשן, דוגמה מהסימולטור או רצף מהמאסטר.')}
                   </p>
                 </div>
               )}
             </div>
           </section>
         )}
+          </div>
+        </div>
       </section>
 
       {showSoundConsent && (
@@ -1651,7 +2713,7 @@ export default function MindLiberatingLanguagePage() {
         </div>
       )}
 
-      <AlchemistCompanion mood={companionMood} message={companionMessage} pulseKey={companionPulseKey} />
+      <AlchemistCompanion mood={companionMood} message={uiHe(companionMessage)} pulseKey={companionPulseKey} />
     </div>
   )
 }
