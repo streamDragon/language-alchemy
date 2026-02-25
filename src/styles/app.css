@@ -367,6 +367,7 @@
 .mindlab-main {
   display: grid;
   gap: 0.9rem;
+  min-width: 0;
 }
 
 .mindlab-rail {
@@ -446,6 +447,210 @@
   padding: 0.7rem 0.75rem;
   color: #233d52;
   line-height: 1.6;
+}
+
+.mindlab-focus-strip {
+  position: sticky;
+  top: 0.6rem;
+  z-index: 7;
+  border: 1px solid rgba(211, 165, 74, 0.3);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 92% 12%, rgba(211, 165, 74, 0.14), transparent 46%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(251, 253, 255, 0.96) 100%);
+  box-shadow: 0 10px 28px rgba(16, 38, 61, 0.08);
+  padding: 0.7rem 0.75rem;
+  backdrop-filter: blur(8px);
+}
+
+.mindlab-focus-strip__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.65rem;
+  margin-bottom: 0.45rem;
+}
+
+.mindlab-focus-strip__eyebrow {
+  color: #6d1835;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.mindlab-focus-strip__status {
+  margin-top: 0.18rem;
+  color: #425f74;
+  font-size: 0.82rem;
+}
+
+.mindlab-focus-strip__scores {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.35rem;
+}
+
+.mindlab-focus-strip__score {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid #d9e3ec;
+  background: #f7fafc;
+  color: #5a7487;
+  padding: 0.15rem 0.42rem;
+  font-size: 0.73rem;
+  font-weight: 700;
+}
+
+.mindlab-focus-strip__score.tone-high {
+  border-color: rgba(109, 24, 53, 0.22);
+  background: rgba(109, 24, 53, 0.06);
+  color: #7a2847;
+}
+
+.mindlab-focus-strip__score.tone-mid {
+  border-color: rgba(211, 165, 74, 0.28);
+  background: rgba(211, 165, 74, 0.08);
+  color: #87652a;
+}
+
+.mindlab-focus-strip__score.tone-low,
+.mindlab-focus-strip__score.is-positive {
+  border-color: rgba(40, 138, 74, 0.22);
+  background: rgba(40, 138, 74, 0.07);
+  color: #2e7440;
+}
+
+.mindlab-focus-strip__quote {
+  margin: 0;
+  border-inline-start: 4px solid rgba(109, 24, 53, 0.18);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.82);
+  padding: 0.55rem 0.65rem;
+  color: #213c50;
+  line-height: 1.5;
+  max-height: 6.2rem;
+  overflow: auto;
+}
+
+.mindlab-eval-compact {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: 0.65rem;
+  margin-bottom: 0.65rem;
+}
+
+.mindlab-eval-compact__barCard {
+  border: 1px solid #e2eaf2;
+  border-radius: 12px;
+  background: #fbfdff;
+  padding: 0.45rem 0.4rem;
+  display: grid;
+  justify-items: center;
+  gap: 0.3rem;
+}
+
+.mindlab-eval-compact__barLabels {
+  width: 100%;
+  display: grid;
+  justify-items: center;
+  gap: 0.15rem;
+  color: #6a8194;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.mindlab-eval-compact__fieldBar {
+  position: relative;
+  width: 18px;
+  height: 112px;
+  border-radius: 999px;
+  border: 1px solid #dfe8f1;
+  background: linear-gradient(180deg, #f7fafc 0%, #ffffff 100%);
+  overflow: hidden;
+}
+
+.mindlab-eval-compact__fieldFill {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  background: linear-gradient(180deg, #6d1835 0%, #c88e32 100%);
+  border-radius: 0 0 999px 999px;
+}
+
+.mindlab-eval-compact__barValue {
+  color: #17324a;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.mindlab-eval-compact__meters {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.mindlab-eval-meter {
+  border: 1px solid #e2eaf2;
+  border-radius: 10px;
+  background: #fff;
+  padding: 0.45rem 0.55rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.mindlab-eval-meter.tone-high {
+  border-color: rgba(109, 24, 53, 0.18);
+  background: linear-gradient(180deg, #fff9fb 0%, #fff 100%);
+}
+
+.mindlab-eval-meter.tone-mid {
+  border-color: rgba(211, 165, 74, 0.2);
+  background: linear-gradient(180deg, #fffdf7 0%, #fff 100%);
+}
+
+.mindlab-eval-meter.tone-low {
+  border-color: rgba(40, 138, 74, 0.18);
+  background: linear-gradient(180deg, #f8fdf9 0%, #fff 100%);
+}
+
+.mindlab-eval-meter__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+  color: #3f5c70;
+  font-size: 0.78rem;
+}
+
+.mindlab-eval-meter__head strong {
+  color: #17324a;
+  font-size: 0.79rem;
+}
+
+.mindlab-eval-meter__track {
+  height: 6px;
+  border-radius: 999px;
+  background: #edf3f8;
+  overflow: hidden;
+}
+
+.mindlab-eval-meter__track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #d3a54a 0%, #7d2444 55%, #611934 100%);
+}
+
+.mindlab-eval-meter.is-positive .mindlab-eval-meter__track > span {
+  background: linear-gradient(90deg, #5ebc69 0%, #2fa66f 55%, #15808f 100%);
+}
+
+.mindlab-detail-menu {
+  margin-top: 0.6rem;
+}
+
+.mindlab-detail-menu .menu-section__subtitle {
+  max-width: 28ch;
 }
 
 .mindlab-score-grid {
@@ -2330,6 +2535,34 @@ textarea {
   .mindlab-options-grid,
   .mindlab-delta-grid {
     grid-template-columns: 1fr;
+  }
+
+  .mindlab-focus-strip {
+    position: static;
+  }
+
+  .mindlab-focus-strip__head {
+    flex-direction: column;
+  }
+
+  .mindlab-focus-strip__scores {
+    justify-content: flex-start;
+  }
+
+  .mindlab-eval-compact {
+    grid-template-columns: 1fr;
+  }
+
+  .mindlab-eval-compact__barCard {
+    grid-template-columns: auto auto auto;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .mindlab-eval-compact__barLabels {
+    width: auto;
+    justify-items: start;
+    text-align: start;
   }
 
   .mindlab-training-grid,

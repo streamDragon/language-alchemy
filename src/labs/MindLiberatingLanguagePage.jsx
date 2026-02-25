@@ -3,6 +3,7 @@ import { getLabConfig } from '../data/labsConfig'
 import { useAppState } from '../state/appStateContext'
 import { makeId } from '../utils/ids'
 import LabLessonPrompt from '../components/layout/LabLessonPrompt'
+import MenuSection from '../components/layout/MenuSection'
 import LiberatingConversationSimulator from '../components/mind/LiberatingConversationSimulator'
 import PatternSequenceMaster from '../components/mind/PatternSequenceMaster'
 import { MessageCircle, Sparkles, Workflow } from 'lucide-react'
@@ -328,6 +329,45 @@ export default function MindLiberatingLanguagePage() {
     return clamp(Math.round(base + delta), 0, 100)
   }, [analysis.optionBlindnessScore, newOptionsAfterRelease.length, therapistText])
 
+  const compactEvaluationMeters = useMemo(
+    () => [
+      {
+        id: 'closure',
+        labelHe: 'סגירת תודעה',
+        value: analysis.closureScore,
+        tone: scoreTone(analysis.closureScore),
+      },
+      {
+        id: 'blindness',
+        labelHe: 'עיוורון לאופציות',
+        value: analysis.optionBlindnessScore,
+        tone: scoreTone(analysis.optionBlindnessScore),
+      },
+      {
+        id: 'opening',
+        labelHe: 'פתיחת שדה אחרי שחרור',
+        value: opennessAfterReleaseScore,
+        tone: scoreTone(100 - opennessAfterReleaseScore),
+        positive: true,
+      },
+    ],
+    [analysis.closureScore, analysis.optionBlindnessScore, opennessAfterReleaseScore],
+  )
+
+  const fieldPressureScore = useMemo(
+    () =>
+      clamp(
+        Math.round(
+          (analysis.closureScore * 0.45 +
+            analysis.optionBlindnessScore * 0.35 +
+            (100 - opennessAfterReleaseScore) * 0.2),
+        ),
+        0,
+        100,
+      ),
+    [analysis.closureScore, analysis.optionBlindnessScore, opennessAfterReleaseScore],
+  )
+
   const handleUseGeneratedScript = () => {
     if (!generatedTherapistText) {
       setStatusMessage('הדבק/י קודם משפט מטופל כדי לבנות ניסוח מטפל משחרר.')
@@ -417,6 +457,32 @@ export default function MindLiberatingLanguagePage() {
 
         <div className="mindlab-layout">
           <div className="mindlab-main">
+            <section className="mindlab-focus-strip" aria-live="polite">
+              <div className="mindlab-focus-strip__head">
+                <div>
+                  <div className="mindlab-focus-strip__eyebrow">משפט מטופל פעיל</div>
+                  <div className="mindlab-focus-strip__status">
+                    <strong>מצב שדה:</strong> {analysis.windowLabelHe}
+                  </div>
+                </div>
+                <div className="mindlab-focus-strip__scores" aria-label="מדדי מצב שדה">
+                  {compactEvaluationMeters.map((metric) => (
+                    <span
+                      key={metric.id}
+                      className={`mindlab-focus-strip__score tone-${metric.tone} ${
+                        metric.positive ? 'is-positive' : ''
+                      }`}
+                    >
+                      {metric.labelHe}: {metric.value}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <blockquote className="mindlab-focus-strip__quote">
+                {analysis.text || 'הדבק/י כאן משפט מטופל כדי שהמשפט הפעיל יישאר מול העיניים לאורך כל העבודה.'}
+              </blockquote>
+            </section>
+
             <section className="panel-card">
               <div className="panel-card__head">
                 <div>
@@ -729,29 +795,39 @@ export default function MindLiberatingLanguagePage() {
                   </div>
                 </div>
 
-                <div className="mindlab-score-grid">
-                  <div className={`mindlab-score-card tone-${scoreTone(analysis.closureScore)}`}>
-                    <div className="mindlab-score-card__label">סגירת תודעה</div>
-                    <div className="mindlab-score-card__value">{analysis.closureScore}/100</div>
-                    <div className="mindlab-bar">
-                      <span style={{ width: `${analysis.closureScore}%` }} />
+                <div className="mindlab-eval-compact">
+                  <div className="mindlab-eval-compact__barCard" aria-label="מד שדה קומפקטי">
+                    <div className="mindlab-eval-compact__barLabels">
+                      <span>סגור</span>
+                      <span>פתוח</span>
                     </div>
+                    <div className="mindlab-eval-compact__fieldBar" aria-hidden="true">
+                      <div
+                        className="mindlab-eval-compact__fieldFill"
+                        style={{ height: `${fieldPressureScore}%` }}
+                      />
+                    </div>
+                    <div className="mindlab-eval-compact__barValue">{fieldPressureScore}/100</div>
                   </div>
 
-                  <div className={`mindlab-score-card tone-${scoreTone(analysis.optionBlindnessScore)}`}>
-                    <div className="mindlab-score-card__label">עיוורון לאופציות</div>
-                    <div className="mindlab-score-card__value">{analysis.optionBlindnessScore}/100</div>
-                    <div className="mindlab-bar">
-                      <span style={{ width: `${analysis.optionBlindnessScore}%` }} />
-                    </div>
-                  </div>
-
-                  <div className={`mindlab-score-card tone-${scoreTone(opennessAfterReleaseScore)}`}>
-                    <div className="mindlab-score-card__label">פתיחת שדה אחרי שחרור (משוער/מדווח)</div>
-                    <div className="mindlab-score-card__value">{opennessAfterReleaseScore}/100</div>
-                    <div className="mindlab-bar">
-                      <span style={{ width: `${opennessAfterReleaseScore}%` }} />
-                    </div>
+                  <div className="mindlab-eval-compact__meters" role="list" aria-label="מדדי אבחון">
+                    {compactEvaluationMeters.map((metric) => (
+                      <div
+                        key={metric.id}
+                        className={`mindlab-eval-meter tone-${metric.tone} ${
+                          metric.positive ? 'is-positive' : ''
+                        }`}
+                        role="listitem"
+                      >
+                        <div className="mindlab-eval-meter__head">
+                          <span>{metric.labelHe}</span>
+                          <strong>{metric.value}/100</strong>
+                        </div>
+                        <div className="mindlab-eval-meter__track" aria-hidden="true">
+                          <span style={{ width: `${metric.value}%` }} />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -760,66 +836,84 @@ export default function MindLiberatingLanguagePage() {
                 </div>
                 <p className="muted-text">{analysis.summaryHe}</p>
 
-                <div className="mindlab-chip-lists">
-                  <div className="chip-bank">
-                    <h4>דפוסי סגירה שזוהו</h4>
-                    <div className="chips-wrap">
-                      {analysis.detectedClosures.length ? (
-                        analysis.detectedClosures.map((item) => (
-                          <span key={item.id} className="chip chip--selected">
-                            {item.labelHe} ({item.count})
-                          </span>
-                        ))
-                      ) : (
-                        <span className="chip">לא זוהו דפוסי סגירה מובהקים</span>
-                      )}
+                <MenuSection
+                  compact
+                  className="mindlab-detail-menu"
+                  title="אבחון מפורט"
+                  subtitle="דפוסי סגירה, ניצני פתיחה וכיווני שחרור"
+                  badgeText={`${
+                    analysis.detectedClosures.length +
+                    analysis.detectedOpenings.length +
+                    analysis.releaseHintsHe.length
+                  }`}
+                >
+                  <div className="mindlab-chip-lists">
+                    <div className="chip-bank">
+                      <h4>דפוסי סגירה שזוהו</h4>
+                      <div className="chips-wrap">
+                        {analysis.detectedClosures.length ? (
+                          analysis.detectedClosures.map((item) => (
+                            <span key={item.id} className="chip chip--selected">
+                              {item.labelHe} ({item.count})
+                            </span>
+                          ))
+                        ) : (
+                          <span className="chip">לא זוהו דפוסי סגירה מובהקים</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="chip-bank">
+                      <h4>ניצני פתיחה שכבר קיימים</h4>
+                      <div className="chips-wrap">
+                        {analysis.detectedOpenings.length ? (
+                          analysis.detectedOpenings.map((item) => (
+                            <span key={item.labelHe} className="chip">
+                              {item.labelHe} ({item.count})
+                            </span>
+                          ))
+                        ) : (
+                          <span className="chip">כמעט אין כרגע שפה פותחת</span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  <div className="chip-bank">
-                    <h4>ניצני פתיחה שכבר קיימים</h4>
-                    <div className="chips-wrap">
-                      {analysis.detectedOpenings.length ? (
-                        analysis.detectedOpenings.map((item) => (
-                          <span key={item.labelHe} className="chip">
-                            {item.labelHe} ({item.count})
-                          </span>
-                        ))
-                      ) : (
-                        <span className="chip">כמעט אין כרגע שפה פותחת</span>
-                      )}
-                    </div>
+                  <div className="mindlab-hints">
+                    <h4>כיווני שחרור מומלצים</h4>
+                    <ul>
+                      {analysis.releaseHintsHe.map((hint) => (
+                        <li key={hint}>{hint}</li>
+                      ))}
+                    </ul>
                   </div>
-                </div>
-
-                <div className="mindlab-hints">
-                  <h4>כיווני שחרור מומלצים</h4>
-                  <ul>
-                    {analysis.releaseHintsHe.map((hint) => (
-                      <li key={hint}>{hint}</li>
-                    ))}
-                  </ul>
-                </div>
+                </MenuSection>
               </section>
 
               <section className="panel-card panel-card--soft">
-                <div className="panel-card__head">
-                  <h3>מה המטופל מסכים לראות אחרי השחרור</h3>
-                </div>
-                <p className="muted-text">
-                  כאן אתה מודד/ת שינוי תודעתי בפועל: אילו אופציות נעשות “אפשר לשקול”.
-                </p>
-                <div className="mindlab-consent-list">
-                  {newOptionsAfterRelease.length ? (
-                    newOptionsAfterRelease.map((item) => (
-                      <div key={item} className="mini-pill">
-                        {item}
-                      </div>
-                    ))
-                  ) : (
-                    <div className="mini-pill">עדיין לא סומנו אופציות חדשות</div>
-                  )}
-                </div>
+                <MenuSection
+                  compact
+                  defaultOpen={false}
+                  className="mindlab-detail-menu"
+                  title="מה המטופל מסכים לראות אחרי השחרור"
+                  subtitle="אופציות חדשות שהופכות מ'לא רלוונטי' ל'אפשר לשקול'"
+                  badgeText={`${newOptionsAfterRelease.length}`}
+                >
+                  <p className="muted-text">
+                    כאן אתה מודד/ת שינוי תודעתי בפועל: אילו אופציות נעשות “אפשר לשקול”.
+                  </p>
+                  <div className="mindlab-consent-list">
+                    {newOptionsAfterRelease.length ? (
+                      newOptionsAfterRelease.map((item) => (
+                        <div key={item} className="mini-pill">
+                          {item}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="mini-pill">עדיין לא סומנו אופציות חדשות</div>
+                    )}
+                  </div>
+                </MenuSection>
               </section>
             </div>
           </aside>
