@@ -1365,8 +1365,66 @@ button:hover {
 }
 
 .chip-bank-panel {
-  display: grid;
-  gap: 0.7rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.55rem;
+}
+
+.chip-bank-panel > .menu-section {
+  flex: 1 1 0;
+  min-width: 132px;
+  margin: 0;
+}
+
+.chip-bank-panel > .menu-section:not(.is-open) {
+  max-width: 220px;
+}
+
+.chip-bank-panel > .menu-section.is-open {
+  flex-basis: 100%;
+  max-width: none;
+  order: 99;
+}
+
+.chip-bank-panel > .menu-section:not(.is-open) .menu-section__toggle {
+  min-height: 52px;
+  padding: 0.58rem 0.65rem;
+  align-items: center;
+}
+
+.chip-bank-panel > .menu-section:not(.is-open) .menu-section__titleWrap {
+  gap: 0.05rem;
+}
+
+.chip-bank-panel > .menu-section:not(.is-open) .menu-section__title {
+  font-size: 0.84rem;
+}
+
+.chip-bank-panel > .menu-section:not(.is-open) .menu-section__subtitle {
+  display: none;
+}
+
+.chip-bank-panel > .menu-section:not(.is-open) .menu-section__badge {
+  font-size: 0.68rem;
+  padding: 0.1rem 0.38rem;
+}
+
+.chip-bank-panel > .menu-section:not(.is-open) .menu-section__chevron {
+  font-size: 0.9rem;
+}
+
+.chip-bank-panel > .menu-section.is-open .menu-section__toggle {
+  border-bottom: 1px solid #e7eef5;
+}
+
+.chip-bank-panel > .menu-section.is-open .menu-section__subtitle {
+  white-space: normal;
+  max-width: none;
+}
+
+.chip-bank-panel > .menu-section.is-open .menu-section__body {
+  padding-top: 0.6rem;
 }
 
 .menu-section {

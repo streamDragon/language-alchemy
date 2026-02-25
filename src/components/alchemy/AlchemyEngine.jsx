@@ -334,6 +334,23 @@ export default function AlchemyEngine({
     setStatusMessage('טקסט המקור נוקה.')
   }
 
+  const handleSelectBankChip = (bank, chipId) => {
+    setDraft((current) => selectChipInDraft(current, bank.slotId, chipId))
+    setOpenBankId('')
+  }
+
+  const handleClearOptionalBank = (bank) => {
+    setDraft((current) => ({
+      ...current,
+      selectedBySlot: {
+        ...current.selectedBySlot,
+        [bank.slotId]: '',
+      },
+      updatedAt: new Date().toISOString(),
+    }))
+    setOpenBankId('')
+  }
+
   const handleCopy = async () => {
     try {
       if (navigator.clipboard?.writeText) {
@@ -584,9 +601,7 @@ export default function AlchemyEngine({
                           type="button"
                           className={`chip ${selected ? 'chip--selected' : ''}`}
                           aria-pressed={selected}
-                          onClick={() =>
-                            setDraft((current) => selectChipInDraft(current, bank.slotId, chip.id))
-                          }
+                          onClick={() => handleSelectBankChip(bank, chip.id)}
                         >
                           {text}
                         </button>
@@ -597,16 +612,7 @@ export default function AlchemyEngine({
                         type="button"
                         className={`chip ${!selectedChipId ? 'chip--selected' : ''}`}
                         aria-pressed={!selectedChipId}
-                        onClick={() =>
-                          setDraft((current) => ({
-                            ...current,
-                            selectedBySlot: {
-                              ...current.selectedBySlot,
-                              [bank.slotId]: '',
-                            },
-                            updatedAt: new Date().toISOString(),
-                          }))
-                        }
+                        onClick={() => handleClearOptionalBank(bank)}
                       >
                         ללא
                       </button>
