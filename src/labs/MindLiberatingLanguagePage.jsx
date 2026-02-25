@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { getLabConfig } from '../data/labsConfig'
 import { useAppState } from '../state/appStateContext'
 import { makeId } from '../utils/ids'
@@ -120,6 +120,33 @@ const THERAPIST_TONES = [
   { id: 'grounded', labelHe: 'קרקעי / יציב', openerHe: 'אני שומע/ת אותך, וחשוב לי שנדייק רגע את מה שקורה כאן.' },
   { id: 'soft', labelHe: 'רך / אמפתי', openerHe: 'אני איתך בזה, ובוא ננסה לפתוח כאן קצת יותר מרחב בלי לבטל את מה שאתה מרגיש.' },
   { id: 'direct', labelHe: 'ישיר / מוביל', openerHe: 'בוא נעצור רגע ונבדוק אם הניסוח הנוכחי סוגר לך אפשרויות שכרגע עוד לא ראינו.' },
+]
+
+const MINDLAB_MAIN_STEPS = [
+  {
+    id: 'patient-source',
+    shortLabelHe: 'משפט מטופל',
+    titleHe: '1) מה המטופל אומר',
+    subtitleHe: 'מתחילים מהטקסט כפי שהוא, בלי לתקן אותו עדיין.',
+  },
+  {
+    id: 'therapist-script',
+    shortLabelHe: 'ניסוח מטפל',
+    titleHe: '2) טקסט מטפל שמזיז תודעה',
+    subtitleHe: 'ניסוח שמכבד חוויה ופותח שדה ואפשרויות.',
+  },
+  {
+    id: 'options-shift',
+    shortLabelHe: 'אופציות לפני/אחרי',
+    titleHe: '3) אילו אופציות לא נראו קודם, ואילו נפתחו אחרי השחרור',
+    subtitleHe: 'כאן מודדים שינוי בפועל במה שהמטופל מוכן לראות.',
+  },
+  {
+    id: 'training-tools',
+    shortLabelHe: 'תרגול מתקדם',
+    titleHe: '4) מעבדות אימון מתקדמות',
+    subtitleHe: 'סימולטור + מאסטר רצפים לתרגול על יבש עם פידבק.',
+  },
 ]
 
 function clamp(value, min, max) {
@@ -287,6 +314,9 @@ export default function MindLiberatingLanguagePage() {
   const [afterOptionsText, setAfterOptionsText] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
   const [activeTrainingToolId, setActiveTrainingToolId] = useState('')
+  const [activeStepId, setActiveStepId] = useState(MINDLAB_MAIN_STEPS[0].id)
+  const [completedStepIds, setCompletedStepIds] = useState([])
+  const stepRefs = useRef({})
 
   useEffect(() => {
     setLastVisitedLab(lab.id)
@@ -374,6 +404,47 @@ export default function MindLiberatingLanguagePage() {
     [analysis.closureScore, analysis.optionBlindnessScore, opennessAfterReleaseScore],
   )
 
+  const activeStepIndex = useMemo(
+    () => Math.max(0, MINDLAB_MAIN_STEPS.findIndex((step) => step.id === activeStepId)),
+    [activeStepId],
+  )
+  const activeStepMeta = MINDLAB_MAIN_STEPS[activeStepIndex] ?? MINDLAB_MAIN_STEPS[0]
+
+  const scrollToStep = (stepId) => {
+    const node = stepRefs.current[stepId]
+    if (!node) return
+    window.requestAnimationFrame(() => {
+      node.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }
+
+  const openStep = (stepId, options = {}) => {
+    const { scroll = true } = options
+    setActiveStepId(stepId)
+    if (scroll) {
+      scrollToStep(stepId)
+    }
+  }
+
+  const markStepDoneAndAdvance = (stepId) => {
+    setCompletedStepIds((current) => (current.includes(stepId) ? current : [...current, stepId]))
+    const currentIndex = MINDLAB_MAIN_STEPS.findIndex((step) => step.id === stepId)
+    const nextStep = MINDLAB_MAIN_STEPS[currentIndex + 1]
+    if (nextStep) {
+      setActiveStepId(nextStep.id)
+      scrollToStep(nextStep.id)
+      setStatusMessage(`סיימת את ${currentIndex + 1}/${MINDLAB_MAIN_STEPS.length} • ממשיכים ל-${nextStep.shortLabelHe}.`)
+      return
+    }
+    setStatusMessage('סיימת את כל שלבי העבודה בעמוד. אפשר לשמור להיסטוריה או לחזור ולחדד שלב מסוים.')
+  }
+
+  const getStepBadgeText = (stepId) => {
+    if (activeStepId === stepId) return 'כאן עכשיו'
+    if (completedStepIds.includes(stepId)) return 'הושלם'
+    return 'סגור'
+  }
+
   const handleUseGeneratedScript = () => {
     if (!generatedTherapistText) {
       setStatusMessage('הדבק/י קודם משפט מטופל כדי לבנות ניסוח מטפל משחרר.')
@@ -431,16 +502,26 @@ export default function MindLiberatingLanguagePage() {
     setSelectedReleaseChannelId(RELEASE_CHANNELS[0].id)
     setSelectedOptionOpenerId(OPTION_OPENERS[0].id)
     setSelectedToneId(THERAPIST_TONES[1].id)
+    setActiveTrainingToolId('')
+    setActiveStepId(MINDLAB_MAIN_STEPS[0].id)
+    setCompletedStepIds([])
     setStatusMessage('נפתחה עבודה חדשה.')
+    scrollToStep(MINDLAB_MAIN_STEPS[0].id)
   }
 
   const loadSample = (text) => {
     setPatientText(text)
+    setActiveStepId('patient-source')
     setStatusMessage('נטענה דוגמת טקסט מטופל. עכשיו בנה/י ניסוח משחרר.')
   }
 
   const loadPatientTextFromTrainingTool = (text) => {
     setPatientText(text)
+    setActiveStepId('patient-source')
+    setCompletedStepIds((current) =>
+      current.includes('training-tools') ? current : [...current, 'training-tools'],
+    )
+    scrollToStep('patient-source')
     setStatusMessage('נטען משפט מטופל מהמעבדה המתקדמת אל המיינד ליברטינג הראשי.')
   }
 
@@ -463,6 +544,49 @@ export default function MindLiberatingLanguagePage() {
 
         <div className="mindlab-layout">
           <div className="mindlab-main">
+            <section className="mindlab-stepper" aria-label="התקדמות בשלבי המעבדה">
+              <div className="mindlab-stepper__head">
+                <div>
+                  <div className="mindlab-stepper__eyebrow">מסלול עבודה ממוקד</div>
+                  <div className="mindlab-stepper__title">
+                    שלב {activeStepIndex + 1}/{MINDLAB_MAIN_STEPS.length} • {activeStepMeta.shortLabelHe}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="mindlab-stepper__reset"
+                  onClick={() => {
+                    setCompletedStepIds([])
+                    openStep(MINDLAB_MAIN_STEPS[0].id)
+                  }}
+                >
+                  איפוס התקדמות
+                </button>
+              </div>
+
+              <div className="mindlab-stepper__track" role="list">
+                {MINDLAB_MAIN_STEPS.map((step, index) => {
+                  const isActive = activeStepId === step.id
+                  const isDone = completedStepIds.includes(step.id)
+                  return (
+                    <button
+                      key={step.id}
+                      type="button"
+                      role="listitem"
+                      className={`mindlab-stepper__dot ${isActive ? 'is-active' : ''} ${
+                        isDone ? 'is-done' : ''
+                      }`}
+                      onClick={() => openStep(step.id)}
+                      aria-current={isActive ? 'step' : undefined}
+                      title={`${index + 1}. ${step.shortLabelHe}`}
+                    >
+                      <span className="mindlab-stepper__dotIndex">{index + 1}</span>
+                      <span className="mindlab-stepper__dotLabel">{step.shortLabelHe}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </section>
             <section className="mindlab-focus-strip" aria-live="polite">
               <div className="mindlab-focus-strip__head">
                 <div>
@@ -472,6 +596,9 @@ export default function MindLiberatingLanguagePage() {
                   </div>
                 </div>
                 <div className="mindlab-focus-strip__scores" aria-label="מדדי מצב שדה">
+                  <span className="mindlab-focus-strip__score current-step" title={activeStepMeta.titleHe}>
+                    עכשיו: {activeStepMeta.shortLabelHe}
+                  </span>
                   {compactEvaluationMeters.map((metric) => (
                     <span
                       key={metric.id}
@@ -489,11 +616,29 @@ export default function MindLiberatingLanguagePage() {
               </blockquote>
             </section>
 
-            <section className="panel-card">
+            <section
+              ref={(node) => {
+                stepRefs.current['patient-source'] = node
+              }}
+              className={`panel-card mindlab-step-card ${
+                activeStepId === 'patient-source' ? 'is-open' : 'is-collapsed'
+              } ${completedStepIds.includes('patient-source') ? 'is-done' : ''}`}
+            >
               <div className="panel-card__head">
                 <div>
                   <h3>1) מה המטופל אומר</h3>
                   <p>מתחילים מהטקסט כפי שהוא, בלי לתקן אותו עדיין.</p>
+                </div>
+                <div className="mindlab-step-card__headActions">
+                  <span className={`mindlab-step-card__badge ${activeStepId === 'patient-source' ? 'is-active' : ''}`}>
+                    {getStepBadgeText('patient-source')}
+                  </span>
+                  <button type="button" onClick={() => openStep('patient-source')}>
+                    {activeStepId === 'patient-source' ? 'פתוח עכשיו' : 'פתח תרגיל'}
+                  </button>
+                  <button type="button" className="secondary-button" onClick={() => markStepDoneAndAdvance('patient-source')}>
+                    סיימתי → סגור והמשך
+                  </button>
                 </div>
               </div>
 
@@ -523,11 +668,33 @@ export default function MindLiberatingLanguagePage() {
               </div>
             </section>
 
-            <section className="panel-card">
+            <section
+              ref={(node) => {
+                stepRefs.current['therapist-script'] = node
+              }}
+              className={`panel-card mindlab-step-card ${
+                activeStepId === 'therapist-script' ? 'is-open' : 'is-collapsed'
+              } ${completedStepIds.includes('therapist-script') ? 'is-done' : ''}`}
+            >
               <div className="panel-card__head">
                 <div>
                   <h3>2) טקסט מטפל שמזיז תודעה</h3>
                   <p>בונים ניסוח שמכבד את החוויה, אבל פותח שדה ואפשרויות.</p>
+                </div>
+                <div className="mindlab-step-card__headActions">
+                  <span className={`mindlab-step-card__badge ${activeStepId === 'therapist-script' ? 'is-active' : ''}`}>
+                    {getStepBadgeText('therapist-script')}
+                  </span>
+                  <button type="button" onClick={() => openStep('therapist-script')}>
+                    {activeStepId === 'therapist-script' ? 'פתוח עכשיו' : 'פתח תרגיל'}
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => markStepDoneAndAdvance('therapist-script')}
+                  >
+                    סיימתי → סגור והמשך
+                  </button>
                 </div>
               </div>
 
@@ -635,11 +802,33 @@ export default function MindLiberatingLanguagePage() {
               </div>
             </section>
 
-            <section className="panel-card">
+            <section
+              ref={(node) => {
+                stepRefs.current['options-shift'] = node
+              }}
+              className={`panel-card mindlab-step-card ${
+                activeStepId === 'options-shift' ? 'is-open' : 'is-collapsed'
+              } ${completedStepIds.includes('options-shift') ? 'is-done' : ''}`}
+            >
               <div className="panel-card__head">
                 <div>
                   <h3>3) אילו אופציות לא נראו קודם, ואילו נפתחו אחרי השחרור</h3>
                   <p>זה הלב של העבודה: לא רק “ניסוח יפה”, אלא שינוי במה שהמטופל מוכן לראות.</p>
+                </div>
+                <div className="mindlab-step-card__headActions">
+                  <span className={`mindlab-step-card__badge ${activeStepId === 'options-shift' ? 'is-active' : ''}`}>
+                    {getStepBadgeText('options-shift')}
+                  </span>
+                  <button type="button" onClick={() => openStep('options-shift')}>
+                    {activeStepId === 'options-shift' ? 'פתוח עכשיו' : 'פתח תרגיל'}
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => markStepDoneAndAdvance('options-shift')}
+                  >
+                    סיימתי → סגור והמשך
+                  </button>
                 </div>
               </div>
 
@@ -704,13 +893,35 @@ export default function MindLiberatingLanguagePage() {
               </div>
             </section>
 
-            <section className="panel-card panel-card--soft">
+            <section
+              ref={(node) => {
+                stepRefs.current['training-tools'] = node
+              }}
+              className={`panel-card panel-card--soft mindlab-step-card ${
+                activeStepId === 'training-tools' ? 'is-open' : 'is-collapsed'
+              } ${completedStepIds.includes('training-tools') ? 'is-done' : ''}`}
+            >
               <div className="panel-card__head">
                 <div>
                   <h3>4) מעבדות אימון מתקדמות</h3>
                   <p>
                     תרגול "על יבש" של שפה משחררת: בוחרים הקשר, מקבלים משפט, ובונים תגובה/רצף עם פידבק מיידי.
                   </p>
+                </div>
+                <div className="mindlab-step-card__headActions">
+                  <span className={`mindlab-step-card__badge ${activeStepId === 'training-tools' ? 'is-active' : ''}`}>
+                    {getStepBadgeText('training-tools')}
+                  </span>
+                  <button type="button" onClick={() => openStep('training-tools')}>
+                    {activeStepId === 'training-tools' ? 'פתוח עכשיו' : 'פתח תרגיל'}
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => markStepDoneAndAdvance('training-tools')}
+                  >
+                    סיימתי שלב תרגול
+                  </button>
                 </div>
               </div>
 

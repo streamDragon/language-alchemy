@@ -370,6 +370,114 @@
   min-width: 0;
 }
 
+.mindlab-stepper {
+  position: sticky;
+  top: 0.6rem;
+  z-index: 9;
+  border-radius: 14px;
+  border: 1px solid rgba(16, 38, 61, 0.1);
+  background:
+    radial-gradient(circle at 90% 12%, rgba(211, 165, 74, 0.12), transparent 48%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 252, 255, 0.96) 100%);
+  box-shadow: 0 12px 26px rgba(16, 38, 61, 0.08);
+  padding: 0.65rem 0.75rem;
+  backdrop-filter: blur(8px);
+}
+
+.mindlab-stepper__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.65rem;
+  margin-bottom: 0.45rem;
+}
+
+.mindlab-stepper__eyebrow {
+  color: #6d1835;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.mindlab-stepper__title {
+  margin-top: 0.15rem;
+  color: #17324a;
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.mindlab-stepper__reset {
+  border-radius: 999px;
+  padding: 0.32rem 0.62rem;
+  font-size: 0.8rem;
+}
+
+.mindlab-stepper__track {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.mindlab-stepper__dot {
+  border-radius: 12px;
+  border: 1px solid #d9e3ed;
+  background: #f7fafd;
+  color: #536d80;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.35rem;
+  text-align: start;
+  padding: 0.35rem 0.5rem;
+  min-height: 48px;
+}
+
+.mindlab-stepper__dot:hover {
+  border-color: rgba(109, 24, 53, 0.2);
+  background: #fffaf5;
+}
+
+.mindlab-stepper__dot.is-active {
+  border-color: rgba(109, 24, 53, 0.35);
+  background:
+    radial-gradient(circle at 92% 14%, rgba(211, 165, 74, 0.14), transparent 46%),
+    linear-gradient(180deg, #fff8f0 0%, #fbf0f6 100%);
+  box-shadow: 0 0 0 2px rgba(211, 165, 74, 0.08);
+}
+
+.mindlab-stepper__dot.is-done {
+  border-color: rgba(40, 138, 74, 0.22);
+  background: linear-gradient(180deg, #f7fdf9 0%, #fff 100%);
+}
+
+.mindlab-stepper__dotIndex {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d3deea;
+  background: #fff;
+  color: #24465c;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.mindlab-stepper__dot.is-active .mindlab-stepper__dotIndex {
+  border-color: rgba(109, 24, 53, 0.28);
+  color: #6d1835;
+}
+
+.mindlab-stepper__dot.is-done .mindlab-stepper__dotIndex {
+  border-color: rgba(40, 138, 74, 0.24);
+  color: #2f7b40;
+}
+
+.mindlab-stepper__dotLabel {
+  font-size: 0.78rem;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
 .mindlab-rail {
   min-width: 0;
 }
@@ -451,8 +559,8 @@
 
 .mindlab-focus-strip {
   position: sticky;
-  top: 0.6rem;
-  z-index: 7;
+  top: 5.2rem;
+  z-index: 8;
   border: 1px solid rgba(211, 165, 74, 0.3);
   border-radius: 14px;
   background:
@@ -519,6 +627,12 @@
   border-color: rgba(40, 138, 74, 0.22);
   background: rgba(40, 138, 74, 0.07);
   color: #2e7440;
+}
+
+.mindlab-focus-strip__score.current-step {
+  border-color: rgba(16, 38, 61, 0.14);
+  background: #eef4f9;
+  color: #355267;
 }
 
 .mindlab-focus-strip__quote {
@@ -651,6 +765,52 @@
 
 .mindlab-detail-menu .menu-section__subtitle {
   max-width: 28ch;
+}
+
+.mindlab-step-card {
+  scroll-margin-top: 9.6rem;
+}
+
+.mindlab-step-card > .panel-card__head {
+  margin-bottom: 0;
+}
+
+.mindlab-step-card.is-open {
+  border-color: rgba(109, 24, 53, 0.18);
+  box-shadow: 0 10px 28px rgba(16, 38, 61, 0.05);
+}
+
+.mindlab-step-card.is-done:not(.is-open) {
+  border-color: rgba(40, 138, 74, 0.18);
+}
+
+.mindlab-step-card.is-collapsed > :not(.panel-card__head) {
+  display: none;
+}
+
+.mindlab-step-card__headActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.mindlab-step-card__badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid #d8e3ed;
+  background: #f5f9fc;
+  color: #5a7386;
+  padding: 0.22rem 0.52rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.mindlab-step-card__badge.is-active {
+  border-color: rgba(109, 24, 53, 0.24);
+  background: rgba(109, 24, 53, 0.06);
+  color: #7a2948;
 }
 
 .mindlab-score-grid {
@@ -2541,6 +2701,10 @@ textarea {
     position: static;
   }
 
+  .mindlab-stepper {
+    position: static;
+  }
+
   .mindlab-focus-strip__head {
     flex-direction: column;
   }
@@ -2563,6 +2727,22 @@ textarea {
     width: auto;
     justify-items: start;
     text-align: start;
+  }
+
+  .mindlab-stepper__head {
+    flex-direction: column;
+  }
+
+  .mindlab-stepper__track {
+    grid-template-columns: 1fr;
+  }
+
+  .mindlab-step-card {
+    scroll-margin-top: 1rem;
+  }
+
+  .mindlab-step-card__headActions {
+    justify-content: flex-start;
   }
 
   .mindlab-training-grid,
