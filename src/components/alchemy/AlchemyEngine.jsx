@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import { getLabConfig } from '../../data/labsConfig'
 import { useAppState } from '../../state/appStateContext'
 import LabLessonPrompt from '../layout/LabLessonPrompt'
@@ -29,74 +29,74 @@ const SOURCE_TOPICS_BY_LAB = {
   phrasing: [
     {
       id: 'work-team',
-      labelHe: 'עבודה וצוות',
+      labelHe: '׳¢׳‘׳•׳“׳” ׳•׳¦׳•׳•׳×',
       stories: [
-        'כשמשנים החלטה בלי לעדכן אותי מראש, אני מגלה על זה מאוחר וזה פוגע ביכולת שלי להיערך.',
-        'כשיש ציפייה לתשובה מיידית בלי הקשר, אני נהיה דרוך ומגיב פחות מדויק.',
-        'כשמשימה מתרחבת תוך כדי עבודה בלי תיאום, אני מאבד פוקוס ומתקשה לעמוד בזמנים.',
+        '׳›׳©׳׳©׳ ׳™׳ ׳”׳—׳׳˜׳” ׳‘׳׳™ ׳׳¢׳“׳›׳ ׳׳•׳×׳™ ׳׳¨׳׳©, ׳׳ ׳™ ׳׳’׳׳” ׳¢׳ ׳–׳” ׳׳׳•׳—׳¨ ׳•׳–׳” ׳₪׳•׳’׳¢ ׳‘׳™׳›׳•׳׳× ׳©׳׳™ ׳׳”׳™׳¢׳¨׳.',
+        '׳›׳©׳™׳© ׳¦׳™׳₪׳™׳™׳” ׳׳×׳©׳•׳‘׳” ׳׳™׳™׳“׳™׳× ׳‘׳׳™ ׳”׳§׳©׳¨, ׳׳ ׳™ ׳ ׳”׳™׳” ׳“׳¨׳•׳ ׳•׳׳’׳™׳‘ ׳₪׳—׳•׳× ׳׳“׳•׳™׳§.',
+        '׳›׳©׳׳©׳™׳׳” ׳׳×׳¨׳—׳‘׳× ׳×׳•׳ ׳›׳“׳™ ׳¢׳‘׳•׳“׳” ׳‘׳׳™ ׳×׳™׳׳•׳, ׳׳ ׳™ ׳׳׳‘׳“ ׳₪׳•׳§׳•׳¡ ׳•׳׳×׳§׳©׳” ׳׳¢׳׳•׳“ ׳‘׳–׳׳ ׳™׳.',
       ],
     },
     {
       id: 'clients-management',
-      labelHe: 'לקוחות וניהול',
+      labelHe: '׳׳§׳•׳—׳•׳× ׳•׳ ׳™׳”׳•׳',
       stories: [
-        'לקוח מבקש שינוי ברגע האחרון ואני לא בטוח מה דחוף ומה יכול לחכות.',
-        'המנהל מבקש עדכון תכוף מאוד וזה יוצר תחושת לחץ במקום בהירות.',
-        'יש ריבוי ערוצים (וואטסאפ/מייל/שיחה) ואני מאבד רצף עבודה.',
+        '׳׳§׳•׳— ׳׳‘׳§׳© ׳©׳™׳ ׳•׳™ ׳‘׳¨׳’׳¢ ׳”׳׳—׳¨׳•׳ ׳•׳׳ ׳™ ׳׳ ׳‘׳˜׳•׳— ׳׳” ׳“׳—׳•׳£ ׳•׳׳” ׳™׳›׳•׳ ׳׳—׳›׳•׳×.',
+        '׳”׳׳ ׳”׳ ׳׳‘׳§׳© ׳¢׳“׳›׳•׳ ׳×׳›׳•׳£ ׳׳׳•׳“ ׳•׳–׳” ׳™׳•׳¦׳¨ ׳×׳—׳•׳©׳× ׳׳—׳¥ ׳‘׳׳§׳•׳ ׳‘׳”׳™׳¨׳•׳×.',
+        '׳™׳© ׳¨׳™׳‘׳•׳™ ׳¢׳¨׳•׳¦׳™׳ (׳•׳•׳׳˜׳¡׳׳₪/׳׳™׳™׳/׳©׳™׳—׳”) ׳•׳׳ ׳™ ׳׳׳‘׳“ ׳¨׳¦׳£ ׳¢׳‘׳•׳“׳”.',
       ],
     },
     {
       id: 'clinic-therapy',
-      labelHe: 'קליניקה/טיפול',
+      labelHe: '׳§׳׳™׳ ׳™׳§׳”/׳˜׳™׳₪׳•׳',
       stories: [
-        'מטופל מבקש מענה ארוך בין מפגשים ואני רוצה לשמור על גבולות ועדיין להיות אמפתי.',
-        'מטופל מגיע עם טקסט פנימי נוקשה, ואני רוצה לעזור לו לעבור לניסוח יותר פתוח.',
+        '׳׳˜׳•׳₪׳ ׳׳‘׳§׳© ׳׳¢׳ ׳” ׳׳¨׳•׳ ׳‘׳™׳ ׳׳₪׳’׳©׳™׳ ׳•׳׳ ׳™ ׳¨׳•׳¦׳” ׳׳©׳׳•׳¨ ׳¢׳ ׳’׳‘׳•׳׳•׳× ׳•׳¢׳“׳™׳™׳ ׳׳”׳™׳•׳× ׳׳׳₪׳×׳™.',
+        '׳׳˜׳•׳₪׳ ׳׳’׳™׳¢ ׳¢׳ ׳˜׳§׳¡׳˜ ׳₪׳ ׳™׳׳™ ׳ ׳•׳§׳©׳”, ׳•׳׳ ׳™ ׳¨׳•׳¦׳” ׳׳¢׳–׳•׳¨ ׳׳• ׳׳¢׳‘׳•׳¨ ׳׳ ׳™׳¡׳•׳— ׳™׳•׳×׳¨ ׳₪׳×׳•׳—.',
       ],
     },
   ],
   empathy: [
     {
       id: 'relationship',
-      labelHe: 'זוגיות וקשר',
+      labelHe: '׳–׳•׳’׳™׳•׳× ׳•׳§׳©׳¨',
       stories: [
-        'כשאני משתף משהו אישי ומקבל עצה מיד, אני מרגיש שלא נשאר מקום למה שאני חווה.',
-        'כשמדברים בטון חד בזמן ויכוח, אני נסגר ומתקשה להסביר מה חשוב לי.',
+        '׳›׳©׳׳ ׳™ ׳׳©׳×׳£ ׳׳©׳”׳• ׳׳™׳©׳™ ׳•׳׳§׳‘׳ ׳¢׳¦׳” ׳׳™׳“, ׳׳ ׳™ ׳׳¨׳’׳™׳© ׳©׳׳ ׳ ׳©׳׳¨ ׳׳§׳•׳ ׳׳׳” ׳©׳׳ ׳™ ׳—׳•׳•׳”.',
+        '׳›׳©׳׳“׳‘׳¨׳™׳ ׳‘׳˜׳•׳ ׳—׳“ ׳‘׳–׳׳ ׳•׳™׳›׳•׳—, ׳׳ ׳™ ׳ ׳¡׳’׳¨ ׳•׳׳×׳§׳©׳” ׳׳”׳¡׳‘׳™׳¨ ׳׳” ׳—׳©׳•׳‘ ׳׳™.',
       ],
     },
     {
       id: 'family-parenting',
-      labelHe: 'משפחה והורות',
+      labelHe: '׳׳©׳₪׳—׳” ׳•׳”׳•׳¨׳•׳×',
       stories: [
-        'כשיש הרבה משימות בבית בלי תיאום, אני מרגיש עומס ולא מצליח לבקש עזרה בזמן.',
-        'כשילד מתנגד ואני מגיב מהר, אני מרגיש אחר כך שלא הייתי מדויק.',
+        '׳›׳©׳™׳© ׳”׳¨׳‘׳” ׳׳©׳™׳׳•׳× ׳‘׳‘׳™׳× ׳‘׳׳™ ׳×׳™׳׳•׳, ׳׳ ׳™ ׳׳¨׳’׳™׳© ׳¢׳•׳׳¡ ׳•׳׳ ׳׳¦׳׳™׳— ׳׳‘׳§׳© ׳¢׳–׳¨׳” ׳‘׳–׳׳.',
+        '׳›׳©׳™׳׳“ ׳׳×׳ ׳’׳“ ׳•׳׳ ׳™ ׳׳’׳™׳‘ ׳׳”׳¨, ׳׳ ׳™ ׳׳¨׳’׳™׳© ׳׳—׳¨ ׳›׳ ׳©׳׳ ׳”׳™׳™׳×׳™ ׳׳“׳•׳™׳§.',
       ],
     },
   ],
   boundaries: [
     {
       id: 'work-boundaries',
-      labelHe: 'גבולות בעבודה',
+      labelHe: '׳’׳‘׳•׳׳•׳× ׳‘׳¢׳‘׳•׳“׳”',
       stories: [
-        'מבקשים ממני משימה נוספת בזמן שאני כבר בעומס, ואני רוצה לסרב בלי לשרוף את הקשר.',
-        'פניות אחרי שעות העבודה יוצרות אצלי דריכות מתמשכת ואני רוצה מסגרת ברורה.',
+        '׳׳‘׳§׳©׳™׳ ׳׳׳ ׳™ ׳׳©׳™׳׳” ׳ ׳•׳¡׳₪׳× ׳‘׳–׳׳ ׳©׳׳ ׳™ ׳›׳‘׳¨ ׳‘׳¢׳•׳׳¡, ׳•׳׳ ׳™ ׳¨׳•׳¦׳” ׳׳¡׳¨׳‘ ׳‘׳׳™ ׳׳©׳¨׳•׳£ ׳׳× ׳”׳§׳©׳¨.',
+        '׳₪׳ ׳™׳•׳× ׳׳—׳¨׳™ ׳©׳¢׳•׳× ׳”׳¢׳‘׳•׳“׳” ׳™׳•׳¦׳¨׳•׳× ׳׳¦׳׳™ ׳“׳¨׳™׳›׳•׳× ׳׳×׳׳©׳›׳× ׳•׳׳ ׳™ ׳¨׳•׳¦׳” ׳׳¡׳’׳¨׳× ׳‘׳¨׳•׳¨׳”.',
       ],
     },
     {
       id: 'social-boundaries',
-      labelHe: 'גבולות אישיים',
+      labelHe: '׳’׳‘׳•׳׳•׳× ׳׳™׳©׳™׳™׳',
       stories: [
-        'מבקשים ממני טובה בתדירות גבוהה ואני רוצה להגיד לא בלי אשמה.',
-        'יש שיחות ארוכות בזמן לא מתאים ואני צריך דרך לעצור בעדינות.',
+        '׳׳‘׳§׳©׳™׳ ׳׳׳ ׳™ ׳˜׳•׳‘׳” ׳‘׳×׳“׳™׳¨׳•׳× ׳’׳‘׳•׳”׳” ׳•׳׳ ׳™ ׳¨׳•׳¦׳” ׳׳”׳’׳™׳“ ׳׳ ׳‘׳׳™ ׳׳©׳׳”.',
+        '׳™׳© ׳©׳™׳—׳•׳× ׳׳¨׳•׳›׳•׳× ׳‘׳–׳׳ ׳׳ ׳׳×׳׳™׳ ׳•׳׳ ׳™ ׳¦׳¨׳™׳ ׳“׳¨׳ ׳׳¢׳¦׳•׳¨ ׳‘׳¢׳“׳™׳ ׳•׳×.',
       ],
     },
   ],
   default: [
     {
       id: 'general',
-      labelHe: 'כללי',
+      labelHe: '׳›׳׳׳™',
       stories: [
-        'יש לי סיטואציה שאני רוצה לנסח מחדש בצורה מדויקת יותר.',
-        'אני רוצה לקחת משפט תקוע ולהפוך אותו לניסוח שמייצר יותר אפשרויות.',
+        '׳™׳© ׳׳™ ׳¡׳™׳˜׳•׳׳¦׳™׳” ׳©׳׳ ׳™ ׳¨׳•׳¦׳” ׳׳ ׳¡׳— ׳׳—׳“׳© ׳‘׳¦׳•׳¨׳” ׳׳“׳•׳™׳§׳× ׳™׳•׳×׳¨.',
+        '׳׳ ׳™ ׳¨׳•׳¦׳” ׳׳§׳—׳× ׳׳©׳₪׳˜ ׳×׳§׳•׳¢ ׳•׳׳”׳₪׳•׳ ׳׳•׳×׳• ׳׳ ׳™׳¡׳•׳— ׳©׳׳™׳™׳¦׳¨ ׳™׳•׳×׳¨ ׳׳₪׳©׳¨׳•׳™׳•׳×.',
       ],
     },
   ],
@@ -125,26 +125,26 @@ function CoachPanel({ lab, draft, sentence, tags, sourceText }) {
   const tips = []
 
   if ((draft?.warmth ?? 50) <= 33) {
-    tips.push('הטון כרגע פורמלי/קשיח. בדקו אם 10–15 נקודות חום משפרות קשב בלי לפגוע בגבול.')
+    tips.push('׳”׳˜׳•׳ ׳›׳¨׳’׳¢ ׳₪׳•׳¨׳׳׳™/׳§׳©׳™׳—. ׳‘׳“׳§׳• ׳׳ 10ג€“15 ׳ ׳§׳•׳“׳•׳× ׳—׳•׳ ׳׳©׳₪׳¨׳•׳× ׳§׳©׳‘ ׳‘׳׳™ ׳׳₪׳’׳•׳¢ ׳‘׳’׳‘׳•׳.')
   }
   if (tags.some((tag) => tag.includes('overdurf') || tag.includes('possibility'))) {
-    tips.push('יש כאן פתיחת אפשרות/כמתים. שימו לב אם זה מקל על קליטה או מחליש בהירות.')
+    tips.push('׳™׳© ׳›׳׳ ׳₪׳×׳™׳—׳× ׳׳₪׳©׳¨׳•׳×/׳›׳׳×׳™׳. ׳©׳™׳׳• ׳׳‘ ׳׳ ׳–׳” ׳׳§׳ ׳¢׳ ׳§׳׳™׳˜׳” ׳׳• ׳׳—׳׳™׳© ׳‘׳”׳™׳¨׳•׳×.')
   }
   if (lab.id === 'boundaries') {
-    tips.push('גבול טוב נשמע ברור גם בטון חם. בדקו שה"לא" נשאר מפורש.')
+    tips.push('׳’׳‘׳•׳ ׳˜׳•׳‘ ׳ ׳©׳׳¢ ׳‘׳¨׳•׳¨ ׳’׳ ׳‘׳˜׳•׳ ׳—׳. ׳‘׳“׳§׳• ׳©׳”"׳׳" ׳ ׳©׳׳¨ ׳׳₪׳•׳¨׳©.')
   }
   if (lab.id === 'empathy') {
-    tips.push('במשפטי "אני", שימרו על רגש + הקשר + צורך + בקשה בלי פרשנות על הצד השני.')
+    tips.push('׳‘׳׳©׳₪׳˜׳™ "׳׳ ׳™", ׳©׳™׳׳¨׳• ׳¢׳ ׳¨׳’׳© + ׳”׳§׳©׳¨ + ׳¦׳•׳¨׳ + ׳‘׳§׳©׳” ׳‘׳׳™ ׳₪׳¨׳©׳ ׳•׳× ׳¢׳ ׳”׳¦׳“ ׳”׳©׳ ׳™.')
   }
   if (!tips.length) {
-    tips.push('נסו להחליף רכיב אחד בלבד ולבדוק איך כל המשפט משתנה.')
+    tips.push('׳ ׳¡׳• ׳׳”׳—׳׳™׳£ ׳¨׳›׳™׳‘ ׳׳—׳“ ׳‘׳׳‘׳“ ׳•׳׳‘׳“׳•׳§ ׳׳™׳ ׳›׳ ׳”׳׳©׳₪׳˜ ׳׳©׳×׳ ׳”.')
   }
 
   return (
     <aside className="coach-panel" aria-label="Coach panel">
-      <div className="coach-panel__title">פאנל מאמן</div>
-      <div className="coach-panel__meta">חום נוכחי: {warmthLabel}</div>
-      {sourceText ? <p className="coach-panel__source">מקור: "{sourceText}"</p> : null}
+      <div className="coach-panel__title">׳₪׳׳ ׳ ׳׳׳׳</div>
+      <div className="coach-panel__meta">׳—׳•׳ ׳ ׳•׳›׳—׳™: {warmthLabel}</div>
+      {sourceText ? <p className="coach-panel__source">׳׳§׳•׳¨: "{sourceText}"</p> : null}
       <p className="coach-panel__sentence">{sentence}</p>
       <ul className="coach-panel__tips">
         {tips.map((tip) => (
@@ -186,6 +186,8 @@ export default function AlchemyEngine({
   const sourceSummary = useMemo(() => sourceContextSummary(sourceContext), [sourceContext])
   const [openBankId, setOpenBankId] = useState('')
   const [openSourceTopicId, setOpenSourceTopicId] = useState('')
+  const [isSourceContextMenuOpen, setIsSourceContextMenuOpen] = useState(() => !sourceSummary)
+  const [isCoachMenuOpen, setIsCoachMenuOpen] = useState(false)
   const resolvedOpenBankId =
     openBankId && banks.some((bank) => bank.id === openBankId) ? openBankId : ''
   const resolvedOpenSourceTopicId =
@@ -264,6 +266,12 @@ export default function AlchemyEngine({
     }))
   }
 
+  const handleSourceTextBlur = () => {
+    if ((sourceContext.patientText ?? '').trim()) {
+      setIsSourceContextMenuOpen(false)
+    }
+  }
+
   const handleSelectSourceTopic = (topicId) => {
     updateSourceContext((current) => ({
       ...current,
@@ -289,14 +297,15 @@ export default function AlchemyEngine({
         patientText: nextText,
       }
     })
-
-    setStatusMessage(mode === 'append' ? 'הסיפור נוסף לטקסט המקור.' : 'הסיפור נטען לטקסט המקור.')
+    setOpenSourceTopicId('')
+    setIsSourceContextMenuOpen(false)
+    setStatusMessage(mode === 'append' ? '׳”׳¡׳™׳₪׳•׳¨ ׳ ׳•׳¡׳£ ׳׳˜׳§׳¡׳˜ ׳”׳׳§׳•׳¨.' : '׳”׳¡׳™׳₪׳•׳¨ ׳ ׳˜׳¢׳ ׳׳˜׳§׳¡׳˜ ׳”׳׳§׳•׳¨.')
   }
 
   const handleSaveSourceAsStory = () => {
     const storyText = (sourceContext.patientText ?? '').trim()
     if (!storyText) {
-      setStatusMessage('הדביקו קודם משפט מטופל או סיפור קצר.')
+      setStatusMessage('׳”׳“׳‘׳™׳§׳• ׳§׳•׳“׳ ׳׳©׳₪׳˜ ׳׳˜׳•׳₪׳ ׳׳• ׳¡׳™׳₪׳•׳¨ ׳§׳¦׳¨.')
       return
     }
 
@@ -323,7 +332,8 @@ export default function AlchemyEngine({
     })
 
     setOpenSourceTopicId(topicId)
-    setStatusMessage(wasAdded ? 'נשמר סיפור חדש בנושא הפעיל.' : 'הסיפור כבר קיים בנושא הפעיל.')
+    setIsSourceContextMenuOpen(false)
+    setStatusMessage(wasAdded ? '׳ ׳©׳׳¨ ׳¡׳™׳₪׳•׳¨ ׳—׳“׳© ׳‘׳ ׳•׳©׳ ׳”׳₪׳¢׳™׳.' : '׳”׳¡׳™׳₪׳•׳¨ ׳›׳‘׳¨ ׳§׳™׳™׳ ׳‘׳ ׳•׳©׳ ׳”׳₪׳¢׳™׳.')
   }
 
   const clearSourceText = () => {
@@ -331,7 +341,8 @@ export default function AlchemyEngine({
       ...current,
       patientText: '',
     }))
-    setStatusMessage('טקסט המקור נוקה.')
+    setIsSourceContextMenuOpen(true)
+    setStatusMessage('׳˜׳§׳¡׳˜ ׳”׳׳§׳•׳¨ ׳ ׳•׳§׳”.')
   }
 
   const handleSelectBankChip = (bank, chipId) => {
@@ -355,18 +366,18 @@ export default function AlchemyEngine({
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(sentence)
-        setStatusMessage('הניסוח הועתק ללוח.')
+        setStatusMessage('׳”׳ ׳™׳¡׳•׳— ׳”׳•׳¢׳×׳§ ׳׳׳•׳—.')
         return
       }
-      setStatusMessage('העתקה אוטומטית לא זמינה. אפשר להעתיק ידנית מהתצוגה.')
+      setStatusMessage('׳”׳¢׳×׳§׳” ׳׳•׳˜׳•׳׳˜׳™׳× ׳׳ ׳–׳׳™׳ ׳”. ׳׳₪׳©׳¨ ׳׳”׳¢׳×׳™׳§ ׳™׳“׳ ׳™׳× ׳׳”׳×׳¦׳•׳’׳”.')
     } catch {
-      setStatusMessage('לא הצלחתי להעתיק ללוח.')
+      setStatusMessage('׳׳ ׳”׳¦׳׳—׳×׳™ ׳׳”׳¢׳×׳™׳§ ׳׳׳•׳—.')
     }
   }
 
   const handleSaveFavorite = () => {
     if (!sentence || sentence === lab.preview?.emptyTextHe) {
-      setStatusMessage('אין עדיין ניסוח לשמירה.')
+      setStatusMessage('׳׳™׳ ׳¢׳“׳™׳™׳ ׳ ׳™׳¡׳•׳— ׳׳©׳׳™׳¨׳”.')
       return
     }
 
@@ -376,7 +387,7 @@ export default function AlchemyEngine({
       draftSnapshot: cloneValue(draft),
       tags,
     })
-    setStatusMessage('נשמר למועדפים.')
+    setStatusMessage('׳ ׳©׳׳¨ ׳׳׳•׳¢׳“׳₪׳™׳.')
   }
 
   return (
@@ -388,13 +399,13 @@ export default function AlchemyEngine({
         </div>
         <div className="alchemy-card__actions">
           <button type="button" onClick={() => setDraft((current) => resetAlchemyDraft(lab, current))}>
-            איפוס
+            ׳׳™׳₪׳•׳¡
           </button>
           <button
             type="button"
             onClick={() => setDraft((current) => randomizeAlchemyDraft(lab, current))}
           >
-            אלכימאי אקראי
+            ׳׳׳›׳™׳׳׳™ ׳׳§׳¨׳׳™
           </button>
         </div>
       </div>
@@ -402,7 +413,7 @@ export default function AlchemyEngine({
       {!compact && lab.route && <LabLessonPrompt labId={lab.id} />}
 
       {lab.templates.length > 1 && (
-        <div className="template-switcher" role="tablist" aria-label="מבני ניסוח">
+        <div className="template-switcher" role="tablist" aria-label="׳׳‘׳ ׳™ ׳ ׳™׳¡׳•׳—">
           {lab.templates.map((option) => (
             <button
               key={option.id}
@@ -422,30 +433,32 @@ export default function AlchemyEngine({
 
       {!compact && (
         <MenuSection
-          title="טקסט מקור / משפט המטופל"
+          title="׳˜׳§׳¡׳˜ ׳׳§׳•׳¨ / ׳׳©׳₪׳˜ ׳”׳׳˜׳•׳₪׳"
           subtitle={
             sourceSummary ||
-            'הדביקו משפט של מטופל/לקוח או טענו סיפור מוכן מתוך נושא רלוונטי.'
+            '׳”׳“׳‘׳™׳§׳• ׳׳©׳₪׳˜ ׳©׳ ׳׳˜׳•׳₪׳/׳׳§׳•׳— ׳׳• ׳˜׳¢׳ ׳• ׳¡׳™׳₪׳•׳¨ ׳׳•׳›׳ ׳׳×׳•׳ ׳ ׳•׳©׳ ׳¨׳׳•׳•׳ ׳˜׳™.'
           }
-          badgeText={sourceSummary ? 'פעיל' : 'אופציונלי'}
-          defaultOpen={false}
+          badgeText={sourceSummary ? '׳₪׳¢׳™׳' : '׳׳•׳₪׳¦׳™׳•׳ ׳׳™'}
+          isOpen={isSourceContextMenuOpen}
+          onToggle={() => setIsSourceContextMenuOpen((current) => !current)}
           className="source-context-menu"
         >
           <div className="source-context-panel">
             <label className="source-context-panel__field">
-              <span>משפט המטופל / סיפור מקור</span>
+              <span>׳׳©׳₪׳˜ ׳”׳׳˜׳•׳₪׳ / ׳¡׳™׳₪׳•׳¨ ׳׳§׳•׳¨</span>
               <textarea
                 className="source-context-panel__textarea"
                 rows={4}
-                placeholder="לדוגמה: 'כל פעם שמשנים לי דברים ברגע האחרון אני נסגר ולא יודע מאיפה להתחיל...'"
+                placeholder="׳׳“׳•׳’׳׳”: '׳›׳ ׳₪׳¢׳ ׳©׳׳©׳ ׳™׳ ׳׳™ ׳“׳‘׳¨׳™׳ ׳‘׳¨׳’׳¢ ׳”׳׳—׳¨׳•׳ ׳׳ ׳™ ׳ ׳¡׳’׳¨ ׳•׳׳ ׳™׳•׳“׳¢ ׳׳׳™׳₪׳” ׳׳”׳×׳—׳™׳...'"
                 value={sourceContext.patientText}
                 onChange={(event) => handleSourceTextChange(event.target.value)}
+                onBlur={handleSourceTextBlur}
               />
             </label>
 
             <div className="source-context-panel__toolbar">
               <label className="source-context-panel__topic">
-                <span>נושא פעיל</span>
+                <span>׳ ׳•׳©׳ ׳₪׳¢׳™׳</span>
                 <select
                   value={activeSourceTopicId}
                   onChange={(event) => handleSelectSourceTopic(event.target.value)}
@@ -458,11 +471,14 @@ export default function AlchemyEngine({
                 </select>
               </label>
               <div className="source-context-panel__actions">
+                <button type="button" onClick={() => setIsSourceContextMenuOpen(false)}>
+                  ׳¡׳™׳™׳׳×׳™ ׳׳§׳•׳¨
+                </button>
                 <button type="button" onClick={handleSaveSourceAsStory}>
-                  שמור כסיפור
+                  ׳©׳׳•׳¨ ׳›׳¡׳™׳₪׳•׳¨
                 </button>
                 <button type="button" onClick={clearSourceText}>
-                  נקה טקסט
+                  ׳ ׳§׳” ׳˜׳§׳¡׳˜
                 </button>
               </div>
             </div>
@@ -472,8 +488,8 @@ export default function AlchemyEngine({
                 <MenuSection
                   key={topic.id}
                   title={topic.labelHe}
-                  subtitle={`${topic.items.length} סיפורים זמינים`}
-                  badgeText={topic.customCount ? `+${topic.customCount} שלי` : 'מוכן'}
+                  subtitle={`${topic.items.length} ׳¡׳™׳₪׳•׳¨׳™׳ ׳–׳׳™׳ ׳™׳`}
+                  badgeText={topic.customCount ? `+${topic.customCount} ׳©׳׳™` : '׳׳•׳›׳'}
                   compact
                   isOpen={resolvedOpenSourceTopicId === topic.id}
                   onToggle={() =>
@@ -491,7 +507,7 @@ export default function AlchemyEngine({
                             setOpenSourceTopicId(topic.id)
                             loadStoryIntoSource(item.text, 'replace', topic.id)
                           }}
-                          title="טען לטקסט המקור"
+                          title="׳˜׳¢׳ ׳׳˜׳§׳¡׳˜ ׳”׳׳§׳•׳¨"
                         >
                           {item.text}
                         </button>
@@ -501,7 +517,7 @@ export default function AlchemyEngine({
                               item.origin === 'custom' ? 'is-custom' : ''
                             }`}
                           >
-                            {item.origin === 'custom' ? 'שלי' : 'מוכן'}
+                            {item.origin === 'custom' ? '׳©׳׳™' : '׳׳•׳›׳'}
                           </span>
                           <button
                             type="button"
@@ -511,7 +527,7 @@ export default function AlchemyEngine({
                               loadStoryIntoSource(item.text, 'append', topic.id)
                             }}
                           >
-                            הוסף
+                            ׳”׳•׳¡׳£
                           </button>
                         </div>
                       </div>
@@ -526,9 +542,9 @@ export default function AlchemyEngine({
 
       <div className="preview-panel">
         <div className="preview-panel__top">
-          <span className="preview-panel__label">תצוגת ניסוח</span>
+          <span className="preview-panel__label">׳×׳¦׳•׳’׳× ׳ ׳™׳¡׳•׳—</span>
           <span className="preview-panel__count">
-            {activeCount}/{template?.slotOrder.length ?? 0} רכיבים פעילים
+            {activeCount}/{template?.slotOrder.length ?? 0} ׳¨׳›׳™׳‘׳™׳ ׳₪׳¢׳™׳׳™׳
           </span>
         </div>
         <div className="preview-panel__tokens">
@@ -543,16 +559,16 @@ export default function AlchemyEngine({
           ))}
         </div>
         <p className="preview-panel__sentence">{sentence}</p>
-        {sourceSummary ? <p className="preview-panel__source">מתוך מקור: {sourceSummary}</p> : null}
+        {sourceSummary ? <p className="preview-panel__source">׳׳×׳•׳ ׳׳§׳•׳¨: {sourceSummary}</p> : null}
         <div className="controls-row">
           <button type="button" onClick={handleCopy}>
-            העתק
+            ׳”׳¢׳×׳§
           </button>
           <button type="button" onClick={handleSaveFavorite}>
-            שמור למועדפים
+            ׳©׳׳•׳¨ ׳׳׳•׳¢׳“׳₪׳™׳
           </button>
           <label className="warmth-control">
-            <span>חום ניסוח: {warmthLabelHe(draft.warmth)}</span>
+            <span>׳—׳•׳ ׳ ׳™׳¡׳•׳—: {warmthLabelHe(draft.warmth)}</span>
             <input
               type="range"
               min="0"
@@ -565,7 +581,7 @@ export default function AlchemyEngine({
               }
               aria-label="Warmth slider"
             />
-            <small>קר / ניטרלי / חם</small>
+            <small>׳§׳¨ / ׳ ׳™׳˜׳¨׳׳™ / ׳—׳</small>
           </label>
         </div>
         <div className="status-line" aria-live="polite">
@@ -573,8 +589,7 @@ export default function AlchemyEngine({
         </div>
       </div>
 
-      <div className="alchemy-layout">
-        <div className="chip-bank-panel">
+      <div className="chip-bank-panel">
           {banks.map((bank) => {
             const selectedChipId = draft.selectedBySlot?.[bank.slotId]
             const selectedChip = bank.chips.find((chip) => chip.id === selectedChipId)
@@ -585,7 +600,7 @@ export default function AlchemyEngine({
                 key={bank.id}
                 title={bank.labelHe}
                 subtitle={selectedText || undefined}
-                badgeText={selectedChipId ? 'נבחר' : bank.optional ? 'אופציונלי' : 'לבחירה'}
+                badgeText={selectedChipId ? '׳ ׳‘׳—׳¨' : bank.optional ? '׳׳•׳₪׳¦׳™׳•׳ ׳׳™' : '׳׳‘׳—׳™׳¨׳”'}
                 isOpen={resolvedOpenBankId === bank.id}
                 onToggle={() => setOpenBankId((currentId) => (currentId === bank.id ? '' : bank.id))}
                 compact={compact}
@@ -614,7 +629,7 @@ export default function AlchemyEngine({
                         aria-pressed={!selectedChipId}
                         onClick={() => handleClearOptionalBank(bank)}
                       >
-                        ללא
+                        ׳׳׳
                       </button>
                     )}
                   </div>
@@ -622,9 +637,17 @@ export default function AlchemyEngine({
               </MenuSection>
             )
           })}
-        </div>
+      </div>
 
-        {showCoach && (
+      {showCoach && (
+        <MenuSection
+          title="׳₪׳׳ ׳ ׳׳׳׳"
+          subtitle="׳˜׳™׳₪׳™׳, ׳”׳§׳©׳¨ ׳•׳ ׳™׳¡׳•׳— ׳₪׳¢׳™׳"
+          badgeText="׳׳•׳₪׳¦׳™׳•׳ ׳׳™"
+          isOpen={isCoachMenuOpen}
+          onToggle={() => setIsCoachMenuOpen((current) => !current)}
+          className="coach-panel-menu"
+        >
           <CoachPanel
             lab={lab}
             draft={draft}
@@ -632,8 +655,10 @@ export default function AlchemyEngine({
             tags={tags}
             sourceText={sourceSummary}
           />
-        )}
-      </div>
+        </MenuSection>
+      )}
     </section>
   )
 }
+
+

@@ -1427,6 +1427,20 @@ button:hover {
   padding-top: 0.6rem;
 }
 
+.coach-panel-menu {
+  margin-top: 0.7rem;
+}
+
+.coach-panel-menu .menu-section__body {
+  padding: 0.55rem;
+}
+
+.coach-panel-menu .coach-panel {
+  border: none;
+  background: transparent;
+  padding: 0.1rem 0.05rem 0;
+}
+
 .menu-section {
   border: 1px solid #dde6ef;
   border-radius: 12px;
