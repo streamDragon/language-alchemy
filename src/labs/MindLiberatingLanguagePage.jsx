@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { getLabConfig } from '../data/labsConfig'
 import { useAppState } from '../state/appStateContext'
 import { makeId } from '../utils/ids'
+import { Link } from 'react-router-dom'
 import LabLessonPrompt from '../components/layout/LabLessonPrompt'
 import MenuSection from '../components/layout/MenuSection'
 import LiberatingConversationSimulator from '../components/mind/LiberatingConversationSimulator'
@@ -302,7 +303,7 @@ export default function MindLiberatingLanguagePage() {
     titleHe: 'מיינד ליברייטינג שפה',
     descriptionHe: 'טקסט מטופל → שחרור תודעתי → אופציות חדשות',
   }
-  const { upsertHistory, setLastVisitedLab } = useAppState()
+  const { state, upsertHistory, setLastVisitedLab } = useAppState()
 
   const [patientText, setPatientText] = useState('')
   const [selectedQuantifierId, setSelectedQuantifierId] = useState(QUANTIFIER_SHIFTS[0].id)
@@ -314,6 +315,7 @@ export default function MindLiberatingLanguagePage() {
   const [afterOptionsText, setAfterOptionsText] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
   const [activeTrainingToolId, setActiveTrainingToolId] = useState('')
+  const [activeMindTabId, setActiveMindTabId] = useState('workflow')
   const [activeStepId, setActiveStepId] = useState(MINDLAB_MAIN_STEPS[0].id)
   const [completedStepIds, setCompletedStepIds] = useState([])
   const stepRefs = useRef({})
@@ -409,6 +411,13 @@ export default function MindLiberatingLanguagePage() {
     [activeStepId],
   )
   const activeStepMeta = MINDLAB_MAIN_STEPS[activeStepIndex] ?? MINDLAB_MAIN_STEPS[0]
+  const mindHistoryItems = useMemo(
+    () =>
+      (state?.history ?? [])
+        .filter((item) => item?.labId === 'mind-liberating-language')
+        .slice(0, 12),
+    [state],
+  )
 
   const scrollToStep = (stepId) => {
     const node = stepRefs.current[stepId]
@@ -503,6 +512,7 @@ export default function MindLiberatingLanguagePage() {
     setSelectedOptionOpenerId(OPTION_OPENERS[0].id)
     setSelectedToneId(THERAPIST_TONES[1].id)
     setActiveTrainingToolId('')
+    setActiveMindTabId('workflow')
     setActiveStepId(MINDLAB_MAIN_STEPS[0].id)
     setCompletedStepIds([])
     setStatusMessage('נפתחה עבודה חדשה.')
@@ -511,12 +521,14 @@ export default function MindLiberatingLanguagePage() {
 
   const loadSample = (text) => {
     setPatientText(text)
+    setActiveMindTabId('workflow')
     setActiveStepId('patient-source')
     setStatusMessage('נטענה דוגמת טקסט מטופל. עכשיו בנה/י ניסוח משחרר.')
   }
 
   const loadPatientTextFromTrainingTool = (text) => {
     setPatientText(text)
+    setActiveMindTabId('workflow')
     setActiveStepId('patient-source')
     setCompletedStepIds((current) =>
       current.includes('training-tools') ? current : [...current, 'training-tools'],
@@ -534,6 +546,9 @@ export default function MindLiberatingLanguagePage() {
             <p>{lab.descriptionHe}</p>
           </div>
           <div className="alchemy-card__actions">
+            <Link to="/" className="secondary-link-button">
+              חזרה למסך הכללי
+            </Link>
             <button type="button" onClick={handleNewSession}>
               סשן חדש
             </button>
@@ -542,6 +557,40 @@ export default function MindLiberatingLanguagePage() {
 
         <LabLessonPrompt labId={lab.id} />
 
+        <section className="mindlab-workspace-menu" aria-label="תפריטי משנה - שחרור תודעה על ידי שפה">
+          <div className="mindlab-workspace-menu__head">
+            <div>
+              <h3>שחרור תודעה על ידי שפה</h3>
+              <p>בחר/י מוד עבודה אחד בכל פעם כדי לשמור פוקוס ולהימנע מגלילה ארוכה.</p>
+            </div>
+            <Link to="/" className="mindlab-workspace-menu__back">
+              חזרה למסך הכללי
+            </Link>
+          </div>
+
+          <div className="mindlab-workspace-menu__tabs" role="tablist" aria-label="תפריטי משנה">
+            {[
+              { id: 'workflow', labelHe: 'תרגילים', labelEn: 'Core Workflow' },
+              { id: 'simulator', labelHe: 'סימולטור', labelEn: 'Simulator' },
+              { id: 'pattern-master', labelHe: 'מאסטר רצפים', labelEn: 'Pattern Master' },
+              { id: 'history', labelHe: 'היסטוריה', labelEn: 'History' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={activeMindTabId === tab.id}
+                className={`mindlab-workspace-menu__tab ${activeMindTabId === tab.id ? 'is-active' : ''}`}
+                onClick={() => setActiveMindTabId(tab.id)}
+              >
+                <span>{tab.labelHe}</span>
+                <small>{tab.labelEn}</small>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {activeMindTabId === 'workflow' && (
         <div className="mindlab-layout">
           <div className="mindlab-main">
             <section className="mindlab-stepper" aria-label="התקדמות בשלבי המעבדה">
@@ -932,9 +981,13 @@ export default function MindLiberatingLanguagePage() {
                     activeTrainingToolId === 'simulator' ? 'is-active' : ''
                   }`}
                   onClick={() =>
-                    setActiveTrainingToolId((current) =>
-                      current === 'simulator' ? '' : 'simulator',
-                    )
+                    setActiveTrainingToolId((current) => {
+                      const next = current === 'simulator' ? '' : 'simulator'
+                      if (next) {
+                        setActiveMindTabId('simulator')
+                      }
+                      return next
+                    })
                   }
                   aria-pressed={activeTrainingToolId === 'simulator'}
                 >
@@ -955,9 +1008,13 @@ export default function MindLiberatingLanguagePage() {
                     activeTrainingToolId === 'pattern-master' ? 'is-active' : ''
                   }`}
                   onClick={() =>
-                    setActiveTrainingToolId((current) =>
-                      current === 'pattern-master' ? '' : 'pattern-master',
-                    )
+                    setActiveTrainingToolId((current) => {
+                      const next = current === 'pattern-master' ? '' : 'pattern-master'
+                      if (next) {
+                        setActiveMindTabId('pattern-master')
+                      }
+                      return next
+                    })
                   }
                   aria-pressed={activeTrainingToolId === 'pattern-master'}
                 >
@@ -973,19 +1030,32 @@ export default function MindLiberatingLanguagePage() {
                 </button>
               </div>
 
-              {activeTrainingToolId === 'simulator' && (
-                <LiberatingConversationSimulator
-                  className="mindlab-training-panel"
-                  onLoadPatientText={loadPatientTextFromTrainingTool}
-                />
-              )}
-
-              {activeTrainingToolId === 'pattern-master' && (
-                <PatternSequenceMaster
-                  className="mindlab-training-panel"
-                  onLoadPatientText={loadPatientTextFromTrainingTool}
-                />
-              )}
+              <div className="mindlab-training-panel mindlab-training-panel--launcher">
+                <p className="muted-text">
+                  התרגול המלא נפתח עכשיו בטאבים העליונים כדי לשמור את זרימת העבודה קצרה וממוקדת.
+                </p>
+                <div className="controls-row">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveMindTabId('simulator')
+                      setActiveTrainingToolId('simulator')
+                    }}
+                  >
+                    פתח סימולטור בטאב נפרד
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => {
+                      setActiveMindTabId('pattern-master')
+                      setActiveTrainingToolId('pattern-master')
+                    }}
+                  >
+                    פתח מאסטר רצפים בטאב נפרד
+                  </button>
+                </div>
+              </div>
             </section>
 
             <div className="status-line" aria-live="polite">
@@ -1135,6 +1205,80 @@ export default function MindLiberatingLanguagePage() {
             </div>
           </aside>
         </div>
+        )}
+
+        {activeMindTabId === 'simulator' && (
+          <section className="panel-card mindlab-workspace-panel">
+            <div className="panel-card__head">
+              <div>
+                <h3>סימולטור שיחות משחררות</h3>
+                <p>תרגול ממוקד בלי להעמיס את שאר חלקי הדף. אפשר לטעון משפט חזרה לזרימת העבודה.</p>
+              </div>
+            </div>
+            <LiberatingConversationSimulator onLoadPatientText={loadPatientTextFromTrainingTool} />
+          </section>
+        )}
+
+        {activeMindTabId === 'pattern-master' && (
+          <section className="panel-card mindlab-workspace-panel">
+            <div className="panel-card__head">
+              <div>
+                <h3>מאסטר רצפים</h3>
+                <p>כאן עובדים רק על רצפים ו-flowchart. טעינת משפט תחזיר אותך לזרימת העבודה כשצריך.</p>
+              </div>
+            </div>
+            <PatternSequenceMaster onLoadPatientText={loadPatientTextFromTrainingTool} />
+          </section>
+        )}
+
+        {activeMindTabId === 'history' && (
+          <section className="panel-card mindlab-workspace-panel">
+            <div className="panel-card__head">
+              <div>
+                <h3>היסטוריה - Mind Liberating</h3>
+                <p>דוגמאות, רצפים וסשנים שנשמרו תחת מעבדת שחרור התודעה.</p>
+              </div>
+              <div className="alchemy-card__actions">
+                <Link to="/library" className="secondary-link-button">
+                  פתח ספרייה מלאה
+                </Link>
+              </div>
+            </div>
+
+            <div className="mindlab-history-list">
+              {mindHistoryItems.length ? (
+                mindHistoryItems.map((item) => (
+                  <article key={item.id} className="mindlab-history-item">
+                    <div className="mindlab-history-item__head">
+                      <strong>{item.summaryHe ?? 'פריט היסטוריה'}</strong>
+                      <time dateTime={item.createdAt}>
+                        {new Date(item.createdAt).toLocaleString('he-IL', {
+                          dateStyle: 'short',
+                          timeStyle: 'short',
+                        })}
+                      </time>
+                    </div>
+                    {item.patientText ? <p className="mindlab-history-item__patient">מטופל: {item.patientText}</p> : null}
+                    {item.sentenceText ? <p className="mindlab-history-item__response">תגובה/רצף: {item.sentenceText}</p> : null}
+                    <div className="mindlab-history-item__actions">
+                      {item.patientText ? (
+                        <button type="button" onClick={() => loadPatientTextFromTrainingTool(item.patientText)}>
+                          טען משפט לזרימת העבודה
+                        </button>
+                      ) : null}
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <div className="panel-card panel-card--soft">
+                  <p className="muted-text">
+                    עדיין אין פריטים בהיסטוריה של מעבדה זו. שמור/י סשן, דוגמה מהסימולטור או רצף מהמאסטר.
+                  </p>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
       </section>
     </div>
   )

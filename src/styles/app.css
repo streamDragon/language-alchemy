@@ -370,6 +370,155 @@
   min-width: 0;
 }
 
+.mindlab-workspace-menu {
+  margin-bottom: 0.9rem;
+  border-radius: 14px;
+  border: 1px solid rgba(16, 38, 61, 0.1);
+  background:
+    radial-gradient(circle at 90% 12%, rgba(211, 165, 74, 0.12), transparent 48%),
+    linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  padding: 0.8rem;
+}
+
+.mindlab-workspace-menu__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.mindlab-workspace-menu__head h3 {
+  margin: 0 0 0.15rem;
+  color: #17324a;
+}
+
+.mindlab-workspace-menu__head p {
+  margin: 0;
+  color: #637d90;
+  font-size: 0.84rem;
+}
+
+.mindlab-workspace-menu__back {
+  border-radius: 999px;
+  border: 1px solid rgba(16, 38, 61, 0.12);
+  background: #f6f9fc;
+  color: #23465c;
+  text-decoration: none;
+  padding: 0.38rem 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.mindlab-workspace-menu__back:hover {
+  background: #eef5fb;
+}
+
+.mindlab-workspace-menu__tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.mindlab-workspace-menu__tab {
+  border-radius: 12px;
+  border: 1px solid #dbe5ef;
+  background: #fff;
+  color: #1c3950;
+  min-height: 56px;
+  padding: 0.5rem 0.6rem;
+  display: grid;
+  gap: 0.15rem;
+  align-content: center;
+  text-align: center;
+}
+
+.mindlab-workspace-menu__tab span {
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.mindlab-workspace-menu__tab small {
+  color: #74899b;
+  font-size: 0.73rem;
+}
+
+.mindlab-workspace-menu__tab.is-active {
+  border-color: rgba(109, 24, 53, 0.28);
+  background:
+    radial-gradient(circle at 90% 12%, rgba(211, 165, 74, 0.12), transparent 46%),
+    linear-gradient(180deg, #fff9f2 0%, #faf1f7 100%);
+  color: #6d1835;
+  box-shadow: 0 6px 18px rgba(16, 38, 61, 0.04);
+}
+
+.mindlab-workspace-panel {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.mindlab-workspace-panel > .panel-card,
+.mindlab-workspace-panel > section.panel-card {
+  margin: 0;
+  box-shadow: none;
+}
+
+.mindlab-history-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.mindlab-history-item {
+  border-radius: 12px;
+  border: 1px solid #e1eaf3;
+  background: #fff;
+  padding: 0.7rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.mindlab-history-item__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.mindlab-history-item__head strong {
+  color: #17324a;
+}
+
+.mindlab-history-item__head time {
+  color: #6f8699;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.mindlab-history-item__patient,
+.mindlab-history-item__response {
+  margin: 0;
+  color: #415f73;
+  line-height: 1.45;
+}
+
+.mindlab-history-item__response {
+  border-top: 1px dashed #e2eaf2;
+  padding-top: 0.45rem;
+}
+
+.mindlab-history-item__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.mindlab-training-panel--launcher {
+  border: 1px dashed rgba(211, 165, 74, 0.35);
+  border-radius: 12px;
+  background: rgba(255, 251, 242, 0.65);
+  padding: 0.75rem;
+}
+
 .mindlab-stepper {
   position: sticky;
   top: 0.6rem;
@@ -2705,6 +2854,14 @@ textarea {
     position: static;
   }
 
+  .mindlab-workspace-menu__head {
+    flex-direction: column;
+  }
+
+  .mindlab-workspace-menu__tabs {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .mindlab-focus-strip__head {
     flex-direction: column;
   }
@@ -2743,6 +2900,10 @@ textarea {
 
   .mindlab-step-card__headActions {
     justify-content: flex-start;
+  }
+
+  .mindlab-history-item__head {
+    flex-direction: column;
   }
 
   .mindlab-training-grid,
@@ -2818,6 +2979,10 @@ textarea {
   .simulator-feedback__head {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .mindlab-workspace-menu__tabs {
+    grid-template-columns: 1fr;
   }
 
   .simulator-progress {
