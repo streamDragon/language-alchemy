@@ -6883,3 +6883,807 @@ textarea {
     align-self: flex-start;
   }
 }
+
+/* Relations Lab UX v2 (mobile-first compact) */
+.relations-v2-header {
+  position: sticky;
+  top: 0.5rem;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: 16px;
+  border: 1px solid rgba(16, 38, 61, 0.1);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 28px rgba(16, 38, 61, 0.06);
+  padding: 0.65rem 0.8rem;
+}
+
+.relations-v2-header__title h1 {
+  margin: 0;
+  color: var(--alchemy-navy);
+  font-size: 1.06rem;
+  line-height: 1.2;
+}
+
+.relations-v2-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.relations-v2-icon-button {
+  width: 2.15rem;
+  height: 2.15rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  border: 1px solid rgba(16, 38, 61, 0.12);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(245, 249, 253, 0.95));
+  color: #18344a;
+  box-shadow: 0 6px 14px rgba(16, 38, 61, 0.05);
+  padding: 0;
+}
+
+.relations-v2-icon-button:hover {
+  transform: translateY(-1px);
+}
+
+.relations-v2-metrics {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.relations-v2-metric-chip {
+  width: 100%;
+  text-align: right;
+  display: grid;
+  gap: 0.45rem;
+  border-radius: 14px;
+  border: 1px solid rgba(16, 38, 61, 0.09);
+  background:
+    radial-gradient(circle at 90% 8%, rgba(211, 165, 74, 0.08), transparent 45%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 252, 255, 0.98));
+  box-shadow: 0 10px 22px rgba(16, 38, 61, 0.05);
+  padding: 0.65rem;
+}
+
+.relations-v2-metric-chip__head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.35rem;
+  color: #3f5569;
+}
+
+.relations-v2-metric-chip__head strong {
+  color: #112f45;
+  font-size: 1rem;
+}
+
+.relations-v2-metric-chip__icon {
+  width: 1.1rem;
+  display: inline-flex;
+  justify-content: center;
+  opacity: 0.8;
+}
+
+.relations-v2-metric-chip__label {
+  font-size: 0.82rem;
+  line-height: 1.2;
+}
+
+.relations-v2-metric-chip__track {
+  height: 5px;
+  border-radius: 999px;
+  background: #e6eef5;
+  overflow: hidden;
+  border: 1px solid rgba(16, 38, 61, 0.05);
+}
+
+.relations-v2-metric-chip__fill,
+.relations-v2-drawer__fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 180ms ease;
+}
+
+.relations-v2-metric-chip__fill--open,
+.relations-v2-drawer__fill--open {
+  background: linear-gradient(90deg, #1d8ebf, #58d8ef);
+}
+
+.relations-v2-metric-chip__fill--resource,
+.relations-v2-drawer__fill--resource {
+  background: linear-gradient(90deg, #2e8b57, #65d685);
+}
+
+.relations-v2-metric-chip__fill--distress,
+.relations-v2-drawer__fill--distress {
+  background: linear-gradient(90deg, #8a2746, #df6b85);
+}
+
+.relations-v2-metric-chip__delta {
+  justify-self: start;
+  border-radius: 999px;
+  padding: 0.16rem 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.relations-v2-metric-chip__delta--good {
+  color: #0f6947;
+  background: rgba(35, 173, 107, 0.12);
+  border-color: rgba(35, 173, 107, 0.2);
+}
+
+.relations-v2-metric-chip__delta--bad {
+  color: #8b2848;
+  background: rgba(184, 62, 101, 0.12);
+  border-color: rgba(184, 62, 101, 0.2);
+}
+
+.relations-v2-metric-chip__delta--neutral {
+  color: #50677b;
+  background: rgba(16, 38, 61, 0.06);
+  border-color: rgba(16, 38, 61, 0.09);
+}
+
+.relations-v2-core {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.relations-v2-panel-head h2 {
+  margin: 0 0 0.2rem;
+  color: var(--alchemy-navy);
+  font-size: 1rem;
+}
+
+.relations-v2-panel-head p {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.relations-v2-elements-panel {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.relations-v2-elements-panel__emotion {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.relations-v2-elements-panel__emotion .relations-emotion-picker {
+  width: 100%;
+}
+
+.relations-v2-result-chip {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 12px;
+  border: 1px dashed rgba(16, 38, 61, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  color: #455b70;
+  padding: 0.45rem 0.55rem;
+}
+
+.relations-v2-result-chip strong {
+  color: #173449;
+}
+
+.relations-v2-result-chip small {
+  color: #5b7287;
+}
+
+.relations-v2-elements-grid {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: 1fr;
+}
+
+.relations-v2-element-card {
+  display: grid;
+  gap: 0.2rem;
+  border-radius: 12px;
+  border: 1px solid rgba(16, 38, 61, 0.08);
+  background: rgba(255, 255, 255, 0.82);
+  padding: 0.55rem 0.6rem;
+}
+
+.relations-v2-element-card span {
+  color: #5c7286;
+  font-size: 0.76rem;
+}
+
+.relations-v2-element-card strong {
+  color: #173449;
+  line-height: 1.35;
+}
+
+.relations-v2-chip-group {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.relations-v2-chip-group h3 {
+  margin: 0;
+  color: #173449;
+  font-size: 0.88rem;
+}
+
+.relations-v2-chip-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.relations-v2-chip {
+  border-radius: 999px;
+  border: 1px solid rgba(16, 38, 61, 0.1);
+  background: rgba(255, 255, 255, 0.86);
+  color: #375067;
+  font-size: 0.78rem;
+  padding: 0.28rem 0.6rem;
+}
+
+.relations-v2-action-panel {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.relations-v2-action-hint {
+  border-radius: 10px;
+  border: 1px dashed rgba(16, 38, 61, 0.12);
+  background: rgba(255, 255, 255, 0.7);
+  color: #51667b;
+  font-size: 0.82rem;
+  padding: 0.45rem 0.55rem;
+}
+
+.relations-v2-smart {
+  width: 100%;
+  display: grid;
+  gap: 0.15rem;
+  text-align: right;
+  border-radius: 12px;
+  border: 1px solid rgba(25, 83, 122, 0.12);
+  background:
+    radial-gradient(circle at 12% 16%, rgba(255, 255, 255, 0.25), transparent 32%),
+    linear-gradient(135deg, rgba(16, 38, 61, 0.92), rgba(27, 85, 120, 0.96));
+  color: #fff;
+  padding: 0.6rem 0.65rem;
+  box-shadow: 0 10px 24px rgba(16, 38, 61, 0.14);
+}
+
+.relations-v2-smart span {
+  font-size: 0.73rem;
+  opacity: 0.9;
+}
+
+.relations-v2-smart strong {
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+.relations-v2-family-tabs {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding-bottom: 0.05rem;
+  scrollbar-width: thin;
+}
+
+.relations-v2-family-tab {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  border: 1px solid rgba(16, 38, 61, 0.1);
+  background: rgba(255, 255, 255, 0.82);
+  color: #2f4b61;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.relations-v2-family-tab.is-active {
+  color: #fff;
+  border-color: rgba(16, 38, 61, 0.2);
+  background: linear-gradient(135deg, #143650, #245d84);
+  box-shadow: 0 8px 18px rgba(16, 38, 61, 0.14);
+}
+
+.relations-v2-family-note {
+  color: #5a6f83;
+  font-size: 0.8rem;
+}
+
+.relations-v2-question-list {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.relations-v2-question-button {
+  width: 100%;
+  text-align: right;
+  border-radius: 12px;
+  border: 1px solid rgba(16, 38, 61, 0.1);
+  background: rgba(255, 255, 255, 0.9);
+  color: #173449;
+  line-height: 1.35;
+  font-weight: 700;
+  padding: 0.68rem 0.72rem;
+  box-shadow: 0 6px 15px rgba(16, 38, 61, 0.04);
+}
+
+.relations-v2-question-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(16, 38, 61, 0.08);
+}
+
+.relations-v2-question-button.is-highlighted {
+  border-color: rgba(31, 133, 190, 0.28);
+  box-shadow: 0 0 0 3px rgba(31, 133, 190, 0.09);
+}
+
+.relations-v2-question-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.relations-v2-idle {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.relations-v2-idle h2 {
+  margin: 0;
+  color: var(--alchemy-navy);
+}
+
+.relations-v2-idle p {
+  margin: 0;
+}
+
+.relations-v2-idle__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.relations-v2-idle__actions > span {
+  color: #50667b;
+  font-weight: 600;
+}
+
+.relations-v2-bottom {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.relations-v2-details {
+  border-radius: 14px;
+  border: 1px solid rgba(16, 38, 61, 0.09);
+  background:
+    radial-gradient(circle at 92% 8%, rgba(211, 165, 74, 0.06), transparent 42%),
+    rgba(255, 255, 255, 0.92);
+  box-shadow: 0 8px 18px rgba(16, 38, 61, 0.04);
+  overflow: hidden;
+}
+
+.relations-v2-details > summary {
+  cursor: pointer;
+  list-style: none;
+  font-weight: 800;
+  color: #173449;
+  padding: 0.7rem 0.85rem;
+}
+
+.relations-v2-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.relations-v2-details > summary::after {
+  content: '+';
+  float: left;
+  color: #5d7388;
+}
+
+.relations-v2-details[open] > summary::after {
+  content: '−';
+}
+
+.relations-v2-details > p {
+  margin: 0;
+  color: #4f667a;
+  line-height: 1.45;
+  padding: 0 0.85rem 0.8rem;
+}
+
+.relations-v2-bottom__body {
+  display: grid;
+  gap: 0.65rem;
+  border-top: 1px solid rgba(16, 38, 61, 0.06);
+  padding: 0.65rem 0.85rem 0.85rem;
+}
+
+.relations-v2-stats-grid {
+  display: grid;
+  gap: 0.45rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.relations-v2-stats-grid > div {
+  display: grid;
+  gap: 0.15rem;
+  border-radius: 10px;
+  border: 1px solid rgba(16, 38, 61, 0.07);
+  background: rgba(255, 255, 255, 0.72);
+  padding: 0.45rem 0.5rem;
+}
+
+.relations-v2-stats-grid span {
+  color: #5e7387;
+  font-size: 0.73rem;
+}
+
+.relations-v2-stats-grid strong {
+  color: #173449;
+  font-size: 1rem;
+}
+
+.relations-v2-bottom__insight {
+  margin: 0;
+  border-radius: 10px;
+  border: 1px solid rgba(16, 38, 61, 0.08);
+  background: rgba(255, 255, 255, 0.78);
+  color: #365066;
+  line-height: 1.4;
+  padding: 0.5rem 0.6rem;
+}
+
+.relations-v2-bottom__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.relations-v2-bottom__actions > button {
+  flex: 1 1 180px;
+}
+
+.relations-v2-history-list,
+.relations-v2-diagnostics-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.relations-v2-history-item {
+  display: grid;
+  gap: 0.45rem;
+  border-radius: 12px;
+  border: 1px solid rgba(16, 38, 61, 0.08);
+  background: rgba(255, 255, 255, 0.78);
+  padding: 0.55rem 0.6rem;
+}
+
+.relations-v2-history-item__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.relations-v2-history-item__head small {
+  color: #60758a;
+}
+
+.relations-v2-history-item__head h4 {
+  margin: 0.1rem 0 0;
+  color: #173449;
+}
+
+.relations-v2-history-item__question {
+  margin: 0;
+  color: #274358;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.relations-v2-details--nested {
+  border-radius: 10px;
+  box-shadow: none;
+  background: rgba(250, 252, 255, 0.86);
+}
+
+.relations-v2-details--nested > summary {
+  padding: 0.5rem 0.6rem;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.relations-v2-history-item__details {
+  display: grid;
+  gap: 0.55rem;
+  border-top: 1px solid rgba(16, 38, 61, 0.05);
+  padding: 0.55rem 0.6rem 0.6rem;
+}
+
+.relations-v2-history-item__details strong {
+  display: block;
+  margin-bottom: 0.15rem;
+  color: #173449;
+  font-size: 0.8rem;
+}
+
+.relations-v2-history-item__details p,
+.relations-v2-history-item__details pre {
+  margin: 0;
+  color: #40596f;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.relations-v2-history-item__details pre {
+  font-family: inherit;
+}
+
+.relations-v2-diagnostic-item {
+  border-radius: 10px;
+  border: 1px solid rgba(16, 38, 61, 0.07);
+  background: rgba(255, 255, 255, 0.76);
+  padding: 0.5rem 0.6rem;
+}
+
+.relations-v2-diagnostic-item strong {
+  display: block;
+  margin: 0 0 0.2rem;
+  color: #173449;
+}
+
+.relations-v2-diagnostic-item p {
+  margin: 0;
+  color: #4b6277;
+  line-height: 1.4;
+}
+
+.relations-v2-monologue {
+  display: grid;
+  gap: 0.35rem;
+  border-top: 1px solid rgba(16, 38, 61, 0.05);
+  padding: 0.6rem 0.85rem 0.8rem;
+}
+
+.relations-v2-monologue p {
+  margin: 0;
+  color: #445d72;
+  line-height: 1.45;
+}
+
+.relations-v2-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 78;
+  background: rgba(7, 15, 24, 0.35);
+  backdrop-filter: blur(4px);
+  display: grid;
+  align-items: end;
+  padding: 0.75rem;
+}
+
+.relations-v2-drawer,
+.relations-v2-dialog {
+  width: min(100%, 640px);
+  margin-inline: auto;
+  border-radius: 18px;
+  border: 1px solid rgba(16, 38, 61, 0.12);
+  background:
+    radial-gradient(circle at 94% 8%, rgba(211, 165, 74, 0.08), transparent 40%),
+    rgba(255, 255, 255, 0.98);
+  box-shadow: 0 25px 55px rgba(8, 21, 34, 0.2);
+}
+
+.relations-v2-drawer {
+  width: min(100%, 720px);
+  max-height: min(92vh, 820px);
+  overflow: auto;
+  padding: 0.55rem 0.75rem 0.9rem;
+}
+
+.relations-v2-drawer__grab {
+  width: 44px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(16, 38, 61, 0.16);
+  margin: 0.15rem auto 0.45rem;
+}
+
+.relations-v2-drawer__head,
+.relations-v2-dialog__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.relations-v2-drawer__head h2,
+.relations-v2-dialog__head h2 {
+  margin: 0.15rem 0 0;
+  color: #173449;
+}
+
+.relations-v2-drawer__eyebrow {
+  margin: 0;
+  color: #5f7386;
+  font-size: 0.78rem;
+}
+
+.relations-v2-drawer__value {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.35rem;
+}
+
+.relations-v2-drawer__value strong {
+  color: #102e45;
+  font-size: clamp(1.45rem, 2vw + 1rem, 2rem);
+}
+
+.relations-v2-drawer__text {
+  margin: 0.25rem 0 0;
+  color: #4d6478;
+  line-height: 1.4;
+}
+
+.relations-v2-drawer__track {
+  height: 8px;
+  border-radius: 999px;
+  background: #e5edf4;
+  border: 1px solid rgba(16, 38, 61, 0.05);
+  overflow: hidden;
+  margin-top: 0.55rem;
+}
+
+.relations-v2-drawer__status {
+  display: grid;
+  gap: 0.15rem;
+  border-radius: 12px;
+  border: 1px solid rgba(16, 38, 61, 0.08);
+  background: rgba(255, 255, 255, 0.72);
+  color: #576d81;
+  padding: 0.55rem 0.65rem;
+  margin-top: 0.65rem;
+}
+
+.relations-v2-drawer__status strong {
+  color: #173449;
+  line-height: 1.35;
+}
+
+.relations-v2-drawer__section {
+  margin-top: 0.7rem;
+}
+
+.relations-v2-drawer__section h3 {
+  margin: 0 0 0.35rem;
+  color: #173449;
+  font-size: 0.92rem;
+}
+
+.relations-v2-drawer__section ul {
+  margin: 0;
+  padding-right: 1rem;
+  color: #435b70;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.relations-v2-dialog {
+  max-height: min(88vh, 760px);
+  overflow: auto;
+  padding: 0.8rem;
+}
+
+.relations-v2-help-list {
+  margin: 0.55rem 0 0.45rem;
+  padding-right: 1.1rem;
+  display: grid;
+  gap: 0.35rem;
+  color: #355066;
+}
+
+.relations-v2-help-footer {
+  margin-top: 0.4rem;
+  color: #60758a;
+  font-size: 0.8rem;
+}
+
+@media (min-width: 760px) {
+  .relations-v2-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .relations-v2-elements-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .relations-v2-element-card--wide {
+    grid-column: 1 / -1;
+  }
+
+  .relations-v2-elements-panel__emotion {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .relations-v2-result-chip {
+    min-width: 220px;
+  }
+}
+
+@media (min-width: 980px) {
+  .relations-v2-core {
+    grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.92fr);
+    align-items: start;
+  }
+
+  .relations-v2-action-panel {
+    position: sticky;
+    top: 4.45rem;
+  }
+
+  .relations-v2-overlay {
+    align-items: center;
+    padding: 1rem;
+  }
+
+  .relations-v2-drawer {
+    border-radius: 20px;
+  }
+}
+
+@media (max-width: 560px) {
+  .relations-v2-header {
+    padding: 0.55rem 0.65rem;
+  }
+
+  .relations-v2-header__title h1 {
+    font-size: 0.98rem;
+  }
+
+  .relations-v2-icon-button {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .relations-v2-metric-chip {
+    padding: 0.55rem;
+  }
+
+  .relations-v2-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .relations-v2-bottom__actions > button {
+    flex-basis: 100%;
+  }
+
+  .relations-v2-overlay {
+    padding: 0.35rem;
+  }
+
+  .relations-v2-drawer {
+    width: 100%;
+    border-radius: 16px 16px 0 0;
+    max-height: 94vh;
+  }
+}
