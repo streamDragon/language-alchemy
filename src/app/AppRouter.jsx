@@ -6,6 +6,7 @@ import BeyondWordsLabPage from '../labs/BeyondWordsLabPage'
 import CleanQuestionsPage from '../labs/CleanQuestionsPage'
 import LibraryPage from '../labs/LibraryPage'
 import MindLiberatingLanguagePage from '../labs/MindLiberatingLanguagePage'
+import RelationsLabPage from '../labs/RelationsLabPage'
 
 export default function AppRouter() {
   return (
@@ -21,6 +22,8 @@ export default function AppRouter() {
         <Route path="lab/beyond" element={<BeyondWordsLabPage />} />
         <Route path="lab/mind-liberating-language" element={<MindLiberatingLanguagePage />} />
         <Route path="lab/mind-liberating" element={<MindLiberatingLanguagePage />} />
+        <Route path="lab/relations" element={<RelationsLabPage />} />
+        <Route path="lab/relationship-questions" element={<RelationsLabPage />} />
         <Route path="library" element={<LibraryPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

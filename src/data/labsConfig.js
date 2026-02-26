@@ -322,6 +322,16 @@ visibleLabs.push({
     'טקסט מטופל → מדד סגירת תודעה → ניסוח מטפל משחרר → אופציות שנפתחות.',
 })
 
+visibleLabs.push({
+  kind: 'relations',
+  id: 'relations',
+  route: '/lab/relations',
+  titleHe: 'מעבדת יחסים',
+  titleEn: 'Relations Lab',
+  descriptionHe:
+    'סימולטור שאלות יחסים: בוחרים רגש, שואלים שאלה אחת, ורואים איך Open Field / Resources / Distress משתנים.',
+})
+
 export const hiddenLabs = [
   alchemy({
     id: 'beyond-practice',
