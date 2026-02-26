@@ -627,7 +627,7 @@ export default function RelationsLabPage() {
                     <li>נשמרו בארכיון: <strong>{archiveCountForCurrentSession}</strong></li>
                   </ul>
                   <div className="relations-mini-list__hint">
-                    {pendingAfterTurn
+                    {pendingTurn
                       ? 'ממתין לבחירת רגש אחרי'
                       : 'מוכן לשאלה הבאה'}
                   </div>

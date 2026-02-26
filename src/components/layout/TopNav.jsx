@@ -1,10 +1,12 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { dashboardCards } from '../../data/labsConfig'
 import { useAppState } from '../../state/appStateContext'
+import packageJson from '../../../package.json'
 
 export default function TopNav() {
   const navigate = useNavigate()
   const { runRandomAlchemist } = useAppState()
+  const appVersion = packageJson.version
 
   const handleRandom = () => {
     const lab = runRandomAlchemist()
@@ -20,6 +22,7 @@ export default function TopNav() {
         <div>
           <div className="brand-title">Language Alchemy Lab</div>
           <div className="brand-subtitle">ארגז הכלים האולטימטיבי לאלכימיה של שפה</div>
+          <div className="brand-version" aria-label="Application version">v{appVersion}</div>
         </div>
       </div>
 
