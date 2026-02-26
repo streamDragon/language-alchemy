@@ -2756,7 +2756,7 @@
 .lab-session-gate__modalCard {
   width: min(920px, 100%);
   max-height: min(88vh, 920px);
-  overflow: auto;
+  overflow: hidden;
   border-radius: 20px;
   border: 1px solid rgba(16, 38, 61, 0.12);
   background:
@@ -2776,6 +2776,10 @@
   padding: 0.9rem 1rem 0.75rem;
   border-bottom: 1px solid #e3ebf3;
   background: rgba(255, 255, 255, 0.8);
+}
+
+.lab-session-gate__modalHeader > div {
+  min-width: 0;
 }
 
 .lab-session-gate__modalHeader h3 {
@@ -2805,6 +2809,9 @@
   padding: 0.85rem 1rem;
   display: grid;
   gap: 0.8rem;
+  overflow: auto;
+  min-width: 0;
+  min-height: 0;
 }
 
 .lab-session-gate__stepMeta {
@@ -2812,11 +2819,10 @@
   border: 1px solid rgba(16, 38, 61, 0.08);
   background: rgba(255, 255, 255, 0.82);
   padding: 0.55rem 0.65rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
   gap: 0.7rem;
-  flex-wrap: wrap;
   color: #5e7385;
   font-size: 0.78rem;
 }
@@ -2824,12 +2830,16 @@
 .lab-session-gate__stepMeta strong {
   color: #173145;
   font-size: 0.8rem;
+  min-width: 0;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .lab-session-gate__fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.7rem;
+  min-width: 0;
 }
 
 .lab-session-gate__field {
@@ -2839,6 +2849,7 @@
   border: 1px solid rgba(16, 38, 61, 0.07);
   background: rgba(255, 255, 255, 0.84);
   padding: 0.65rem;
+  min-width: 0;
 }
 
 .lab-session-gate__field > span,
@@ -2869,6 +2880,7 @@
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
   gap: 0.8rem;
+  min-width: 0;
 }
 
 .lab-session-gate__reviewCard {
@@ -2878,6 +2890,7 @@
   padding: 0.8rem;
   display: grid;
   gap: 0.5rem;
+  min-width: 0;
 }
 
 .lab-session-gate__reviewCard h4 {
@@ -2941,6 +2954,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.65rem;
+  flex-wrap: wrap;
 }
 
 @media (max-width: 860px) {
