@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppState } from '../state/appStateContext'
 import { makeId } from '../utils/ids'
@@ -37,7 +37,7 @@ function formatTurnDeltaLine(turn) {
   const open = deltaToken(turn.deltas.openField)
   const resources = deltaToken(turn.deltas.resources)
   const distress = deltaToken(turn.deltas.distress, true)
-  return `OpenField ${open.text}, Resources ${resources.text}, Distress ${distress.text}`
+  return `פתיחות שדה ${open.text}, משאבים ${resources.text}, עומס/מצוקה ${distress.text}`
 }
 
 function buildFavoriteArchiveRecord({ session, turn }) {
@@ -74,94 +74,192 @@ function getBarTone(key) {
   return 'distress'
 }
 
-function MetricBars({ bars }) {
+function normalizeEmotionSelection(selection, fallbackId = null, fallbackIntensity = 3) {
+  return {
+    id: selection?.id ?? fallbackId,
+    intensity: Number(selection?.intensity ?? fallbackIntensity),
+    labelHe:
+      selection?.labelHe ??
+      (selection?.id ? (getEmotionById(selection.id)?.labelHe ?? selection.id) : null),
+  }
+}
+
+function relationTypeLabel(type) {
+  if (type === 'loop') return 'לולאה'
+  if (type === 'cause') return 'אחד מפעיל את השני'
+  if (type === 'conflict') return 'התנגשות'
+  if (type === 'identity') return 'זהות שמפעילה תגובה'
+  return 'קשר פעיל'
+}
+
+function relationStateLabelFromStage(stage) {
+  if (stage <= 0) return 'הקשר כרגע סגור ונוקשה'
+  if (stage === 1) return 'לולאה שמתחילה להתרכך'
+  if (stage === 2) return 'יש יותר מרווח והשפעה הדדית'
+  return 'הקשר פתוח יותר ואפשר לעבוד איתו'
+}
+
+function describeCurrentRelationState(session) {
+  if (!session?.turns?.length) {
+    return relationTypeLabel(session?.scenario?.initialRelationR0?.type)
+  }
+  const latestTurn = session.turns.at(-1)
+  const nextStage = latestTurn?.relationShift?.next ?? 0
+  return relationStateLabelFromStage(nextStage)
+}
+
+function EmotionPickerPill({
+  title,
+  selection,
+  placeholder,
+  isOpen,
+  onToggle,
+  onSelectEmotion,
+  onChangeIntensity,
+  disabled = false,
+}) {
+  const label = selection?.labelHe ?? placeholder
+
+  return (
+    <div className={`relations-emotion-picker ${isOpen ? 'is-open' : ''} ${disabled ? 'is-disabled' : ''}`}>
+      <button
+        type="button"
+        className="relations-emotion-pill"
+        onClick={onToggle}
+        disabled={disabled}
+        aria-expanded={isOpen}
+      >
+        <span className="relations-emotion-pill__title">{title}</span>
+        <span className="relations-emotion-pill__value">{label}</span>
+        {selection?.id ? <small>{selection.intensity}/5</small> : null}
+      </button>
+
+      {isOpen && !disabled && (
+        <div className="relations-emotion-dropdown" role="dialog" aria-label={title}>
+          <div className="relations-emotion-dropdown__list" role="listbox" aria-label={title}>
+            {relationsEmotionOptions.map((emotion) => {
+              const selected = emotion.id === selection?.id
+              return (
+                <button
+                  key={emotion.id}
+                  type="button"
+                  role="option"
+                  aria-selected={selected}
+                  className={`relations-emotion-dropdown__option ${selected ? 'is-selected' : ''}`}
+                  onClick={() => onSelectEmotion(emotion.id)}
+                >
+                  {emotion.labelHe}
+                </button>
+              )
+            })}
+          </div>
+
+          {selection?.id && (
+            <label className="relations-emotion-dropdown__intensity">
+              <span>עוצמה (אופציונלי)</span>
+              <input
+                type="range"
+                min="1"
+                max="5"
+                step="1"
+                value={selection.intensity}
+                onChange={(event) => onChangeIntensity(Number(event.target.value))}
+              />
+            </label>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function EmotionPillsPanel({
+  currentEmotion,
+  afterEmotion,
+  openMenuId,
+  setOpenMenuId,
+  onSelectCurrentEmotion,
+  onChangeCurrentIntensity,
+  onSelectAfterEmotion,
+  onChangeAfterIntensity,
+}) {
+  return (
+    <div className="relations-panel relations-emotions-panel">
+      <h3>מצב רגשי</h3>
+      <p className="muted-text">הרגש אחרי השאלה מתעדכן אוטומטית. אפשר לדייק ידנית דרך ה-pill.</p>
+
+      <div className="relations-emotion-pills">
+        <EmotionPickerPill
+          title="רגש נוכחי"
+          selection={currentEmotion}
+          placeholder="בחר/י רגש"
+          isOpen={openMenuId === 'current'}
+          onToggle={() => setOpenMenuId((current) => (current === 'current' ? '' : 'current'))}
+          onSelectEmotion={onSelectCurrentEmotion}
+          onChangeIntensity={onChangeCurrentIntensity}
+        />
+
+        <EmotionPickerPill
+          title="רגש אחרי השאלה"
+          selection={afterEmotion}
+          placeholder="יופיע אחרי שאלה"
+          isOpen={openMenuId === 'after'}
+          onToggle={() => setOpenMenuId((current) => (current === 'after' ? '' : 'after'))}
+          onSelectEmotion={onSelectAfterEmotion}
+          onChangeIntensity={onChangeAfterIntensity}
+          disabled={!afterEmotion}
+        />
+      </div>
+    </div>
+  )
+}
+
+function MetricBars({ bars, latestTurn }) {
   const items = [
-    { key: 'openField', label: 'פתיחות שדה (Open Field)' },
-    { key: 'resources', label: 'משאבים זמינים (Resources)' },
-    { key: 'distress', label: 'עומס / מצוקה (Distress)' },
+    { key: 'openField', label: 'פתיחות שדה' },
+    { key: 'resources', label: 'משאבים זמינים' },
+    { key: 'distress', label: 'עומס/מצוקה' },
   ]
 
   return (
     <div className="relations-panel relations-metrics-panel">
-      <h3>לוח מדדים</h3>
+      <h3>מדדים (תוצאה)</h3>
       <div className="relations-metrics-list">
-        {items.map((item) => (
-          <div key={item.key} className="relations-metric">
-            <div className="relations-metric__head">
-              <span>{item.label}</span>
-              <strong>{bars[item.key]}</strong>
+        {items.map((item) => {
+          const rawDelta = latestTurn?.deltas?.[item.key]
+          const delta = Number.isFinite(rawDelta) ? rawDelta : null
+          const deltaDisplay = delta === null ? null : deltaToken(delta, item.key === 'distress')
+
+          return (
+            <div key={item.key} className="relations-metric">
+              <div className="relations-metric__head">
+                <span>{item.label}</span>
+                <div className="relations-metric__value">
+                  {deltaDisplay && (
+                    <span
+                      key={`${latestTurn?.id ?? 'base'}:${item.key}`}
+                      className={`relations-metric__delta relations-metric__delta--${deltaDisplay.tone}`}
+                    >
+                      {deltaDisplay.text}
+                    </span>
+                  )}
+                  <strong>{bars[item.key]}</strong>
+                </div>
+              </div>
+              <div className="relations-metric__track" aria-hidden="true">
+                <div
+                  className={`relations-metric__fill relations-metric__fill--${getBarTone(item.key)}`}
+                  style={{ width: `${bars[item.key]}%` }}
+                />
+              </div>
             </div>
-            <div className="relations-metric__track" aria-hidden="true">
-              <div
-                className={`relations-metric__fill relations-metric__fill--${getBarTone(item.key)}`}
-                style={{ width: `${bars[item.key]}%` }}
-              />
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
       <div className="relations-status-line">{deriveSystemStatus(bars)}</div>
     </div>
   )
 }
-
-function EmotionWheel({
-  selectedEmotionId,
-  selectedIntensity,
-  onChangeIntensity,
-  onSelectEmotion,
-  mode = 'before',
-  suggestedEmotionId,
-}) {
-  return (
-    <div className="relations-panel relations-emotion-panel">
-      <h3>{mode === 'after' ? 'בחר/י רגש אחרי השאלה' : 'מה המצב הרגשי שהמצב מעורר?'}</h3>
-      <p className="muted-text">
-        {mode === 'after'
-          ? 'בחר/י רגש אחד (ואפשר לעדכן עוצמה) כדי לסגור את הסבב ולהמשיך.'
-          : 'בחר/י רגש אחד לפני בחירת השאלה. זה ה"לפני" של הסבב.'}
-      </p>
-
-      <div className="relations-emotion-wheel" role="list" aria-label="בחירת רגש">
-        <div className="relations-emotion-wheel__center">
-          <span>{mode === 'after' ? 'אחרי' : 'לפני'}</span>
-          <strong>{selectedIntensity}/5</strong>
-        </div>
-        {relationsEmotionOptions.map((emotion, index) => {
-          const isSelected = emotion.id === selectedEmotionId
-          const isSuggested = suggestedEmotionId === emotion.id && !selectedEmotionId
-          return (
-            <button
-              key={emotion.id}
-              type="button"
-              role="listitem"
-              className={`relations-emotion-slice ${isSelected ? 'is-selected' : ''} ${isSuggested ? 'is-suggested' : ''}`}
-              style={{ '--slot': index }}
-              onClick={() => onSelectEmotion(emotion.id)}
-              aria-pressed={isSelected}
-            >
-              <span className="relations-emotion-slice__icon" aria-hidden="true">{emotion.icon}</span>
-              <span className="relations-emotion-slice__label">{emotion.labelHe}</span>
-            </button>
-          )
-        })}
-      </div>
-
-      <label className="relations-intensity-control">
-        <span>עוצמה</span>
-        <input
-          type="range"
-          min="1"
-          max="5"
-          step="1"
-          value={selectedIntensity}
-          onChange={(event) => onChangeIntensity(Number(event.target.value))}
-        />
-      </label>
-    </div>
-  )
-}
-
 function QuestionPanel({
   familyId,
   onSelectFamily,
@@ -178,11 +276,11 @@ function QuestionPanel({
     <div className="relations-panel relations-question-panel">
       <div className="relations-question-panel__head">
         <div>
-          <h3>שאלות יחסים</h3>
-          <p className="muted-text">בוחרים משפחה אחת. מוצגות רק 2–4 שאלות בכל רגע.</p>
+          <h3>משפחות שאלות</h3>
+          <p className="muted-text">בכל טאב מוצגות רק 3–4 שאלות, כדי לשמור על בחירה אנושית ופשוטה.</p>
         </div>
         <button type="button" className="relations-smart-button" onClick={onApplySmartSuggestion}>
-          🪄 הצעה חכמה
+          הצעה חכמה
         </button>
       </div>
 
@@ -230,9 +328,9 @@ function QuestionPanel({
 
 function TurnDeltaBadges({ turn }) {
   const tokens = [
-    { label: 'Open', ...deltaToken(turn.deltas.openField) },
-    { label: 'Resources', ...deltaToken(turn.deltas.resources) },
-    { label: 'Distress', ...deltaToken(turn.deltas.distress, true) },
+    { label: 'פתיחות שדה', ...deltaToken(turn.deltas.openField) },
+    { label: 'משאבים', ...deltaToken(turn.deltas.resources) },
+    { label: 'מצוקה', ...deltaToken(turn.deltas.distress, true) },
   ]
   return (
     <div className="relations-delta-badges">
@@ -282,11 +380,11 @@ export default function RelationsLabPage() {
 
   const [session, setSession] = useState(null)
   const [selectedFamilyId, setSelectedFamilyId] = useState('between')
-  const [emotionPickerMode, setEmotionPickerMode] = useState('before')
   const [emotionSelection, setEmotionSelection] = useState({ id: null, intensity: 3 })
-  const [pendingAfterTurnId, setPendingAfterTurnId] = useState(null)
+  const [afterEmotionSelection, setAfterEmotionSelection] = useState(null)
+  const [questionPickerOpen, setQuestionPickerOpen] = useState(false)
+  const [openEmotionMenuId, setOpenEmotionMenuId] = useState('')
   const [highlightedQuestionId, setHighlightedQuestionId] = useState('')
-  const [showFullMonologue, setShowFullMonologue] = useState(false)
   const [statusMessage, setStatusMessage] = useState('')
   const [archive, setArchive] = useState(loadRelationsQuestionArchive)
 
@@ -309,27 +407,55 @@ export default function RelationsLabPage() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [wizardOpen])
 
-  const questionFamilies = useMemo(
-    () => (session?.scenario ? buildRelationsQuestionSetForScenario(session.scenario) : []),
-    [session?.scenario],
-  )
+  useEffect(() => {
+    if (!questionPickerOpen) return undefined
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setQuestionPickerOpen(false)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [questionPickerOpen])
 
-  const smartSuggestion = useMemo(
-    () => (session?.scenario ? suggestSmartQuestion({ scenario: session.scenario, bars: session.bars }) : null),
-    [session?.scenario, session?.bars],
-  )
+  useEffect(() => {
+    const onPointerDown = (event) => {
+      if (!(event.target instanceof Element)) return
+      if (event.target.closest('.relations-emotion-picker')) return
+      setOpenEmotionMenuId('')
+    }
+    window.addEventListener('pointerdown', onPointerDown)
+    return () => window.removeEventListener('pointerdown', onPointerDown)
+  }, [])
 
-  const suggestedEmotion = session?.scenario?.baselineEmotionId ?? null
-  const canAskQuestion = Boolean(session && emotionSelection.id && !pendingAfterTurnId)
-  const pendingTurn = pendingAfterTurnId
-    ? session?.turns.find((turn) => turn.id === pendingAfterTurnId) ?? null
+  const questionFamilies = session?.scenario ? buildRelationsQuestionSetForScenario(session.scenario) : []
+
+  const smartSuggestion = session?.scenario
+    ? suggestSmartQuestion({ scenario: session.scenario, bars: session.bars })
     : null
+
+  const canAskQuestion = Boolean(session && emotionSelection.id)
+  const latestTurn = session?.turns.at(-1) ?? null
+  const relationStateSummary = session ? describeCurrentRelationState(session) : ''
 
   const handleOpenWizard = () => {
     setWizardOpen(true)
     setWizardStep('setup')
     setWizardScenarioPreview(null)
+    setQuestionPickerOpen(false)
+    setOpenEmotionMenuId('')
     setStatusMessage('')
+  }
+
+  const handleOpenQuestionPicker = () => {
+    if (!session) return
+    setQuestionPickerOpen(true)
+    setOpenEmotionMenuId('')
+    emitAlchemySignal('whoosh', { message: 'פתיחת משפחות שאלות.' })
+  }
+
+  const handleCloseQuestionPicker = () => {
+    setQuestionPickerOpen(false)
   }
 
   const handleGenerateScenario = () => {
@@ -360,56 +486,76 @@ export default function RelationsLabPage() {
     setWizardOpen(false)
     setWizardStep('setup')
     setSelectedFamilyId('between')
-    setEmotionPickerMode('before')
-    setEmotionSelection({
-      id: wizardScenarioPreview.baselineEmotionId ?? null,
-      intensity: 3,
-    })
-    setPendingAfterTurnId(null)
+    setEmotionSelection(
+      normalizeEmotionSelection({
+        id: wizardScenarioPreview.baselineEmotionId ?? null,
+        intensity: 3,
+      }),
+    )
+    setAfterEmotionSelection(null)
+    setQuestionPickerOpen(false)
+    setOpenEmotionMenuId('')
     setHighlightedQuestionId('')
-    setShowFullMonologue(false)
-    setStatusMessage('בחר/י רגש ואז שאלה ראשונה.')
+    setStatusMessage('קראו את המונולוג ובחרו שאלת יחסים. המדדים והרגש יתעדכנו מיד אחרי הבחירה.')
   }
 
-  const handleSelectEmotion = (emotionId) => {
-    if (!emotionId) return
-
-    if (!pendingAfterTurnId) {
-      setEmotionSelection((current) => ({ ...current, id: emotionId }))
-      setEmotionPickerMode('before')
-      setStatusMessage('רגש לפני השאלה נבחר. עכשיו בחר/י שאלה.')
-      return
-    }
-
+  const updateLatestTurnEmotionAfter = (nextEmotion) => {
     setSession((currentSession) => {
-      if (!currentSession) return currentSession
-      const turns = currentSession.turns.map((turn) =>
-        turn.id === pendingAfterTurnId
-          ? {
-              ...turn,
-              emotionAfter: {
-                id: emotionId,
-                intensity: emotionSelection.intensity,
-                labelHe: getEmotionById(emotionId)?.labelHe ?? emotionId,
-              },
-            }
-          : turn,
-      )
+      if (!currentSession?.turns?.length) return currentSession
+      const turns = currentSession.turns.slice()
+      const latestIndex = turns.length - 1
+      turns[latestIndex] = {
+        ...turns[latestIndex],
+        emotionAfter: nextEmotion,
+      }
       return { ...currentSession, turns }
     })
+  }
 
-    setEmotionSelection((current) => ({ ...current, id: emotionId }))
-    setPendingAfterTurnId(null)
-    setEmotionPickerMode('before')
-    setStatusMessage('רגש אחרי נשמר. אפשר לבחור את השאלה הבאה.')
+  const handleSelectCurrentEmotion = (emotionId) => {
+    if (!emotionId) return
+    const nextEmotion = normalizeEmotionSelection({
+      id: emotionId,
+      intensity: emotionSelection?.intensity ?? 3,
+    })
+    setEmotionSelection(nextEmotion)
+    setOpenEmotionMenuId('')
+    setStatusMessage('עודכן רגש נוכחי לסבב הבא.')
+  }
+
+  const handleChangeCurrentEmotionIntensity = (intensity) => {
+    setEmotionSelection((current) => normalizeEmotionSelection({ ...current, intensity }))
+  }
+
+  const handleSelectAfterEmotion = (emotionId) => {
+    if (!emotionId || !latestTurn) return
+    const nextEmotion = normalizeEmotionSelection({
+      id: emotionId,
+      intensity: afterEmotionSelection?.intensity ?? latestTurn.emotionAfter?.intensity ?? 3,
+    })
+    setAfterEmotionSelection(nextEmotion)
+    setEmotionSelection(nextEmotion)
+    updateLatestTurnEmotionAfter(nextEmotion)
+    setOpenEmotionMenuId('')
+    setStatusMessage('עודכן רגש אחרי השאלה (וגם הרגש הנוכחי לסבב הבא).')
+  }
+
+  const handleChangeAfterEmotionIntensity = (intensity) => {
+    if (!afterEmotionSelection) return
+    const nextEmotion = normalizeEmotionSelection({ ...afterEmotionSelection, intensity })
+    setAfterEmotionSelection(nextEmotion)
+    setEmotionSelection(nextEmotion)
+    updateLatestTurnEmotionAfter(nextEmotion)
   }
 
   const handleAskQuestion = (family, question) => {
     if (!session) return
     if (!canAskQuestion) {
-      setStatusMessage(pendingAfterTurnId ? 'קודם בחר/י רגש אחרי כדי לסגור את הסבב.' : 'קודם בחר/י רגש.')
+      setStatusMessage('קודם בחר/י או עדכן/י רגש נוכחי.')
       return
     }
+
+    const emotionBefore = normalizeEmotionSelection(emotionSelection)
 
     const turnResult = simulateQuestionTurn({
       scenario: session.scenario,
@@ -417,13 +563,14 @@ export default function RelationsLabPage() {
       barsBefore: session.bars,
       question,
       familyId: family.id,
-      emotionBefore: {
-        id: emotionSelection.id,
-        intensity: emotionSelection.intensity,
-        labelHe: getEmotionById(emotionSelection.id)?.labelHe ?? emotionSelection.id,
-      },
+      emotionBefore,
       turnIndex: session.turns.length,
     })
+    const nextAfterEmotion = normalizeEmotionSelection(
+      turnResult.emotionAfterSuggested ?? emotionBefore,
+      emotionBefore.id,
+      emotionBefore.intensity,
+    )
 
     const turnId = makeId('rel-turn')
     const turn = {
@@ -436,12 +583,8 @@ export default function RelationsLabPage() {
       barsBefore: { ...session.bars },
       barsAfter: turnResult.barsAfter,
       deltas: turnResult.deltas,
-      emotionBefore: {
-        id: emotionSelection.id,
-        intensity: emotionSelection.intensity,
-        labelHe: getEmotionById(emotionSelection.id)?.labelHe ?? emotionSelection.id,
-      },
-      emotionAfter: null,
+      emotionBefore,
+      emotionAfter: nextAfterEmotion,
       clientAnswerText: turnResult.clientAnswerText,
       coachInsightText: turnResult.coachInsightText,
       relationShift: turnResult.relationShift,
@@ -454,17 +597,22 @@ export default function RelationsLabPage() {
       turns: [...current.turns, turn],
     }))
 
-    setPendingAfterTurnId(turnId)
-    setEmotionPickerMode('after')
-    setEmotionSelection((current) => ({ ...current, id: null }))
+    setAfterEmotionSelection(nextAfterEmotion)
+    setEmotionSelection(nextAfterEmotion)
+    setQuestionPickerOpen(false)
+    setOpenEmotionMenuId('')
     setHighlightedQuestionId(question.id)
-    setStatusMessage('המערכת עדכנה מדדים. עכשיו בחר/י רגש אחרי השאלה.')
+    setStatusMessage('השאלה נוספה. המדדים והרגש התעדכנו לפי התגובה.')
+
+    emitAlchemySignal('tap', { message: 'נבחרה שאלת יחסים.' })
+    emitAlchemySignal('rise', { message: 'המדדים התעדכנו.' })
 
     const gain = turn.deltas.openField + turn.deltas.resources - turn.deltas.distress
-    if (gain >= 24) {
-      emitAlchemySignal('mastery', { message: 'שאלה חזקה פתחה את השדה.' })
+    const improved = turn.deltas.openField > 0 || turn.deltas.distress < 0
+    if (improved) {
+      emitAlchemySignal('copied', { message: 'שיפור מורגש במדדים.' })
     } else if (gain >= 14) {
-      emitAlchemySignal('success', { message: 'נפתחה אופציה חדשה בשדה.' })
+      emitAlchemySignal('success', { message: 'נוצר שינוי במבנה הקשר.' })
     }
   }
 
@@ -551,9 +699,10 @@ export default function RelationsLabPage() {
   const handleStartNewSession = () => {
     setView('home')
     setSession(null)
-    setPendingAfterTurnId(null)
-    setEmotionPickerMode('before')
     setEmotionSelection({ id: null, intensity: 3 })
+    setAfterEmotionSelection(null)
+    setQuestionPickerOpen(false)
+    setOpenEmotionMenuId('')
     setHighlightedQuestionId('')
     setStatusMessage('')
     handleOpenWizard()
@@ -596,14 +745,12 @@ export default function RelationsLabPage() {
         </section>
       )}
 
-      {view === 'engine' && session && (
+            {view === 'engine' && session && (
         <>
           <div className="relations-engine-toolbar">
             <div className="relations-engine-toolbar__left">
-              <h2>מנוע התרגול</h2>
-              <p className="muted-text">
-                בכל סבב: בחר/י רגש → שאל/י שאלה → בחר/י רגש אחרי
-              </p>
+              <h2>לולאת תרגול יחסים</h2>
+              <p className="muted-text">קוראים מונולוג → בוחרים שאלת יחסים → רואים שינוי במדדים וברגש.</p>
             </div>
             <div className="relations-engine-toolbar__actions">
               <button type="button" className="secondary-button" onClick={handleOpenWizard}>
@@ -615,94 +762,95 @@ export default function RelationsLabPage() {
             </div>
           </div>
 
+          <div className="relations-loop-strip" role="note" aria-label="לולאת סיבה ותוצאה">
+            <span>במרכז: המונולוג + השאלה</span>
+            <span className="relations-loop-strip__arrow" aria-hidden="true">←</span>
+            <strong>משמאל: שינוי במדדים וברגש</strong>
+          </div>
+
           <div className="relations-engine">
+            <div className="relations-engine__connector" aria-hidden="true">
+              <span>סיבה → תוצאה</span>
+            </div>
+
             <aside className="relations-engine__left">
               <div className="relations-sticky-stack">
-                <MetricBars bars={session.bars} />
+                <MetricBars bars={session.bars} latestTurn={latestTurn} />
+
+                <EmotionPillsPanel
+                  currentEmotion={emotionSelection}
+                  afterEmotion={afterEmotionSelection}
+                  openMenuId={openEmotionMenuId}
+                  setOpenMenuId={setOpenEmotionMenuId}
+                  onSelectCurrentEmotion={handleSelectCurrentEmotion}
+                  onChangeCurrentIntensity={handleChangeCurrentEmotionIntensity}
+                  onSelectAfterEmotion={handleSelectAfterEmotion}
+                  onChangeAfterIntensity={handleChangeAfterEmotionIntensity}
+                />
+
                 <div className="relations-panel relations-mini-panel">
-                  <h4>סשן נוכחי</h4>
+                  <h4>מצב הסשן</h4>
                   <ul className="relations-mini-list">
                     <li>שאלות שנשאלו: <strong>{session.turns.length}</strong></li>
-                    <li>אהבתי: <strong>{likedTurns.length}</strong></li>
-                    <li>נשמרו בארכיון: <strong>{archiveCountForCurrentSession}</strong></li>
+                    <li>שאלות אהובות: <strong>{likedTurns.length}</strong></li>
+                    <li>ארכיון בסשן: <strong>{archiveCountForCurrentSession}</strong></li>
                   </ul>
                   <div className="relations-mini-list__hint">
-                    {pendingTurn
-                      ? 'ממתין לבחירת רגש אחרי'
-                      : 'מוכן לשאלה הבאה'}
+                    {latestTurn
+                      ? `הרגש הנוכחי עודכן ל־${emotionSelection?.labelHe ?? '—'}`
+                      : 'בחר/י שאלה אחת כדי לראות שינוי ראשון'}
                   </div>
                 </div>
               </div>
             </aside>
 
             <section className="relations-engine__center">
-              <div className="relations-panel relations-problem-panel">
+              <div className="relations-panel relations-problem-panel relations-problem-panel--primary">
                 <div className="relations-problem-panel__head">
                   <div>
-                    <h3>המציאות הנוכחית</h3>
-                    <p className="muted-text">המונולוג המקוצר + מבנה הבעיה (F / G / 1 / 2 / R)</p>
+                    <h3>משפחות שאלות</h3>
+                    <p className="muted-text">בכל טאב מוצגות רק 3–4 שאלות, כדי לשמור על בחירה אנושית ופשוטה.</p>
                   </div>
-                  <button
-                    type="button"
-                    className="relations-link-button"
-                    onClick={() => setShowFullMonologue((current) => !current)}
-                  >
-                    {showFullMonologue ? 'הצג פחות' : 'הצג מלא'}
-                  </button>
                 </div>
 
-                <div className="relations-monologue-preview">
-                  {(showFullMonologue
-                    ? session.scenario.clientMonologueLines
-                    : session.scenario.clientMonologueLines.slice(0, 3)
-                  ).map((line, index) => (
+                <div className="relations-monologue-preview relations-monologue-preview--full">
+                  {session.scenario.clientMonologueLines.map((line, index) => (
                     <p key={`${line}-${index}`}>{line}</p>
                   ))}
                 </div>
+              </div>
 
-                <div className="relations-structure-grid">
-                  <div className="relations-structure-item">
-                    <span>שדה (F)</span>
+              <div className="relations-panel relations-decomposition-panel">
+                <h3>פירוק אנושי של הסיטואציה</h3>
+                <div className="relations-human-breakdown">
+                  <div className="relations-human-breakdown__row">
+                    <span>ההקשר:</span>
                     <strong>{session.scenario.contextF}</strong>
                   </div>
-                  <div className="relations-structure-item">
-                    <span>מטרה (G)</span>
+                  <div className="relations-human-breakdown__row">
+                    <span>המטרה:</span>
                     <strong>{session.scenario.goalG}</strong>
                   </div>
-                  <div className="relations-structure-item">
-                    <span>אלמנט 1</span>
-                    <strong>{session.scenario.element1}</strong>
+                  <div className="relations-human-breakdown__row">
+                    <span>שני דברים במתח:</span>
+                    <strong>{session.scenario.element1} מול {session.scenario.element2}</strong>
                   </div>
-                  <div className="relations-structure-item">
-                    <span>אלמנט 2</span>
-                    <strong>{session.scenario.element2}</strong>
-                  </div>
-                  <div className="relations-structure-item relations-structure-item--full">
-                    <span>יחס נוכחי (R₀)</span>
-                    <strong>{session.scenario.initialRelationR0.shortHe}</strong>
+                  <div className="relations-human-breakdown__row relations-human-breakdown__row--full">
+                    <span>הקשר ביניהם כרגע:</span>
+                    <strong>{relationStateSummary}</strong>
                   </div>
                 </div>
-
-                {session.scenario.alternativeFields.length > 0 && (
-                  <div className="relations-alt-fields">
-                    {session.scenario.alternativeFields.map((field) => (
-                      <span key={field} className="relations-chip">{field}</span>
-                    ))}
-                  </div>
-                )}
               </div>
 
               <div className="relations-panel relations-stream-panel">
                 <div className="relations-stream-panel__head">
-                  <h3>שיחה אחרונה / סטרים</h3>
-                  <p className="muted-text">
-                    מוצג רצף השאלה → תשובת המטופל → שורת היועץ
-                  </p>
+                  <h3>השיחה האחרונה</h3>
+                  <p className="muted-text">השאלה שבחרת יוצרת תגובה חדשה, תובנת יועץ, ושינוי במדדים.</p>
                 </div>
 
                 {!session.turns.length && (
                   <div className="relations-empty-state">
-                    בחר/י רגש ותקוף/תקפי את המבנה עם שאלה אחת. זה כל מה שצריך כרגע.
+                    קראו את המונולוג, פתחו את בחירת השאלות מימין, ובחרו שאלת יחסים אחת.
                   </div>
                 )}
 
@@ -715,16 +863,16 @@ export default function RelationsLabPage() {
                       <div className="relations-turn-card__head">
                         <div>
                           <small>{turn.familyLabelHe}</small>
-                          <h4>אתה/את שואל/ת: {turn.questionText}</h4>
+                          <h4>{reverseIndex === 0 ? 'השיחה האחרונה' : `סבב קודם #${session.turns.length - reverseIndex}`}</h4>
                         </div>
                         <button
                           type="button"
                           className={`relations-like-button ${turn.liked ? 'is-liked' : ''}`}
                           onClick={() => handleToggleLikeTurn(turn.id)}
                           aria-pressed={turn.liked}
-                          title="אהבתי את השאלה"
+                          title="שמור שאלה אהובה"
                         >
-                          ❤ אהבתי
+                          {turn.liked ? 'נשמר' : 'שמור'}
                         </button>
                       </div>
 
@@ -732,18 +880,22 @@ export default function RelationsLabPage() {
 
                       <div className="relations-turn-card__body">
                         <div className="relations-stream-line">
-                          <strong>המטופל עונה:</strong>
+                          <strong>אתה שאלת:</strong>
+                          <p>{turn.questionText}</p>
+                        </div>
+                        <div className="relations-stream-line">
+                          <strong>המטופל ענה:</strong>
                           <pre>{turn.clientAnswerText}</pre>
                         </div>
                         <div className="relations-stream-line">
-                          <strong>יועץ אומר:</strong>
+                          <strong>תובנת היועץ:</strong>
                           <p>{turn.coachInsightText}</p>
                         </div>
                       </div>
 
                       <div className="relations-turn-card__foot">
-                        <span>לפני: {turn.emotionBefore?.labelHe ?? '—'} ({turn.emotionBefore?.intensity ?? '—'}/5)</span>
-                        <span>אחרי: {turn.emotionAfter?.labelHe ?? 'ממתין לבחירה'} {turn.emotionAfter ? `(${turn.emotionAfter.intensity}/5)` : ''}</span>
+                        <span>רגש לפני: {turn.emotionBefore?.labelHe ?? '—'} ({turn.emotionBefore?.intensity ?? '—'}/5)</span>
+                        <span>רגש אחרי: {turn.emotionAfter?.labelHe ?? '—'} {turn.emotionAfter ? `(${turn.emotionAfter.intensity}/5)` : ''}</span>
                       </div>
                     </article>
                   ))}
@@ -753,27 +905,31 @@ export default function RelationsLabPage() {
 
             <aside className="relations-engine__right">
               <div className="relations-action-stack">
-                <EmotionWheel
-                  mode={pendingAfterTurnId ? 'after' : 'before'}
-                  selectedEmotionId={emotionSelection.id}
-                  selectedIntensity={emotionSelection.intensity}
-                  suggestedEmotionId={suggestedEmotion}
-                  onChangeIntensity={(value) =>
-                    setEmotionSelection((current) => ({ ...current, intensity: value }))
-                  }
-                  onSelectEmotion={handleSelectEmotion}
-                />
+                <div className="relations-panel relations-action-panel">
+                  <h3>בחירת שאלה</h3>
+                  <p className="muted-text">שואלים שאלה אחת בכל פעם. אחרי הבחירה המודאל נסגר, והמערכת מציגה מיד את האפקט.</p>
 
-                <QuestionPanel
-                  familyId={selectedFamilyId}
-                  onSelectFamily={setSelectedFamilyId}
-                  questionFamilies={questionFamilies}
-                  onAskQuestion={handleAskQuestion}
-                  disabled={!canAskQuestion}
-                  smartSuggestion={smartSuggestion}
-                  onApplySmartSuggestion={handleApplySmartSuggestion}
-                  highlightedQuestionId={highlightedQuestionId}
-                />
+                  {smartSuggestion && (
+                    <div className="relations-smart-callout">
+                      <span>הצעה חכמה כרגע</span>
+                      <strong>{smartSuggestion.familyLabelHe}</strong>
+                      <p>{smartSuggestion.renderedText}</p>
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    className="relations-ask-cta"
+                    onClick={handleOpenQuestionPicker}
+                    disabled={!canAskQuestion}
+                  >
+                    שאל שאלת יחסים
+                  </button>
+
+                  {!canAskQuestion && (
+                    <div className="relations-action-note">בחר/י רגש נוכחי כדי לפתוח את בחירת השאלות.</div>
+                  )}
+                </div>
               </div>
             </aside>
           </div>
@@ -842,6 +998,49 @@ export default function RelationsLabPage() {
         </section>
       )}
 
+      {questionPickerOpen && session && (
+        <div
+          className="relations-question-modal-backdrop"
+          onClick={handleCloseQuestionPicker}
+          role="presentation"
+        >
+          <section
+            className="relations-question-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="relations-question-modal-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="relations-question-modal__head">
+              <div>
+                <p className="relations-home-card__eyebrow">שאלת יחסים</p>
+                <h2 id="relations-question-modal-title">בחר/י משפחת שאלות ושאלה אחת</h2>
+                <p className="muted-text">לאחר הבחירה המודאל ייסגר אוטומטית ויופיעו תגובה, מדדים ורגש מעודכן.</p>
+              </div>
+              <button
+                type="button"
+                className="relations-wizard-close"
+                onClick={handleCloseQuestionPicker}
+                aria-label="סגור בחירת שאלות"
+              >
+                ×
+              </button>
+            </div>
+
+            <QuestionPanel
+              familyId={selectedFamilyId}
+              onSelectFamily={setSelectedFamilyId}
+              questionFamilies={questionFamilies}
+              onAskQuestion={handleAskQuestion}
+              disabled={!canAskQuestion}
+              smartSuggestion={smartSuggestion}
+              onApplySmartSuggestion={handleApplySmartSuggestion}
+              highlightedQuestionId={highlightedQuestionId}
+            />
+          </section>
+        </div>
+      )}
+
       <div className="status-line" aria-live="polite">{statusMessage}</div>
 
       {wizardOpen && (
@@ -867,7 +1066,7 @@ export default function RelationsLabPage() {
 
                 <div className="relations-wizard-grid">
                   <label className="relations-field">
-                    <span>תחום / הקשר (Field / Context)</span>
+                    <span>תחום / הקשר</span>
                     <select
                       value={wizardSettings.contextId}
                       onChange={(event) =>
@@ -881,7 +1080,7 @@ export default function RelationsLabPage() {
                   </label>
 
                   <label className="relations-field">
-                    <span>סוג בעיה (Problem Archetype)</span>
+                    <span>סוג הסיטואציה</span>
                     <select
                       value={wizardSettings.archetypeId}
                       onChange={(event) =>
@@ -895,7 +1094,7 @@ export default function RelationsLabPage() {
                   </label>
 
                   <label className="relations-field">
-                    <span>אופי המטופל (Client Style)</span>
+                    <span>אופי המטופל</span>
                     <select
                       value={wizardSettings.clientStyleId}
                       onChange={(event) =>
@@ -960,11 +1159,11 @@ export default function RelationsLabPage() {
                   </div>
 
                   <div className="relations-wizard-structure">
-                    <div><span>שדה:</span> <strong>{wizardScenarioPreview.contextF}</strong></div>
-                    <div><span>מטרה:</span> <strong>{wizardScenarioPreview.goalG}</strong></div>
-                    <div><span>אלמנט 1:</span> <strong>{wizardScenarioPreview.element1}</strong></div>
-                    <div><span>אלמנט 2:</span> <strong>{wizardScenarioPreview.element2}</strong></div>
-                    <div><span>יחס נוכחי (R₀):</span> <strong>{wizardScenarioPreview.initialRelationR0.shortHe}</strong></div>
+                    <div><span>ההקשר:</span> <strong>{wizardScenarioPreview.contextF}</strong></div>
+                    <div><span>המטרה:</span> <strong>{wizardScenarioPreview.goalG}</strong></div>
+                    <div><span>דבר ראשון במתח:</span> <strong>{wizardScenarioPreview.element1}</strong></div>
+                    <div><span>דבר שני במתח:</span> <strong>{wizardScenarioPreview.element2}</strong></div>
+                    <div><span>הקשר ביניהם כרגע:</span> <strong>{wizardScenarioPreview.initialRelationR0.shortHe}</strong></div>
                   </div>
                 </div>
 

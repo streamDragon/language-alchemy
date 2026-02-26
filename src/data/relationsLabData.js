@@ -13,7 +13,7 @@ const hashString = (text) => {
 
 const copy = (value) => JSON.parse(JSON.stringify(value))
 
-export const RELATIONS_LAB_VERSION = 'Relations Lab / v2026.02.26.1'
+export const RELATIONS_LAB_VERSION = 'Relations Lab / v2026.02.26.2'
 export const RELATIONS_ARCHIVE_STORAGE_KEY = 'la.v1.relationsQuestionArchive'
 
 export const relationsContextOptions = [
@@ -59,7 +59,7 @@ const emotionById = Object.fromEntries(relationsEmotionOptions.map((item) => [it
 export const relationsQuestionFamilies = [
   {
     id: 'between',
-    labelHe: 'בין 1 ל־2',
+    labelHe: 'בין שני הדברים',
     helperHe: 'ממפה קשרים, תפקידים ומחירים.',
     questions: [
       { id: 'between-link', textTemplate: 'מה הקשר בין {element1} ל־{element2} אצלך כרגע?', impact: { open: 10, resources: 5, distress: -4 } },
@@ -69,7 +69,7 @@ export const relationsQuestionFamilies = [
   },
   {
     id: 'directional',
-    labelHe: 'כיווניות',
+    labelHe: 'מי משפיע על מי',
     helperHe: '1→2 / 2→1 / סדר בזמן.',
     questions: [
       { id: 'dir-12', textTemplate: 'איך בדיוק {element1} מפעיל את {element2} ב־{contextF}?', impact: { open: 9, resources: 4, distress: -2 } },
@@ -79,7 +79,7 @@ export const relationsQuestionFamilies = [
   },
   {
     id: 'field',
-    labelHe: 'שדה F',
+    labelHe: 'תפקיד ההקשר',
     helperHe: 'פותח הקשר, תנאים ושדות חלופיים.',
     questions: [
       { id: 'field-soften', textTemplate: 'באיזה הקשר בתוך {contextF} הקשר בין {element1} ל־{element2} פחות נסגר?', impact: { open: 14, resources: 6, distress: -5 } },
@@ -89,7 +89,7 @@ export const relationsQuestionFamilies = [
   },
   {
     id: 'inside',
-    labelHe: 'בתוך',
+    labelHe: 'אחד בתוך השני',
     helperHe: '1 בתוך 2 / 2 בתוך 1 / חלקים פנימיים.',
     questions: [
       { id: 'inside-2in1', textTemplate: 'איפה יש קצת {element2} גם בתוך {element1}?', impact: { open: 11, resources: 7, distress: -4 } },
@@ -99,7 +99,7 @@ export const relationsQuestionFamilies = [
   },
   {
     id: 'meta',
-    labelHe: 'Meta',
+    labelHe: 'הקשר עצמו',
     helperHe: 'שאלות על היחס עצמו R.',
     questions: [
       { id: 'meta-name', textTemplate: 'אם תתאר/י את היחס ({relationShort}) בלי "תמיד", איך זה נשמע?', impact: { open: 13, resources: 5, distress: -3 } },
@@ -434,7 +434,7 @@ function relationStageFromBars(bars) {
   return 3
 }
 
-function buildClientAnswer({ scenario, familyId, settings, emotionBefore, barsBefore, barsAfter, questionText }) {
+function buildClientAnswer({ scenario, familyId, settings, emotionBefore, barsBefore, barsAfter }) {
   const emotionLabel = emotionById[emotionBefore?.id]?.labelHe ?? 'הרגש הזה'
   const altField = scenario.alternativeFields[0] ?? scenario.contextF
   const styleLead = STYLE_LEADS[settings.clientStyleId] ?? STYLE_LEADS.rational
@@ -470,6 +470,59 @@ function buildCoachInsight({ familyId, barsBefore, barsAfter, scenario }) {
     meta: 'המסגור של היחס התרכך ונפתחה אפשרות חדשה.',
   }
   return `${relationLine} ${cueByFamily[familyId]}`
+}
+
+function inferEmotionAfterTurn({ barsAfter, deltas, emotionBefore }) {
+  const openness = clamp(Number(barsAfter?.openField ?? 0))
+  const resources = clamp(Number(barsAfter?.resources ?? 0))
+  const distress = clamp(Number(barsAfter?.distress ?? 0))
+  const openDelta = Number(deltas?.openField ?? 0)
+  const resourcesDelta = Number(deltas?.resources ?? 0)
+  const distressDelta = Number(deltas?.distress ?? 0)
+  const improvement = openDelta + resourcesDelta - distressDelta
+
+  let emotionId = emotionBefore?.id ?? 'confusion'
+
+  if (distress <= 38 && openness >= 56 && resources >= 52) {
+    emotionId = 'calm'
+  } else if (improvement >= 12 && (openness >= 46 || resources >= 50) && distress <= 62) {
+    emotionId = 'hope'
+  } else if (distress >= 78 && openness <= 32 && resources <= 32) {
+    emotionId = 'shame'
+  } else if (distress >= 74 && (emotionBefore?.id === 'anger' || distressDelta > 0 || openDelta < 0)) {
+    emotionId = 'anger'
+  } else if (distress >= 70 && openness <= 40) {
+    emotionId = 'fear'
+  } else if (distress >= 64 && resources <= 38) {
+    emotionId = 'guilt'
+  } else if (distress >= 58 && openness <= 48 && resources <= 50) {
+    emotionId = 'sadness'
+  } else if (Math.abs(openDelta) <= 4 && Math.abs(resourcesDelta) <= 4 && distress >= 50) {
+    emotionId = 'confusion'
+  } else if (openness >= 48 || resources >= 52) {
+    emotionId = 'hope'
+  }
+
+  const positiveEmotions = new Set(['calm', 'hope'])
+  const baseIntensity =
+    positiveEmotions.has(emotionId)
+      ? Math.round(((openness + resources + (100 - distress)) / 3) / 20)
+      : Math.round(((distress + (100 - openness) + (100 - resources)) / 3) / 20)
+  const deltaBoost =
+    positiveEmotions.has(emotionId)
+      ? improvement >= 12
+        ? 1
+        : 0
+      : distressDelta > 0 || improvement <= -8
+        ? 1
+        : 0
+  const intensity = clamp(baseIntensity + deltaBoost, 1, 5)
+
+  return {
+    id: emotionId,
+    intensity,
+    labelHe: emotionById[emotionId]?.labelHe ?? emotionId,
+  }
 }
 
 export function simulateQuestionTurn({
@@ -508,6 +561,7 @@ export function simulateQuestionTurn({
   return {
     barsAfter,
     deltas,
+    emotionAfterSuggested: inferEmotionAfterTurn({ barsAfter, deltas, emotionBefore }),
     relationShift: {
       previous: relationStageFromBars(barsBefore),
       next: relationStageFromBars(barsAfter),
@@ -520,11 +574,9 @@ export function simulateQuestionTurn({
 }
 
 export function deriveSystemStatus(bars) {
-  const stateLabel =
-    bars.openField < 35 ? 'כרגע המערכת סגורה' : bars.openField < 65 ? 'כרגע המערכת נפתחת' : 'כרגע המערכת נפתחה'
-  const stage = relationStageFromBars(bars)
-  const relationLabel = stage === 0 ? 'R₀' : `R${stage}`
-  return `${stateLabel} • עוגן הבעיה: יחס ${relationLabel} פעיל`
+  if (bars.openField < 35) return 'כרגע: המערכת סגורה'
+  if (bars.openField < 65) return 'כרגע: המערכת נפתחת'
+  return 'כרגע: המערכת פתוחה'
 }
 
 export function buildFinalSessionInsight({ scenario, turns, bars }) {
@@ -552,6 +604,10 @@ export function getRelationsQuestionById(questionId) {
 
 export function getEmotionById(emotionId) {
   return emotionById[emotionId] ?? null
+}
+
+export function inferRelationsEmotionFromOutcome({ barsAfter, deltas, emotionBefore }) {
+  return inferEmotionAfterTurn({ barsAfter, deltas, emotionBefore })
 }
 
 export function loadRelationsQuestionArchive() {

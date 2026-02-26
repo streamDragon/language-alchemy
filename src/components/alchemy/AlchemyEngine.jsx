@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { getLabConfig } from '../../data/labsConfig'
 import { useAppState } from '../../state/appStateContext'
 import LabLessonPrompt from '../layout/LabLessonPrompt'
@@ -6,6 +6,7 @@ import MenuSection from '../layout/MenuSection'
 import {
   activeChipBanksForTemplate,
   buildSentence,
+  getBankBySlot,
   getTemplate,
   previewTokens,
   randomizeAlchemyDraft,
@@ -103,6 +104,171 @@ const SOURCE_TOPICS_BY_LAB = {
   ],
 }
 
+const PHRASING_TARGET_EMOTIONS = [
+  { id: 'calm', labelHe: 'רוגע', icon: '◌' },
+  { id: 'confidence', labelHe: 'ביטחון', icon: '▲' },
+  { id: 'hope', labelHe: 'תקווה', icon: '✦' },
+  { id: 'compassion', labelHe: 'חמלה', icon: '♡' },
+  { id: 'anger', labelHe: 'כעס (מכוון)', icon: '■' },
+  { id: 'shame', labelHe: 'בושה/אשמה', icon: '◍' },
+  { id: 'fear', labelHe: 'פחד', icon: '△' },
+  { id: 'confusion', labelHe: 'בלבול', icon: '◇' },
+]
+
+const PHRASING_EMOTION_STYLE_MAP = {
+  calm: {
+    warmth: 78,
+    slotSelections: { opener: 'o1', quantifier: 'q2', request: 'r3', closing: 'cl2' },
+    supportPhrase: 'ניקח רגע ונתקדם בקצב שאפשר לעמוד בו.',
+    qualities: ['חם', 'עדין', 'מקרקע'],
+  },
+  confidence: {
+    warmth: 44,
+    slotSelections: { opener: 'o1', quantifier: '', request: 'r1', closing: '' },
+    supportPhrase: '',
+    qualities: ['ישיר', 'ברור', 'תמציתי'],
+  },
+  hope: {
+    warmth: 74,
+    slotSelections: { opener: 'o1', quantifier: 'q3', request: 'r3', closing: 'cl1' },
+    supportPhrase: 'אפשר להתחיל בצעד קטן ומשם לדייק.',
+    qualities: ['מזמין', 'עתידי', 'אפשרי'],
+  },
+  compassion: {
+    warmth: 86,
+    slotSelections: { opener: 'o2', quantifier: 'q2', request: 'r2', closing: 'cl2' },
+    supportPhrase: 'אני מבין/ה שזה לא פשוט, וחשוב לי שנדבר על זה בעדינות.',
+    qualities: ['חם', 'עדין', 'מכיל'],
+  },
+  anger: {
+    warmth: 30,
+    slotSelections: { opener: 'o1', quantifier: '', request: 'r1', closing: '' },
+    supportPhrase: 'לא מתאים לי להמשיך בלי תיאום מראש.',
+    qualities: ['חד', 'ברור', 'עם גבול'],
+  },
+  shame: {
+    warmth: 82,
+    slotSelections: { opener: 'o2', quantifier: 'q3', request: 'r3', closing: 'cl2' },
+    supportPhrase: 'מותר לי לבקש את מה שיעזור לי, בלי לתקוף את עצמי.',
+    qualities: ['מקבל', 'עדין', 'מרכך שיפוט'],
+  },
+  fear: {
+    warmth: 76,
+    slotSelections: { opener: 'o2', quantifier: 'q3', request: 'r3', closing: 'cl2' },
+    supportPhrase: 'נלך בצעד קטן ובטוח כדי לשמור על יציבות.',
+    qualities: ['בטוח', 'מדורג', 'מרגיע'],
+  },
+  confusion: {
+    warmth: 58,
+    slotSelections: { opener: 'o2', quantifier: '', request: 'r2', closing: 'cl1' },
+    supportPhrase: 'בוא נבהיר שלושה דברים: מה חשוב, מה דחוף, ומה הצעד הבא.',
+    qualities: ['מבהיר', 'מסודר', 'מזמין'],
+  },
+}
+
+function applyPhrasingEmotionTarget({ lab, draft, emotionId }) {
+  const style = PHRASING_EMOTION_STYLE_MAP[emotionId]
+  if (!style || !lab || !draft) return draft
+
+  const next = {
+    ...draft,
+    selectedBySlot: { ...(draft.selectedBySlot ?? {}) },
+    warmth: style.warmth,
+    updatedAt: new Date().toISOString(),
+  }
+
+  for (const [slotId, preferredChipIds] of Object.entries(style.slotSelections ?? {})) {
+    const bank = getBankBySlot(lab, slotId)
+    if (!bank) continue
+    if (preferredChipIds === '') {
+      next.selectedBySlot[slotId] = ''
+      continue
+    }
+
+    const preferredList = Array.isArray(preferredChipIds) ? preferredChipIds : [preferredChipIds]
+    const match = preferredList.find((chipId) => bank.chips.some((chip) => chip.id === chipId))
+    if (match) {
+      next.selectedBySlot[slotId] = match
+    }
+  }
+
+  return next
+}
+
+function composeSentenceWithSupport(sentence, supportPhrase) {
+  const base = String(sentence ?? '').trim()
+  const extra = String(supportPhrase ?? '').trim()
+  if (!extra) return base
+  if (!base) return extra
+  return `${base} ${extra}`.trim()
+}
+
+function phrasingEmotionCoachLine(emotionId) {
+  const emotion = PHRASING_TARGET_EMOTIONS.find((item) => item.id === emotionId)
+  const style = PHRASING_EMOTION_STYLE_MAP[emotionId]
+  if (!emotion || !style) return ''
+  return `כדי לייצר ${emotion.labelHe}, המשפט נעשה יותר: ${style.qualities.join(' / ')}`
+}
+
+function phrasingEmotionMatchInfo(lab, draft, emotionId) {
+  const style = PHRASING_EMOTION_STYLE_MAP[emotionId]
+  if (!lab || !draft || !style) return null
+
+  let score = 0
+  let max = 0
+
+  for (const [slotId, preferredChipIds] of Object.entries(style.slotSelections ?? {})) {
+    max += 1
+    const preferredList = Array.isArray(preferredChipIds) ? preferredChipIds : [preferredChipIds]
+    const selected = draft.selectedBySlot?.[slotId] ?? ''
+    if (preferredList.includes(selected)) {
+      score += 1
+    }
+  }
+
+  max += 1
+  const warmthDistance = Math.abs((draft.warmth ?? 50) - style.warmth)
+  if (warmthDistance <= 12) score += 1
+  else if (warmthDistance <= 24) score += 0.5
+
+  const ratio = max ? score / max : 0
+  return {
+    ratio,
+    levelHe: ratio >= 0.75 ? 'גבוה' : ratio >= 0.45 ? 'בינוני' : 'נמוך',
+  }
+}
+
+function PhrasingEmotionWheel({ selectedEmotionId, onSelectEmotion }) {
+  return (
+    <div className="phrasing-emotion-wheel" role="list" aria-label="בחירת רגש יעד">
+      <div className="phrasing-emotion-wheel__center">
+        <span>רגש יעד</span>
+        <strong>
+          {PHRASING_TARGET_EMOTIONS.find((emotion) => emotion.id === selectedEmotionId)?.labelHe ?? 'בחר/י'}
+        </strong>
+      </div>
+
+      {PHRASING_TARGET_EMOTIONS.map((emotion, index) => {
+        const selected = emotion.id === selectedEmotionId
+        return (
+          <button
+            key={emotion.id}
+            type="button"
+            role="listitem"
+            className={`phrasing-emotion-slice ${selected ? 'is-selected' : ''}`}
+            style={{ '--slot': index }}
+            onClick={() => onSelectEmotion(emotion.id)}
+            aria-pressed={selected}
+          >
+            <span className="phrasing-emotion-slice__icon" aria-hidden="true">{emotion.icon}</span>
+            <span className="phrasing-emotion-slice__label">{emotion.labelHe}</span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 const ALCHEMY_UI_VERSION = 'Alchemy Lab UI • v2026.02.25-setup-modal'
 
 function getSourceTopicsForLab(labId) {
@@ -192,12 +358,16 @@ export default function AlchemyEngine({
   const [isSourceContextMenuOpen, setIsSourceContextMenuOpen] = useState(() => !sourceSummary)
   const [isCoachMenuOpen, setIsCoachMenuOpen] = useState(false)
   const [isPreTaskModalOpen, setIsPreTaskModalOpen] = useState(false)
+  const [phrasingTargetEmotionId, setPhrasingTargetEmotionId] = useState('')
+  const [phrasingPreviewMode, setPhrasingPreviewMode] = useState('after')
+  const [phrasingNeutralPreviewDraft, setPhrasingNeutralPreviewDraft] = useState(null)
   const resolvedOpenBankId =
     openBankId && banks.some((bank) => bank.id === openBankId) ? openBankId : ''
   const resolvedOpenSourceTopicId =
     openSourceTopicId && sourceTopics.some((topic) => topic.id === openSourceTopicId)
       ? openSourceTopicId
       : ''
+  const showInlineSourceContextMenu = false
 
   useEffect(() => {
     if (!onSentenceChange || !lab || !draft) return
@@ -220,6 +390,29 @@ export default function AlchemyEngine({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isPreTaskModalOpen])
 
+  const isPhrasingLab = lab?.id === 'phrasing'
+  const phrasingTargetEmotion = useMemo(
+    () => PHRASING_TARGET_EMOTIONS.find((emotion) => emotion.id === phrasingTargetEmotionId) ?? null,
+    [phrasingTargetEmotionId],
+  )
+  const phrasingStyle = phrasingTargetEmotion ? PHRASING_EMOTION_STYLE_MAP[phrasingTargetEmotion.id] : null
+  const phrasingCoachText = useMemo(
+    () => (isPhrasingLab && phrasingTargetEmotion ? phrasingEmotionCoachLine(phrasingTargetEmotion.id) : ''),
+    [isPhrasingLab, phrasingTargetEmotion],
+  )
+  const phrasingMatch = useMemo(
+    () => (isPhrasingLab && lab && draft && phrasingTargetEmotion ? phrasingEmotionMatchInfo(lab, draft, phrasingTargetEmotion.id) : null),
+    [isPhrasingLab, lab, draft, phrasingTargetEmotion],
+  )
+  const phrasingNeutralSentence = useMemo(() => {
+    if (!isPhrasingLab || !lab || !phrasingNeutralPreviewDraft) return ''
+    return buildSentence(lab, phrasingNeutralPreviewDraft)
+  }, [isPhrasingLab, lab, phrasingNeutralPreviewDraft])
+  const phrasingAfterSentence = useMemo(
+    () => (isPhrasingLab ? composeSentenceWithSupport(sentence, phrasingStyle?.supportPhrase) : sentence),
+    [isPhrasingLab, sentence, phrasingStyle?.supportPhrase],
+  )
+
   if (!lab || !draft) {
     return null
   }
@@ -232,6 +425,28 @@ export default function AlchemyEngine({
   const setDraft = (updater) => {
     updateDraft(labId, updater)
     setStatusMessage('')
+  }
+
+  const sentenceForActions = isPhrasingLab && phrasingTargetEmotion ? phrasingAfterSentence : sentence
+  const sentenceForPreview =
+    isPhrasingLab && phrasingTargetEmotion && phrasingPreviewMode === 'before'
+      ? (phrasingNeutralSentence || sentence)
+      : sentenceForActions
+
+  const handleSelectPhrasingTargetEmotion = (emotionId) => {
+    if (!isPhrasingLab || !lab || !draft) return
+    const emotion = PHRASING_TARGET_EMOTIONS.find((item) => item.id === emotionId)
+    if (!emotion) return
+
+    const beforeSnapshot = cloneValue(draft)
+    const nextDraft = applyPhrasingEmotionTarget({ lab, draft: beforeSnapshot, emotionId })
+
+    setPhrasingTargetEmotionId(emotionId)
+    setPhrasingPreviewMode('after')
+    setPhrasingNeutralPreviewDraft(beforeSnapshot)
+    setDraft(() => nextDraft)
+    emitAlchemySignal('copied', { message: `רגש יעד נבחר: ${emotion.labelHe}` })
+    setStatusMessage(`רגש יעד: ${emotion.labelHe}. הצ'יפים וחום הניסוח עודכנו אוטומטית.`)
   }
 
   const activeSourceTopicId = sourceContext.activeTopicId || sourceTopics[0]?.id || ''
@@ -386,7 +601,7 @@ export default function AlchemyEngine({
   const handleCopy = async () => {
     try {
       if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(sentence)
+        await navigator.clipboard.writeText(sentenceForActions)
         emitAlchemySignal('copied', { message: 'הניסוח הועתק ללוח.' })
         setStatusMessage('הניסוח הועתק ללוח.')
         return
@@ -398,14 +613,14 @@ export default function AlchemyEngine({
   }
 
   const handleSaveFavorite = () => {
-    if (!sentence || sentence === lab.preview?.emptyTextHe) {
+    if (!sentenceForActions || sentenceForActions === lab.preview?.emptyTextHe) {
       setStatusMessage('אין עדיין ניסוח לשמירה.')
       return
     }
 
     saveFavorite({
       labId,
-      sentenceText: sentence,
+      sentenceText: sentenceForActions,
       draftSnapshot: cloneValue(draft),
       tags,
     })
@@ -485,7 +700,7 @@ export default function AlchemyEngine({
         </div>
       )}
 
-      {!compact && false && (
+      {!compact && showInlineSourceContextMenu && (
         <MenuSection
           title="טקסט מקור / משפט המטופל"
           subtitle={
@@ -612,7 +827,53 @@ export default function AlchemyEngine({
             </span>
           ))}
         </div>
-        <p className="preview-panel__sentence">{sentence}</p>
+        {isPhrasingLab && (
+          <div className="phrasing-preview-tools" aria-label="כוונון רגש יעד">
+            <div className="phrasing-preview-tools__head">
+              <span>כוונון רגש יעד</span>
+              {phrasingMatch ? (
+                <span className={`phrasing-match-badge phrasing-match-badge--${phrasingMatch.levelHe}`}>
+                  התאמה: {phrasingMatch.levelHe}
+                </span>
+              ) : (
+                <span className="phrasing-match-badge">בחר/י יעד</span>
+              )}
+            </div>
+            <PhrasingEmotionWheel
+              selectedEmotionId={phrasingTargetEmotionId}
+              onSelectEmotion={handleSelectPhrasingTargetEmotion}
+            />
+            {phrasingCoachText ? <p className="phrasing-preview-tools__coach">{phrasingCoachText}</p> : null}
+            {phrasingTargetEmotion && (
+              <div className="phrasing-preview-toggle" role="tablist" aria-label="תצוגת לפני ואחרי">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={phrasingPreviewMode === 'before'}
+                  className={phrasingPreviewMode === 'before' ? 'is-active' : ''}
+                  onClick={() => setPhrasingPreviewMode('before')}
+                >
+                  לפני
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={phrasingPreviewMode === 'after'}
+                  className={phrasingPreviewMode === 'after' ? 'is-active' : ''}
+                  onClick={() => setPhrasingPreviewMode('after')}
+                >
+                  אחרי
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+        <p className={`preview-panel__sentence ${phrasingPreviewMode === 'before' ? 'is-comparison' : ''}`}>
+          {sentenceForPreview}
+        </p>
+        {isPhrasingLab && phrasingTargetEmotion && phrasingPreviewMode === 'before' ? (
+          <p className="preview-panel__source">תצוגת "לפני" לשם השוואה. העתקה/שמירה משתמשות בגרסת "אחרי".</p>
+        ) : null}
         {sourceSummary ? <p className="preview-panel__source">מתוך מקור: {sourceSummary}</p> : null}
         <div className="controls-row">
           <button type="button" onClick={handleCopy}>
@@ -705,7 +966,7 @@ export default function AlchemyEngine({
           <CoachPanel
             lab={lab}
             draft={draft}
-            sentence={sentence}
+            sentence={sentenceForActions}
             tags={tags}
             sourceText={sourceSummary}
           />
@@ -871,5 +1132,3 @@ export default function AlchemyEngine({
     </section>
   )
 }
-
-

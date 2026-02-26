@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Music2, Sparkles, Volume2, VolumeX } from 'lucide-react'
 import {
@@ -306,6 +306,22 @@ function getSignalPresentation(signal) {
       message: signal.message || 'טוענים שכבה חדשה במעבדה.',
     }
   }
+  if (type === 'tap') {
+    return {
+      mood: 'happy',
+      cue: 'tap',
+      burst: null,
+      message: signal.message || 'נבחרה פעולה.',
+    }
+  }
+  if (type === 'rise') {
+    return {
+      mood: 'happy',
+      cue: 'rise',
+      burst: 'soft',
+      message: signal.message || 'יש שינוי מתעדכן במערכת.',
+    }
+  }
   return {
     mood: 'dancing',
     cue: 'harp',
@@ -359,32 +375,28 @@ export default function GlobalAlchemyAtmosphere() {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches
   }, [])
 
-  const particleDots = useMemo(
-    () =>
-      Array.from({ length: 18 }, (_, index) => ({
-        id: `dot-${index}`,
-        top: 6 + Math.random() * 88,
-        left: 4 + Math.random() * 92,
-        size: 4 + Math.random() * 8,
-        hue: ['#7c3aed', '#22d3ee', '#facc15'][index % 3],
-        delay: -Math.random() * 18,
-        duration: 14 + Math.random() * 18,
-      })),
-    [],
+  const [particleDots] = useState(() =>
+    Array.from({ length: 18 }, (_, index) => ({
+      id: `dot-${index}`,
+      top: 6 + Math.random() * 88,
+      left: 4 + Math.random() * 92,
+      size: 4 + Math.random() * 8,
+      hue: ['#7c3aed', '#22d3ee', '#facc15'][index % 3],
+      delay: -Math.random() * 18,
+      duration: 14 + Math.random() * 18,
+    })),
   )
 
-  const particleLinks = useMemo(
-    () =>
-      Array.from({ length: 10 }, (_, index) => ({
-        id: `link-${index}`,
-        top: 8 + Math.random() * 80,
-        left: 8 + Math.random() * 74,
-        width: 80 + Math.random() * 180,
-        rotate: -35 + Math.random() * 70,
-        delay: -Math.random() * 12,
-        duration: 10 + Math.random() * 14,
-      })),
-    [],
+  const [particleLinks] = useState(() =>
+    Array.from({ length: 10 }, (_, index) => ({
+      id: `link-${index}`,
+      top: 8 + Math.random() * 80,
+      left: 8 + Math.random() * 74,
+      width: 80 + Math.random() * 180,
+      rotate: -35 + Math.random() * 70,
+      delay: -Math.random() * 12,
+      duration: 10 + Math.random() * 14,
+    })),
   )
 
   useEffect(() => {
@@ -474,8 +486,7 @@ export default function GlobalAlchemyAtmosphere() {
     }, 2200)
   }
 
-  const handleSignalRef = useRef(() => {})
-  handleSignalRef.current = (signal) => {
+  const handleSignal = useEffectEvent((signal) => {
     const presentation = getSignalPresentation(signal)
     const muted = !audioPrefsRef.current.enabled || audioPrefsRef.current.muted
 
@@ -502,14 +513,14 @@ export default function GlobalAlchemyAtmosphere() {
     }
 
     triggerCompanion(presentation.mood, presentation.message)
-  }
+  })
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
 
     const onAlchemySignal = (event) => {
       const detail = event?.detail ?? {}
-      handleSignalRef.current(detail)
+      handleSignal(detail)
     }
 
     window.addEventListener(ALCHEMY_SIGNAL_EVENT, onAlchemySignal)
