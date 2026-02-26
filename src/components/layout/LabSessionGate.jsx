@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { getLabConfig } from '../../data/labsConfig'
 
 function buildAlchemyPreset(lab) {
@@ -346,15 +347,13 @@ export default function LabSessionGate({ labId, children }) {
   const [wizardStep, setWizardStep] = useState('setup')
   const [draftSettings, setDraftSettings] = useState(() => createDefaultFieldValues(preset.fields))
   const [activeSettings, setActiveSettings] = useState(null)
-  const [hasEnteredContent, setHasEnteredContent] = useState(false)
 
   useEffect(() => {
     const nextPreset = getPresetForLab(getLabConfig(labId))
-    setWizardOpen(false)
+    setWizardOpen(true)
     setWizardStep('setup')
     setDraftSettings(createDefaultFieldValues(nextPreset.fields))
     setActiveSettings(null)
-    setHasEnteredContent(false)
   }, [labId])
 
   useEffect(() => {
@@ -386,195 +385,171 @@ export default function LabSessionGate({ labId, children }) {
   const setupPreviewText = quickSummaryText(draftSummaryItems)
 
   const openWizard = () => {
+    if (activeSettings) {
+      setDraftSettings(clonePlainObject(activeSettings))
+    }
     setWizardStep('setup')
     setWizardOpen(true)
   }
 
   const startWithCurrentSettings = () => {
     setActiveSettings(clonePlainObject(draftSettings))
-    setHasEnteredContent(true)
     setWizardOpen(false)
   }
 
-  return (
-    <div className="lab-session-gate-shell">
-      {!hasEnteredContent && (
-        <section className="hero-card lab-session-gate__hero">
-          <div className="lab-session-gate__heroBody">
-            <div className="lab-session-gate__eyebrow">{lab.titleEn} · Session Setup</div>
-            <h2>{lab.titleHe}</h2>
-            <p>{preset.introHe}</p>
+  const hasActiveSettings = Boolean(activeSettings)
+  const activeSummaryText = hasActiveSettings
+    ? quickSummaryText(summaryItems)
+    : 'אין סטינג שמור כרגע. אפשר לעבוד כרגיל ולפתוח סטינג מעל התוכן בכל רגע.'
 
-            <div className="lab-session-gate__chips" aria-label="תצוגה מקדימה של סטינג">
-              {draftSummaryItems.map((item) => (
-                <span key={item.id} className="lab-session-gate__chip">
-                  <strong>{item.labelHe}:</strong> {item.valueHe}
-                </span>
+  const modalNode = wizardOpen ? (
+    <div
+      className="lab-session-gate__modal"
+      role="presentation"
+      onClick={() => setWizardOpen(false)}
+    >
+      <div
+        className="lab-session-gate__modalCard"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={`lab-session-gate-title-${lab.id}`}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="lab-session-gate__modalHeader">
+          <div>
+            <div className="lab-session-gate__eyebrow">Wizard / {lab.titleHe}</div>
+            <h3 id={`lab-session-gate-title-${lab.id}`}>
+              {wizardStep === 'setup' ? 'בנה סטינג לתרגול' : preset.reviewTitleHe}
+            </h3>
+            <p>
+              {wizardStep === 'setup'
+                ? 'מגדירים כוונה וקונטקסט לפני כניסה לפיצ׳ר. אפשר לחזור ולעדכן בכל רגע.'
+                : 'זה הסטינג שאיתו תעבוד/י עכשיו. לחיצה על "כניסה לתוכן" סוגרת את שכבת הפתיחה ומשאירה אותך במסך שמתחת.'}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="lab-session-gate__close"
+            onClick={() => setWizardOpen(false)}
+            aria-label="סגור חלון סטינג"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="lab-session-gate__modalBody">
+          <div className="lab-session-gate__stepMeta">
+            <span>מסך {wizardStep === 'setup' ? '1' : '2'} / 2</span>
+            <strong>{wizardStep === 'setup' ? setupPreviewText : quickSummaryText(draftSummaryItems)}</strong>
+          </div>
+
+          {wizardStep === 'setup' && (
+            <div className="lab-session-gate__fields">
+              {preset.fields.map((field) => (
+                <SetupField
+                  key={field.id}
+                  field={field}
+                  value={draftSettings[field.id]}
+                  onChange={(nextValue) =>
+                    setDraftSettings((current) => ({
+                      ...current,
+                      [field.id]: nextValue,
+                    }))
+                  }
+                />
               ))}
             </div>
-          </div>
+          )}
 
-          <div className="hero-card__actions lab-session-gate__heroActions">
-            <button type="button" onClick={openWizard}>
-              פתח סטינג לפני התחלה
-            </button>
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={() => {
-                setWizardStep('review')
-                setWizardOpen(true)
-              }}
-            >
-              המשך עם ברירת מחדל
-            </button>
-          </div>
-        </section>
-      )}
-
-      {hasEnteredContent && (
-        <section className="panel-card panel-card--soft lab-session-gate__activeBanner">
-          <div className="lab-session-gate__activeText">
-            <div className="lab-session-gate__activeTitle">סטינג פעיל · {lab.titleHe}</div>
-            <div className="lab-session-gate__activeSummary">{quickSummaryText(summaryItems)}</div>
-          </div>
-
-          <div className="alchemy-card__actions">
-            <button type="button" onClick={openWizard}>
-              ערוך סטינג
-            </button>
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={() => {
-                setHasEnteredContent(false)
-                setWizardStep('setup')
-              }}
-            >
-              חזור לפתיחה
-            </button>
-          </div>
-        </section>
-      )}
-
-      {hasEnteredContent ? children : null}
-
-      {wizardOpen && (
-        <div
-          className="lab-session-gate__modal"
-          role="presentation"
-          onClick={() => setWizardOpen(false)}
-        >
-          <div
-            className="lab-session-gate__modalCard"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={`lab-session-gate-title-${lab.id}`}
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="lab-session-gate__modalHeader">
-              <div>
-                <div className="lab-session-gate__eyebrow">Wizard / {lab.titleHe}</div>
-                <h3 id={`lab-session-gate-title-${lab.id}`}>
-                  {wizardStep === 'setup' ? 'בנה סטינג לתרגול' : preset.reviewTitleHe}
-                </h3>
-                <p>
-                  {wizardStep === 'setup'
-                    ? 'מגדירים כוונה וקונטקסט לפני כניסה לפיצ׳ר. אפשר לחזור ולעדכן בכל רגע.'
-                    : 'זה הסטינג שאיתו תיכנס/י עכשיו לפיצ׳ר. לחיצה על "כניסה לתוכן" פותחת את המסך המלא.'}
-                </p>
-              </div>
-
-              <button
-                type="button"
-                className="lab-session-gate__close"
-                onClick={() => setWizardOpen(false)}
-                aria-label="סגור חלון סטינג"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="lab-session-gate__modalBody">
-              <div className="lab-session-gate__stepMeta">
-                <span>מסך {wizardStep === 'setup' ? '1' : '2'} / 2</span>
-                <strong>{wizardStep === 'setup' ? setupPreviewText : quickSummaryText(draftSummaryItems)}</strong>
-              </div>
-
-              {wizardStep === 'setup' && (
-                <div className="lab-session-gate__fields">
-                  {preset.fields.map((field) => (
-                    <SetupField
-                      key={field.id}
-                      field={field}
-                      value={draftSettings[field.id]}
-                      onChange={(nextValue) =>
-                        setDraftSettings((current) => ({
-                          ...current,
-                          [field.id]: nextValue,
-                        }))
-                      }
-                    />
+          {wizardStep === 'review' && (
+            <div className="lab-session-gate__reviewGrid">
+              <div className="lab-session-gate__reviewCard">
+                <h4>סטינג שנבחר</h4>
+                <ul>
+                  {draftSummaryItems.map((item) => (
+                    <li key={item.id}>
+                      <span>{item.labelHe}</span>
+                      <strong>{item.valueHe}</strong>
+                    </li>
                   ))}
+                </ul>
+              </div>
+
+              <div className="lab-session-gate__reviewCard">
+                <h4>מה קורה עכשיו?</h4>
+                <p>
+                  התוכן של המעבדה כבר נמצא מתחת לשכבת הפתיחה. הסטינג יישמר כבאנר קצר
+                  למעלה, ותוכל/י לפתוח את ה־wizard שוב בכל רגע.
+                </p>
+                <div className="lab-session-gate__reviewBadge">
+                  {lab.titleEn} · Ready to enter
                 </div>
-              )}
-
-              {wizardStep === 'review' && (
-                <div className="lab-session-gate__reviewGrid">
-                  <div className="lab-session-gate__reviewCard">
-                    <h4>סטינג שנבחר</h4>
-                    <ul>
-                      {draftSummaryItems.map((item) => (
-                        <li key={item.id}>
-                          <span>{item.labelHe}</span>
-                          <strong>{item.valueHe}</strong>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="lab-session-gate__reviewCard">
-                    <h4>מה קורה עכשיו?</h4>
-                    <p>
-                      לאחר הכניסה תראה/י את הפיצ׳ר עצמו. הסטינג נשמר במסך הזה כבאנר קצר,
-                      ותוכל/י לערוך אותו שוב בלי לאבד את זרימת העבודה.
-                    </p>
-                    <div className="lab-session-gate__reviewBadge">
-                      {lab.titleEn} · Ready to enter
-                    </div>
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
-
-            <div className="lab-session-gate__modalFooter">
-              <button
-                type="button"
-                className="secondary-button"
-                onClick={() => {
-                  if (wizardStep === 'review') {
-                    setWizardStep('setup')
-                    return
-                  }
-                  setWizardOpen(false)
-                }}
-              >
-                {wizardStep === 'review' ? 'חזרה להגדרות' : 'סגור'}
-              </button>
-
-              {wizardStep === 'setup' ? (
-                <button type="button" onClick={() => setWizardStep('review')}>
-                  המשך לסיכום
-                </button>
-              ) : (
-                <button type="button" onClick={startWithCurrentSettings}>
-                  כניסה לתוכן
-                </button>
-              )}
-            </div>
-          </div>
+          )}
         </div>
-      )}
+
+        <div className="lab-session-gate__modalFooter">
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => {
+              if (wizardStep === 'review') {
+                setWizardStep('setup')
+                return
+              }
+              setWizardOpen(false)
+            }}
+          >
+            {wizardStep === 'review' ? 'חזרה להגדרות' : 'סגור'}
+          </button>
+
+          {wizardStep === 'setup' ? (
+            <button type="button" onClick={() => setWizardStep('review')}>
+              המשך לסיכום
+            </button>
+          ) : (
+            <button type="button" onClick={startWithCurrentSettings}>
+              כניסה לתוכן
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  ) : null
+
+  return (
+    <div className="lab-session-gate-shell">
+      <section className="panel-card panel-card--soft lab-session-gate__activeBanner">
+        <div className="lab-session-gate__activeText">
+          <div className="lab-session-gate__activeTitle">
+            {hasActiveSettings ? `סטינג פעיל · ${lab.titleHe}` : `פתיחת סטינג · ${lab.titleHe}`}
+          </div>
+          <div className="lab-session-gate__activeSummary">{activeSummaryText}</div>
+        </div>
+
+        <div className="alchemy-card__actions">
+          <button type="button" onClick={openWizard}>
+            {hasActiveSettings ? 'ערוך סטינג' : 'פתח סטינג'}
+          </button>
+          {hasActiveSettings && (
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => setActiveSettings(null)}
+            >
+              נקה סטינג
+            </button>
+          )}
+        </div>
+      </section>
+
+      {children}
+
+      {wizardOpen
+        ? (typeof document !== 'undefined' ? createPortal(modalNode, document.body) : modalNode)
+        : null}
     </div>
   )
 }
