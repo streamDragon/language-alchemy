@@ -7,21 +7,85 @@ import CleanQuestionsPage from '../labs/CleanQuestionsPage'
 import LibraryPage from '../labs/LibraryPage'
 import MindLiberatingLanguagePage from '../labs/MindLiberatingLanguagePage'
 import RelationsLabPage from '../labs/RelationsLabPage'
+import LabSessionGate from '../components/layout/LabSessionGate'
 
 export default function AppRouter() {
   return (
     <Routes>
       <Route path="/" element={<AppShell />}>
         <Route index element={<DashboardPage />} />
-        <Route path="lab/phrasing" element={<AlchemyLabPage labId="phrasing" />} />
-        <Route path="lab/empathy" element={<AlchemyLabPage labId="empathy" />} />
-        <Route path="lab/boundaries" element={<AlchemyLabPage labId="boundaries" />} />
-        <Route path="lab/clean-questions" element={<CleanQuestionsPage />} />
-        <Route path="lab/questions" element={<CleanQuestionsPage />} />
-        <Route path="lab/beyond-words" element={<BeyondWordsLabPage />} />
-        <Route path="lab/beyond" element={<BeyondWordsLabPage />} />
-        <Route path="lab/mind-liberating-language" element={<MindLiberatingLanguagePage />} />
-        <Route path="lab/mind-liberating" element={<MindLiberatingLanguagePage />} />
+        <Route
+          path="lab/phrasing"
+          element={(
+            <LabSessionGate labId="phrasing">
+              <AlchemyLabPage labId="phrasing" />
+            </LabSessionGate>
+          )}
+        />
+        <Route
+          path="lab/empathy"
+          element={(
+            <LabSessionGate labId="empathy">
+              <AlchemyLabPage labId="empathy" />
+            </LabSessionGate>
+          )}
+        />
+        <Route
+          path="lab/boundaries"
+          element={(
+            <LabSessionGate labId="boundaries">
+              <AlchemyLabPage labId="boundaries" />
+            </LabSessionGate>
+          )}
+        />
+        <Route
+          path="lab/clean-questions"
+          element={(
+            <LabSessionGate labId="clean-questions">
+              <CleanQuestionsPage />
+            </LabSessionGate>
+          )}
+        />
+        <Route
+          path="lab/questions"
+          element={(
+            <LabSessionGate labId="clean-questions">
+              <CleanQuestionsPage />
+            </LabSessionGate>
+          )}
+        />
+        <Route
+          path="lab/beyond-words"
+          element={(
+            <LabSessionGate labId="beyond-words">
+              <BeyondWordsLabPage />
+            </LabSessionGate>
+          )}
+        />
+        <Route
+          path="lab/beyond"
+          element={(
+            <LabSessionGate labId="beyond-words">
+              <BeyondWordsLabPage />
+            </LabSessionGate>
+          )}
+        />
+        <Route
+          path="lab/mind-liberating-language"
+          element={(
+            <LabSessionGate labId="mind-liberating-language">
+              <MindLiberatingLanguagePage />
+            </LabSessionGate>
+          )}
+        />
+        <Route
+          path="lab/mind-liberating"
+          element={(
+            <LabSessionGate labId="mind-liberating-language">
+              <MindLiberatingLanguagePage />
+            </LabSessionGate>
+          )}
+        />
         <Route path="lab/relations" element={<RelationsLabPage />} />
         <Route path="lab/relationship-questions" element={<RelationsLabPage />} />
         <Route path="library" element={<LibraryPage />} />
