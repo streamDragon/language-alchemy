@@ -3,6 +3,7 @@ import { useAppState } from '../state/appStateContext'
 import { makeId } from '../utils/ids'
 import { emitAlchemySignal } from '../utils/alchemySignals'
 import { downloadJson } from '../utils/storage'
+import { useOverlay } from '../components/overlay/useOverlay'
 import {
   RELATIONS_LAB_VERSION,
   buildFinalSessionInsight,
@@ -422,7 +423,7 @@ function MetricsStrip({ bars, latestTurn, onSelectMetric }) {
   )
 }
 
-function MetricDetailsDrawer({ metricId, bars, latestTurn, onClose }) {
+function MetricDetailsPanel({ metricId, bars, latestTurn }) {
   const item = getMetricItem(metricId)
   if (!item) return null
 
@@ -432,96 +433,72 @@ function MetricDetailsDrawer({ metricId, bars, latestTurn, onClose }) {
   const deltaDisplay = delta === null ? null : deltaToken(delta, item.barKey === 'distress')
 
   return (
-    <div className="relations-v2-overlay" role="presentation" onClick={onClose}>
-      <section
-        className="relations-v2-drawer"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={`metric-drawer-title-${item.id}`}
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="relations-v2-drawer__grab" aria-hidden="true" />
-        <div className="relations-v2-drawer__head">
-          <div>
-            <p className="relations-v2-drawer__eyebrow">ΧΧ“Χ“</p>
-            <h2 id={`metric-drawer-title-${item.id}`}>{item.labelHe}</h2>
-          </div>
-          <button type="button" className="relations-v2-icon-button" onClick={onClose} aria-label="Χ΅Χ’Χ•Χ¨">
-            <span aria-hidden="true">Γ—</span>
-          </button>
+    <section className="relations-v2-drawer opened-content" aria-labelledby={`metric-drawer-title-${item.id}`}>
+      <div className="relations-v2-drawer__grab" aria-hidden="true" />
+      <div className="relations-v2-drawer__head">
+        <div>
+          <p className="relations-v2-drawer__eyebrow">ξγγ</p>
+          <h2 id={`metric-drawer-title-${item.id}`}>{item.labelHe}</h2>
         </div>
+      </div>
 
-        <div className="relations-v2-drawer__value">
-          <strong>{value}%</strong>
-          {deltaDisplay && (
-            <span className={`relations-v2-metric-chip__delta relations-v2-metric-chip__delta--${deltaDisplay.tone}`}>
-              {deltaDisplay.text}
-            </span>
-          )}
-        </div>
-        <p className="relations-v2-drawer__text">{item.descriptionHe}</p>
-        <div className="relations-v2-drawer__track" aria-hidden="true">
-          <div
-            className={`relations-v2-drawer__fill relations-v2-drawer__fill--${getBarTone(item.barKey)}`}
-            style={{ width: `${value}%` }}
-          />
-        </div>
+      <div className="relations-v2-drawer__value">
+        <strong>{value}%</strong>
+        {deltaDisplay && (
+          <span className={`relations-v2-metric-chip__delta relations-v2-metric-chip__delta--${deltaDisplay.tone}`}>
+            {deltaDisplay.text}
+          </span>
+        )}
+      </div>
+      <p className="relations-v2-drawer__text">{item.descriptionHe}</p>
+      <div className="relations-v2-drawer__track" aria-hidden="true">
+        <div
+          className={`relations-v2-drawer__fill relations-v2-drawer__fill--${getBarTone(item.barKey)}`}
+          style={{ width: `${value}%` }}
+        />
+      </div>
 
-        <div className="relations-v2-drawer__status">
-          <span>ΧΧ¦Χ‘ ΧΧΆΧ¨Χ›Χª Χ›Χ¨Χ’ΧΆ</span>
-          <strong>{deriveSystemStatus(bars)}</strong>
-        </div>
+      <div className="relations-v2-drawer__status">
+        <span>ξφα ξςψλϊ λψβς</span>
+        <strong>{deriveSystemStatus(bars)}</strong>
+      </div>
 
-        <div className="relations-v2-drawer__section">
-          <h3>ΧΧ™Χ ΧΧ©Χ¤Χ¨Χ™Χ?</h3>
-          <ul>
-            {item.tipsHe.map((tip) => (
-              <li key={tip}>{tip}</li>
-            ))}
-          </ul>
-        </div>
+      <div className="relations-v2-drawer__section">
+        <h3>ΰικ ξωτψιν?</h3>
+        <ul>
+          {item.tipsHe.map((tip) => (
+            <li key={tip}>{tip}</li>
+          ))}
+        </ul>
+      </div>
 
-        <details className="relations-v2-details">
-          <summary>ΧΧΧ” Χ–Χ” Χ—Χ©Χ•Χ‘?</summary>
-          <p>{item.whyHe}</p>
-        </details>
-      </section>
-    </div>
+      <details className="relations-v2-details">
+        <summary>μξδ ζδ ηωεα?</summary>
+        <p>{item.whyHe}</p>
+      </details>
+    </section>
   )
 }
 
-function RelationsHelpModal({ open, onClose, version }) {
-  if (!open) return null
+function RelationsHelpPanel({ version }) {
   return (
-    <div className="relations-v2-overlay" role="presentation" onClick={onClose}>
-      <section
-        className="relations-v2-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="relations-help-title"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="relations-v2-dialog__head">
-          <h2 id="relations-help-title">ΧΧ™Χ ΧΆΧ•Χ‘Χ“Χ™Χ Χ›ΧΧ</h2>
-          <button type="button" className="relations-v2-icon-button" onClick={onClose} aria-label="Χ΅Χ’Χ•Χ¨">
-            <span aria-hidden="true">Γ—</span>
-          </button>
-        </div>
-        <ol className="relations-v2-help-list">
-          <li>Χ‘Χ—Χ¨/Χ™ Χ¨Χ’Χ© Χ Χ•Χ›Χ—Χ™.</li>
-          <li>Χ‘Χ—Χ¨/Χ™ Χ©ΧΧΧ” ΧΧ—Χª Χ‘ΧΧ‘Χ“.</li>
-          <li>Χ‘Χ“Χ•Χ§/Χ™ Χ©Χ™Χ Χ•Χ™ Χ‘ΧΧ“Χ“Χ™Χ Χ•Χ‘Χ¤Χ™Χ¨Χ•Χ§.</li>
-          <li>Χ—Χ–Χ•Χ¨/Χ™ ΧΆΧ Χ”ΧªΧ”ΧΧ™Χ ΧΆΧ Χ©ΧΧΧ” Χ—Χ“Χ©Χ”.</li>
-        </ol>
-        <p className="muted-text">
-          ΧΧ“Χ“Χ™Χ Χ Χ¤ΧªΧ—Χ™Χ Χ‘ΧΧ—Χ™Χ¦Χ” ΧΧ”Χ΅Χ‘Χ¨ ΧΧΧ. Χ΅ΧΧΧ™Χ΅ΧΧ™Χ§Χ” Χ•Χ”Χ™Χ΅ΧΧ•Χ¨Χ™Χ” Χ ΧΧ¦ΧΧ™Χ Χ‘ΧªΧ—ΧªΧ™Χª Χ‘ΧΧ΅Χ›Χ™Χ ΧΧªΧ§Χ¤ΧΧ™Χ.
-        </p>
-        <div className="relations-v2-help-footer">{version}</div>
-      </section>
-    </div>
+    <section className="relations-v2-dialog opened-content" aria-labelledby="relations-help-title">
+      <div className="relations-v2-dialog__head">
+        <h2 id="relations-help-title">ΰικ ςεαγιν λΰο</h2>
+      </div>
+      <ol className="relations-v2-help-list">
+        <li>αηψ/ι ψβω πεληι.</li>
+        <li>αηψ/ι ωΰμδ ΰηϊ αμαγ.</li>
+        <li>αγεχ/ι ωιπει αξγγιν εατιψεχ.</li>
+        <li>ηζεψ/ι ςμ δϊδμικ ςν ωΰμδ ηγωδ.</li>
+      </ol>
+      <p className="muted-text">
+        ξγγιν πτϊηιν αμηιφδ μδραψ ξμΰ. ρθθιρθιχδ εδιρθεψιδ πξφΰιν αϊηϊιϊ αξρλιν ξϊχτμιν.
+      </p>
+      <div className="relations-v2-help-footer">{version}</div>
+    </section>
   )
 }
-
 function ElementsPanel({
   session,
   currentEmotion,

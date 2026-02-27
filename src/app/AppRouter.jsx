@@ -8,6 +8,7 @@ import LibraryPage from '../labs/LibraryPage'
 import MindLiberatingLanguagePage from '../labs/MindLiberatingLanguagePage'
 import RelationsLabPage from '../labs/RelationsLabPage'
 import LabSessionGate from '../components/layout/LabSessionGate'
+import ScreenModeBoundary from '../components/layout/ScreenModeBoundary'
 
 export default function AppRouter() {
   return (
@@ -86,8 +87,26 @@ export default function AppRouter() {
             </LabSessionGate>
           )}
         />
-        <Route path="lab/relations" element={<RelationsLabPage />} />
-        <Route path="lab/relationship-questions" element={<RelationsLabPage />} />
+        <Route
+          path="lab/relations"
+          element={(
+            <ScreenModeBoundary
+              screenId="relations"
+              shell={<RelationsLabPage />}
+              legacy={<RelationsLabPage />}
+            />
+          )}
+        />
+        <Route
+          path="lab/relationship-questions"
+          element={(
+            <ScreenModeBoundary
+              screenId="relations"
+              shell={<RelationsLabPage />}
+              legacy={<RelationsLabPage />}
+            />
+          )}
+        />
         <Route path="library" element={<LibraryPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
