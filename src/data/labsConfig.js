@@ -332,6 +332,16 @@ visibleLabs.push({
     'סימולטור שאלות יחסים: בוחרים רגש, שואלים שאלה אחת, ורואים איך Open Field / Resources / Distress משתנים.',
 })
 
+visibleLabs.push({
+  kind: 'perspectives',
+  id: 'perspectives',
+  route: '/lab/perspectives',
+  titleHe: 'מעבדת הפרספקטיבות',
+  titleEn: 'Perspective Lab',
+  descriptionHe:
+    'השוואה מרחבית בין מה שאמרתי קודם למה שאני אומר/ת עכשיו, עם גשר ניסוח ומיקרו-פעולה.',
+})
+
 export const hiddenLabs = [
   alchemy({
     id: 'beyond-practice',

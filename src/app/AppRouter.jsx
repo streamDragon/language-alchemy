@@ -7,6 +7,7 @@ import CleanQuestionsPage from '../labs/CleanQuestionsPage'
 import LibraryPage from '../labs/LibraryPage'
 import MindLiberatingLanguagePage from '../labs/MindLiberatingLanguagePage'
 import RelationsLabPage from '../labs/RelationsLabPage'
+import PerspectiveLabPage from '../labs/PerspectiveLabPage'
 import LabSessionGate from '../components/layout/LabSessionGate'
 import ScreenModeBoundary from '../components/layout/ScreenModeBoundary'
 
@@ -104,6 +105,26 @@ export default function AppRouter() {
               screenId="relations"
               shell={<RelationsLabPage />}
               legacy={<RelationsLabPage />}
+            />
+          )}
+        />
+        <Route
+          path="lab/perspectives"
+          element={(
+            <ScreenModeBoundary
+              screenId="perspectives"
+              shell={<PerspectiveLabPage />}
+              legacy={<PerspectiveLabPage />}
+            />
+          )}
+        />
+        <Route
+          path="lab/now-before"
+          element={(
+            <ScreenModeBoundary
+              screenId="perspectives"
+              shell={<PerspectiveLabPage />}
+              legacy={<PerspectiveLabPage />}
             />
           )}
         />

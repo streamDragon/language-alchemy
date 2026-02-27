@@ -15,6 +15,13 @@ export const SCREEN_UI_REGISTRY = Object.freeze({
     defaultUiMode: 'shell',
     overlayPanels: Object.freeze(['setup', 'settings', 'help', 'metrics', 'history', 'stats']),
   }),
+  perspectives: Object.freeze({
+    id: 'perspectives',
+    route: '/lab/perspectives',
+    aliases: Object.freeze(['/lab/now-before']),
+    title: 'Perspective Lab',
+    defaultUiMode: 'shell',
+  }),
 })
 
 export function normalizeUiMode(input) {
