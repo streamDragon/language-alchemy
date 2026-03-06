@@ -86,10 +86,10 @@ export function RelationsHeader({
 }) {
   const stageLabel =
     flowStage === 'setup'
-      ? 'Setup'
+      ? 'הכנה'
       : flowStage === 'review'
-        ? 'Review'
-        : 'Drill'
+        ? 'סיכום'
+        : 'תרגול'
 
   return (
     <header className="relations-v2-header relations-v3-header">

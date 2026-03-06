@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Music2, Sparkles, Volume2, VolumeX } from 'lucide-react'
 import {
@@ -423,17 +423,10 @@ export default function GlobalAlchemyAtmosphere() {
         window.clearTimeout(statusScanTimerRef.current)
       }
       stopAmbient(ambientRef)
-      if (audioContextRef.current) {
-        try {
-          audioContextRef.current.close()
-        } catch {
-          // no-op
-        }
-      }
     }
   }, [])
 
-  const spawnRipple = (x, y, variant = 'tap') => {
+  const spawnRipple = useCallback((x, y, variant = 'tap') => {
     if (prefersReducedMotion) return
     const id = `r-${idRef.current++}`
     const next = {
@@ -447,9 +440,9 @@ export default function GlobalAlchemyAtmosphere() {
       if (!mountedRef.current) return
       setRipples((current) => current.filter((item) => item.id !== id))
     }, 820)
-  }
+  }, [prefersReducedMotion])
 
-  const spawnBurst = (x, y, variant = 'success') => {
+  const spawnBurst = useCallback((x, y, variant = 'success') => {
     if (prefersReducedMotion) return
     const id = `b-${idRef.current++}`
     const next = {
@@ -464,7 +457,7 @@ export default function GlobalAlchemyAtmosphere() {
       if (!mountedRef.current) return
       setBursts((current) => current.filter((item) => item.id !== id))
     }, variant === 'mastery' ? 1800 : variant === 'hover' ? 750 : 1250)
-  }
+  }, [prefersReducedMotion])
 
   const triggerCompanion = (mood, message) => {
     setCompanion((current) => ({
@@ -566,9 +559,7 @@ export default function GlobalAlchemyAtmosphere() {
         const previous = hoverTargetTimesRef.current.get(interactive) ?? 0
         if (now - previous > 180) {
           hoverTargetTimesRef.current.set(interactive, now)
-          if (!prefersReducedMotion) {
-            spawnBurst(event.clientX, event.clientY, 'hover')
-          }
+          spawnBurst(event.clientX, event.clientY, 'hover')
           playAlchemyCue(
             audioContextRef,
             'hover',
@@ -582,10 +573,8 @@ export default function GlobalAlchemyAtmosphere() {
         const previous = cardHoverTimesRef.current.get(card) ?? 0
         if (now - previous > 520) {
           cardHoverTimesRef.current.set(card, now)
-          if (!prefersReducedMotion) {
-            const rect = card.getBoundingClientRect()
-            spawnBurst(rect.left + rect.width * 0.82, rect.top + rect.height * 0.18, 'hover')
-          }
+          const rect = card.getBoundingClientRect()
+          spawnBurst(rect.left + rect.width * 0.82, rect.top + rect.height * 0.18, 'hover')
         }
       }
     }
@@ -609,7 +598,7 @@ export default function GlobalAlchemyAtmosphere() {
       document.removeEventListener('pointerover', onPointerOver, true)
       document.removeEventListener('click', onClick, true)
     }
-  }, [prefersReducedMotion])
+  }, [spawnBurst, spawnRipple])
 
   useEffect(() => {
     if (typeof document === 'undefined' || !document.body) return undefined

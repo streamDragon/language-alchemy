@@ -1,21 +1,21 @@
 export const labFamilies = [
   {
     id: 'skill',
-    titleHe: 'Skill Labs',
+    titleHe: 'מעבדות מיומנות',
     titleEn: 'Skill Labs',
     descriptionHe: 'מעבדות לבניית מיומנות נקודתית שאפשר לקחת ישר לשיחה אמיתית.',
     badgeHe: 'מיומנות',
   },
   {
     id: 'diagnostic',
-    titleHe: 'Diagnostic Labs',
+    titleHe: 'מעבדות אבחון ופירוק',
     titleEn: 'Diagnostic Labs',
     descriptionHe: 'מעבדות לפירוק מצב, זיהוי קשרים, ושאלות שמרחיבות את התמונה.',
     badgeHe: 'אבחון ופירוק',
   },
   {
     id: 'influence',
-    titleHe: 'Influence / State Labs',
+    titleHe: 'מעבדות השפעה וסטייט',
     titleEn: 'Influence / State Labs',
     descriptionHe: 'מעבדות להובלה עדינה, קשב לגוף, ושפה שמשנה מצב ולא רק תוכן.',
     badgeHe: 'השפעה וסטייט',

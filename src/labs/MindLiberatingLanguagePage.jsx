@@ -23,7 +23,6 @@ import {
   liberatingClientStatements,
   liberatingPatterns,
   randomItem,
-  statementsForContext,
 } from '../data/mindLiberatingTraining'
 
 const SAMPLE_PATIENT_TEXTS = [
@@ -887,20 +886,31 @@ export default function MindLiberatingLanguagePage() {
         .slice(0, 12),
     [state],
   )
-  const preferredContextIdsForTone = WORK_TONE_TO_CONTEXT_IDS[selectedWorkToneId] ?? ['therapy']
+  const preferredContextIdsForTone = useMemo(
+    () => WORK_TONE_TO_CONTEXT_IDS[selectedWorkToneId] ?? ['therapy'],
+    [selectedWorkToneId],
+  )
+  const activeMiniSimulatorContextId = preferredContextIdsForTone.includes(miniSimulatorContextId)
+    ? miniSimulatorContextId
+    : (preferredContextIdsForTone[0] ?? 'therapy')
   const miniSimulatorContextStatements = useMemo(
     () =>
       liberatingClientStatements.filter(
-        (item) => item?.context === miniSimulatorContextId,
+        (item) => item?.context === activeMiniSimulatorContextId,
       ),
-    [miniSimulatorContextId],
+    [activeMiniSimulatorContextId],
   )
+  const activeMiniSimulatorStatementId = miniSimulatorContextStatements.some(
+    (item) => String(item.id) === String(miniSimulatorStatementId),
+  )
+    ? miniSimulatorStatementId
+    : (miniSimulatorContextStatements[0]?.id ?? null)
   const miniSimulatorStatement = useMemo(
     () =>
-      miniSimulatorContextStatements.find((item) => String(item.id) === String(miniSimulatorStatementId)) ??
+      miniSimulatorContextStatements.find((item) => String(item.id) === String(activeMiniSimulatorStatementId)) ??
       miniSimulatorContextStatements[0] ??
       null,
-    [miniSimulatorContextStatements, miniSimulatorStatementId],
+    [activeMiniSimulatorStatementId, miniSimulatorContextStatements],
   )
   const miniSimulatorExamples = useMemo(
     () => (miniSimulatorStatement?.idealResponses ?? []).slice(0, 4),
@@ -928,26 +938,7 @@ export default function MindLiberatingLanguagePage() {
   const isSoundOn = audioPrefs.enabled && !audioPrefs.muted
   const uiHe = (text) => genderizeUiHe(text, addressGender)
   const g = (masc, fem) => (addressGender === 'fem' ? fem : masc)
-
-  useEffect(() => {
-    const preferred = preferredContextIdsForTone[0] ?? 'therapy'
-    if (!preferredContextIdsForTone.includes(miniSimulatorContextId)) {
-      setMiniSimulatorContextId(preferred)
-    }
-  }, [preferredContextIdsForTone, miniSimulatorContextId])
-
-  useEffect(() => {
-    const statements = miniSimulatorContextStatements
-    if (!statements.length) {
-      setMiniSimulatorStatementId(null)
-      return
-    }
-    const exists = statements.some((item) => String(item.id) === String(miniSimulatorStatementId))
-    if (!exists) {
-      const next = randomItem(statements) ?? statements[0]
-      setMiniSimulatorStatementId(next?.id ?? null)
-    }
-  }, [miniSimulatorContextStatements, miniSimulatorStatementId])
+  const legacyExerciseCardsEnabled = false
 
   const triggerCompanion = (mood, message) => {
     setCompanionMood(mood)
@@ -1260,7 +1251,7 @@ export default function MindLiberatingLanguagePage() {
     if (!pool.length) return
     let next = randomItem(pool) ?? pool[0]
     let attempts = 0
-    while (pool.length > 1 && String(next?.id) === String(miniSimulatorStatementId) && attempts < 6) {
+    while (pool.length > 1 && String(next?.id) === String(activeMiniSimulatorStatementId) && attempts < 6) {
       next = randomItem(pool) ?? pool[0]
       attempts += 1
     }
@@ -1408,20 +1399,20 @@ export default function MindLiberatingLanguagePage() {
                   { id: 'pattern-master', title: 'Pattern Master', subtitle: 'מאסטר רצפים', Icon: Workflow },
                   { id: 'workflow', title: 'תרגילים', subtitle: '6 פאטרנים + workflow', Icon: Wand2 },
                   { id: 'history', title: 'היסטוריה', subtitle: 'סשנים ותרגולים', Icon: Sparkles },
-                ].map(({ id, title, subtitle, Icon }) => (
+                ].map((item) => (
                   <button
-                    key={id}
+                    key={item.id}
                     type="button"
-                    className={`mindlab-sidebar-nav__item ${activeMindTabId === id ? 'is-active' : ''}`}
-                    onClick={() => handleOpenWorkspaceTab(id)}
-                    aria-current={activeMindTabId === id ? 'page' : undefined}
+                    className={`mindlab-sidebar-nav__item ${activeMindTabId === item.id ? 'is-active' : ''}`}
+                    onClick={() => handleOpenWorkspaceTab(item.id)}
+                    aria-current={activeMindTabId === item.id ? 'page' : undefined}
                   >
                     <span className="mindlab-sidebar-nav__icon" aria-hidden="true">
-                      <Icon size={16} />
+                      <item.Icon size={16} />
                     </span>
                     <span className="mindlab-sidebar-nav__copy">
-                      <strong>{title}</strong>
-                      <small>{subtitle}</small>
+                      <strong>{item.title}</strong>
+                      <small>{item.subtitle}</small>
                     </span>
                   </button>
                 ))}
@@ -1524,17 +1515,17 @@ export default function MindLiberatingLanguagePage() {
                 { id: 'simulator', labelHe: 'סימולטור שיחות משחררות', Icon: MessageCircle },
                 { id: 'pattern-master', labelHe: 'מאסטר רצפים', Icon: Workflow },
                 { id: 'workflow', labelHe: 'תרגילים', Icon: Wand2 },
-              ].map(({ id, labelHe, Icon }) => (
+              ].map((item) => (
                 <button
-                  key={id}
+                  key={item.id}
                   type="button"
                   role="tab"
-                  aria-selected={activeMindTabId === id}
-                  className={`mindlab-main-tabs__item ${activeMindTabId === id ? 'is-active' : ''}`}
-                  onClick={() => handleOpenWorkspaceTab(id)}
+                  aria-selected={activeMindTabId === item.id}
+                  className={`mindlab-main-tabs__item ${activeMindTabId === item.id ? 'is-active' : ''}`}
+                  onClick={() => handleOpenWorkspaceTab(item.id)}
                 >
-                  <Icon size={18} aria-hidden="true" />
-                  <span>{labelHe}</span>
+                  <item.Icon size={18} aria-hidden="true" />
+                  <span>{item.labelHe}</span>
                 </button>
               ))}
             </div>
@@ -1707,7 +1698,7 @@ export default function MindLiberatingLanguagePage() {
               </section>
             )}
 
-            {activeMindTabId === 'workflow' && false && (
+            {activeMindTabId === 'workflow' && legacyExerciseCardsEnabled && (
         <>
           <section className="panel-card mindlab-exercises-deck" aria-label="6 פאטרנים">
             <div className="panel-card__head">
@@ -2437,10 +2428,11 @@ export default function MindLiberatingLanguagePage() {
                       key={contextId}
                       type="button"
                       role="tab"
-                      aria-selected={miniSimulatorContextId === contextId}
-                      className={`chip ${miniSimulatorContextId === contextId ? 'chip--selected' : ''}`}
+                      aria-selected={activeMiniSimulatorContextId === contextId}
+                      className={`chip ${activeMiniSimulatorContextId === contextId ? 'chip--selected' : ''}`}
                       onClick={() => {
                         setMiniSimulatorContextId(contextId)
+                        setMiniSimulatorStatementId(null)
                         setMiniSimulatorResponse('')
                         setMiniSimulatorChecked(false)
                       }}

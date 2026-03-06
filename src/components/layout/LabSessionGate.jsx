@@ -340,21 +340,13 @@ function SetupField({ field, value, onChange }) {
   )
 }
 
-export default function LabSessionGate({ labId, children }) {
+function LabSessionGateContent({ labId, children }) {
   const lab = getLabConfig(labId)
   const preset = getPresetForLab(lab)
-  const [wizardOpen, setWizardOpen] = useState(false)
+  const [wizardOpen, setWizardOpen] = useState(true)
   const [wizardStep, setWizardStep] = useState('setup')
   const [draftSettings, setDraftSettings] = useState(() => createDefaultFieldValues(preset.fields))
   const [activeSettings, setActiveSettings] = useState(null)
-
-  useEffect(() => {
-    const nextPreset = getPresetForLab(getLabConfig(labId))
-    setWizardOpen(true)
-    setWizardStep('setup')
-    setDraftSettings(createDefaultFieldValues(nextPreset.fields))
-    setActiveSettings(null)
-  }, [labId])
 
   useEffect(() => {
     if (!wizardOpen || typeof window === 'undefined') return undefined
@@ -552,4 +544,8 @@ export default function LabSessionGate({ labId, children }) {
         : null}
     </div>
   )
+}
+
+export default function LabSessionGate(props) {
+  return <LabSessionGateContent key={props.labId} {...props} />
 }

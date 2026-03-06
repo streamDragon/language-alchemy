@@ -51,7 +51,7 @@ export function OverlayProvider({ children }) {
         nextUrl.toString(),
       )
       historyArmedRef.current = true
-    } catch (_error) {
+    } catch {
       historyArmedRef.current = false
     }
   }, [])
@@ -67,7 +67,7 @@ export function OverlayProvider({ children }) {
       const nextUrl = new URL(window.location.href)
       nextUrl.hash = ''
       window.history.replaceState(window.history.state, '', nextUrl.toString())
-    } catch (_error) {
+    } catch {
       // noop
     }
   }, [])
@@ -80,7 +80,7 @@ export function OverlayProvider({ children }) {
 
     try {
       current.onClose?.(reason)
-    } catch (_error) {
+    } catch {
       // noop
     }
 
@@ -89,7 +89,7 @@ export function OverlayProvider({ children }) {
     if (restoreEl && typeof restoreEl.focus === 'function') {
       try {
         restoreEl.focus({ preventScroll: true })
-      } catch (_error) {
+      } catch {
         restoreEl.focus()
       }
     }
@@ -104,7 +104,7 @@ export function OverlayProvider({ children }) {
       try {
         window.history.back()
         return
-      } catch (_error) {
+      } catch {
         pendingCloseReasonRef.current = ''
         closingFromHistoryRef.current = false
       }
@@ -155,6 +155,7 @@ export function OverlayProvider({ children }) {
     <OverlayContext.Provider value={value}>
       {children}
       <OverlayRoot
+        key={activeOverlay?.id ?? 'overlay-closed'}
         overlay={activeOverlay}
         onRequestClose={closeOverlay}
         onHistoryPop={() => {

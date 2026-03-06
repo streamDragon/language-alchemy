@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 function getFocusableElements(container) {
@@ -27,10 +27,8 @@ export default function OverlayRoot({ overlay, onRequestClose, onHistoryPop }) {
   const touchTrackingRef = useRef(false)
   const lockRef = useRef(null)
 
-  const isSheet = useMemo(
-    () => window.matchMedia?.('(max-width: 767px)')?.matches ?? false,
-    [overlay?.id],
-  )
+  const isSheet =
+    typeof window !== 'undefined' ? (window.matchMedia?.('(max-width: 767px)')?.matches ?? false) : false
 
   useEffect(() => {
     if (!overlay) return
@@ -92,7 +90,7 @@ export default function OverlayRoot({ overlay, onRequestClose, onHistoryPop }) {
     if (target && typeof target.focus === 'function') {
       try {
         target.focus({ preventScroll: true })
-      } catch (_error) {
+      } catch {
         target.focus()
       }
     }
@@ -131,13 +129,6 @@ export default function OverlayRoot({ overlay, onRequestClose, onHistoryPop }) {
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [onRequestClose, overlay])
-
-  useEffect(() => {
-    if (!overlay) {
-      setDragOffset(0)
-      touchTrackingRef.current = false
-    }
-  }, [overlay])
 
   if (!overlay) return null
 

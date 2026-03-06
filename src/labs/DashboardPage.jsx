@@ -19,6 +19,13 @@ function timeLabel(value) {
   }
 }
 
+function labStatusLabel(status) {
+  if (status === 'stable') return 'מוכן'
+  if (status === 'beta') return 'בבדיקה'
+  if (status === 'experimental') return 'ניסוי'
+  return status
+}
+
 function ChoiceGroup({ label, options, selectedId, onSelect }) {
   return (
     <div className="gateway-choice-group">
@@ -48,7 +55,9 @@ function LabBrowseCard({ lab }) {
           <h3>{lab.titleHe}</h3>
           <p>{lab.promiseHe}</p>
         </div>
-        <span className={`family-lab-card__status family-lab-card__status--${lab.status}`}>{lab.status}</span>
+        <span className={`family-lab-card__status family-lab-card__status--${lab.status}`}>
+          {labStatusLabel(lab.status)}
+        </span>
       </div>
       <div className="family-lab-card__meta">
         <span>{lab.audienceLabelHe}</span>
@@ -121,7 +130,7 @@ export default function DashboardPage() {
             <h2>מי את/ה ומה צריך עכשיו?</h2>
             <p>
               שתי בחירות קצרות ייתנו המלצה אחת ראשית ועוד שתי חלופות מתאימות. המטרה היא
-              להבין תוך פחות מדקה מאיפה נכון להתחיל.
+              להבין תוך כמה שניות מאיפה נכון להתחיל.
             </p>
           </div>
         </div>
@@ -184,6 +193,11 @@ export default function DashboardPage() {
           </article>
 
           <div className="recommendation-side">
+            <div className="recommendation-side__head">
+              <strong>עוד שני מסלולים מתאימים</strong>
+              <span>קלים יותר לעיון, אבל פחות מדויקים מההמלצה הראשית.</span>
+            </div>
+
             {secondaryLabs.map((lab) => (
               <article key={lab.id} className="recommendation-card recommendation-card--secondary">
                 <div className="recommendation-card__head">
@@ -212,9 +226,9 @@ export default function DashboardPage() {
       <section className="family-sections">
         <div className="section-head">
           <div>
-            <p className="dashboard-hero__eyebrow">עיון חופשי לפי משפחות</p>
-            <h2>לא עוד ערימה אחת של כרטיסים</h2>
-            <p>אפשר לבחור סוג תרגול: מיומנות, אבחון ופירוק, או השפעה וסטייט.</p>
+            <p className="dashboard-hero__eyebrow">או לעיין לפי משפחות</p>
+            <h2>לא כל מעבדה צריכה להתחרות על הקליק הראשון</h2>
+            <p>אם לא רוצים המלצה, אפשר לדפדף לפי סוג התרגול.</p>
           </div>
         </div>
 
@@ -239,64 +253,74 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <section className="dashboard-quick-grid">
-        <article className="panel-card panel-card--soft">
-          <div className="panel-card__head">
-            <h2>המשך מאיפה שהפסקת</h2>
-            {lastVisitedLab?.route && <Link to={lastVisitedLab.route}>פתח/י</Link>}
+      <section className="dashboard-quick-section">
+        <div className="section-head">
+          <div>
+            <p className="dashboard-hero__eyebrow">חזרה מהירה</p>
+            <h2>להמשיך בלי רעש מיותר</h2>
+            <p>חזרה למסלול האחרון, תרגולים אחרונים, ושאלות ששווה לשמור ליד.</p>
           </div>
-          {lastVisitedLab ? (
-            <div className="stack-list">
-              <div className="stack-list__item">
-                <strong>{lastVisitedLab.titleHe}</strong>
-                <p>{lastVisitedLab.promiseHe}</p>
-                <small>{lastVisitedLab.resultHe}</small>
+        </div>
+
+        <div className="dashboard-quick-grid">
+          <article className="panel-card panel-card--soft">
+            <div className="panel-card__head">
+              <h2>המשך מאיפה שהפסקת</h2>
+              {lastVisitedLab?.route && <Link to={lastVisitedLab.route}>פתח/י</Link>}
+            </div>
+            {lastVisitedLab ? (
+              <div className="stack-list">
+                <div className="stack-list__item">
+                  <strong>{lastVisitedLab.titleHe}</strong>
+                  <p>{lastVisitedLab.promiseHe}</p>
+                  <small>{lastVisitedLab.resultHe}</small>
+                </div>
               </div>
-            </div>
-          ) : (
-            <p className="muted-text">עדיין אין מעבדה אחרונה. אפשר להתחיל מההמלצה למעלה.</p>
-          )}
-        </article>
+            ) : (
+              <p className="muted-text">עדיין אין מעבדה אחרונה. אפשר להתחיל מההמלצה למעלה.</p>
+            )}
+          </article>
 
-        <article className="panel-card panel-card--soft">
-          <div className="panel-card__head">
-            <h2>תרגולים אחרונים</h2>
-            <Link to="/library">לספרייה</Link>
-          </div>
-          {recentHistory.length ? (
-            <div className="stack-list">
-              {recentHistory.map((entry) => (
-                <div key={entry.id} className="stack-list__item">
-                  <strong>{getLabConfig(entry.labId)?.titleHe ?? entry.labId}</strong>
-                  <p>{entry.summaryHe ?? entry.sentenceText ?? 'תרגול'}</p>
-                  <small>{timeLabel(entry.createdAt)}</small>
-                </div>
-              ))}
+          <article className="panel-card panel-card--soft">
+            <div className="panel-card__head">
+              <h2>תרגולים אחרונים</h2>
+              <Link to="/library">לספרייה</Link>
             </div>
-          ) : (
-            <p className="muted-text">עדיין אין היסטוריה. סשן ראשון יופיע כאן אוטומטית.</p>
-          )}
-        </article>
+            {recentHistory.length ? (
+              <div className="stack-list">
+                {recentHistory.map((entry) => (
+                  <div key={entry.id} className="stack-list__item">
+                    <strong>{getLabConfig(entry.labId)?.titleHe ?? entry.labId}</strong>
+                    <p>{entry.summaryHe ?? entry.sentenceText ?? 'תרגול'}</p>
+                    <small>{timeLabel(entry.createdAt)}</small>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="muted-text">עדיין אין היסטוריה. סשן ראשון יופיע כאן אוטומטית.</p>
+            )}
+          </article>
 
-        <article className="panel-card panel-card--soft">
-          <div className="panel-card__head">
-            <h2>השאלות שעבדו לי</h2>
-            <Link to="/library">לספרייה</Link>
-          </div>
-          {recentFavorites.length ? (
-            <div className="stack-list">
-              {recentFavorites.map((favorite) => (
-                <div key={favorite.id} className="stack-list__item">
-                  <strong>{favorite.titleHe}</strong>
-                  <p>{favorite.sentenceText}</p>
-                  <small>{timeLabel(favorite.createdAt)}</small>
-                </div>
-              ))}
+          <article className="panel-card panel-card--soft">
+            <div className="panel-card__head">
+              <h2>השאלות שעבדו לי</h2>
+              <Link to="/library">לספרייה</Link>
             </div>
-          ) : (
-            <p className="muted-text">עדיין אין מועדפים. שמור/י ניסוחים או שאלות מתוך המעבדות.</p>
-          )}
-        </article>
+            {recentFavorites.length ? (
+              <div className="stack-list">
+                {recentFavorites.map((favorite) => (
+                  <div key={favorite.id} className="stack-list__item">
+                    <strong>{favorite.titleHe}</strong>
+                    <p>{favorite.sentenceText}</p>
+                    <small>{timeLabel(favorite.createdAt)}</small>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="muted-text">עדיין אין מועדפים. שמור/י ניסוחים או שאלות מתוך המעבדות.</p>
+            )}
+          </article>
+        </div>
       </section>
     </div>
   )
