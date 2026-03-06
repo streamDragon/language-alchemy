@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { dashboardCards } from '../../data/labsConfig'
+import { getLabManifest, topNavLabIds } from '../../data/labManifest'
 import { useAppState } from '../../state/appStateContext'
 import packageJson from '../../../package.json'
 
@@ -7,6 +7,7 @@ export default function TopNav() {
   const navigate = useNavigate()
   const { runRandomAlchemist } = useAppState()
   const appVersion = packageJson.version
+  const topNavLabs = topNavLabIds.map((labId) => getLabManifest(labId)).filter(Boolean)
 
   const handleRandom = () => {
     const lab = runRandomAlchemist()
@@ -21,16 +22,16 @@ export default function TopNav() {
         <div className="brand-mark">AL</div>
         <div>
           <div className="brand-title">Language Alchemy Lab</div>
-          <div className="brand-subtitle">ארגז הכלים האולטימטיבי לאלכימיה של שפה</div>
+          <div className="brand-subtitle">שפה, השפעה, ויסות ודיוק אנושי</div>
           <div className="brand-version" aria-label="Application version">v{appVersion}</div>
         </div>
       </div>
 
       <nav className="top-nav__links" aria-label="ניווט ראשי">
         <NavLink to="/" end className={({ isActive }) => `nav-pill ${isActive ? 'is-active' : ''}`}>
-          דשבורד
+          בית
         </NavLink>
-        {dashboardCards.map((lab) => (
+        {topNavLabs.map((lab) => (
           <NavLink
             key={lab.id}
             to={lab.route}
@@ -48,7 +49,7 @@ export default function TopNav() {
       </nav>
 
       <button type="button" className="random-alchemist-button" onClick={handleRandom}>
-        אלכימאי אקראי
+        תרגול אקראי
       </button>
     </header>
   )

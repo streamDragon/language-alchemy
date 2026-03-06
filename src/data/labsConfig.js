@@ -1,3 +1,5 @@
+import { getLabManifest } from './labManifest'
+
 const c = (id, cold, neutral, warm, tags = []) => ({
   id,
   textVariants: { cold, neutral, warm },
@@ -375,5 +377,14 @@ export const alchemyLabIds = allLabs.filter((lab) => lab.kind === 'alchemy').map
 export const dashboardCards = visibleLabs.map((lab) => ({ id: lab.id, route: lab.route, titleHe: lab.titleHe, descriptionHe: lab.descriptionHe, kind: lab.kind }))
 
 export function getLabConfig(labId) {
-  return labsById[labId] ?? null
+  const config = labsById[labId] ?? null
+  const manifest = getLabManifest(labId)
+
+  if (!config) return manifest ?? null
+  if (!manifest) return config
+
+  return {
+    ...manifest,
+    ...config,
+  }
 }
