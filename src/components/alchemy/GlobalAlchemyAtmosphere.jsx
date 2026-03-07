@@ -358,10 +358,6 @@ export default function GlobalAlchemyAtmosphere() {
   const statusScanTimerRef = useRef(null)
 
   const [audioPrefs, setAudioPrefs] = useState(() => readGlobalAudioPrefs())
-  const [showConsent, setShowConsent] = useState(() => {
-    const prefs = readGlobalAudioPrefs()
-    return !prefs.asked && !prefs.dontAskAgain
-  })
   const [companion, setCompanion] = useState({
     mood: 'happy',
     message: 'פותחים שדה. צעד קטן, שינוי מורגש.',
@@ -369,6 +365,8 @@ export default function GlobalAlchemyAtmosphere() {
   })
   const [ripples, setRipples] = useState([])
   const [bursts, setBursts] = useState([])
+  const showConsent =
+    !audioPrefs.asked && !audioPrefs.dontAskAgain && location.pathname !== '/'
 
   const prefersReducedMotion = useMemo(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return false
@@ -651,7 +649,6 @@ export default function GlobalAlchemyAtmosphere() {
       asked: true,
       dontAskAgain: current.dontAskAgain || dontAskAgain,
     }))
-    setShowConsent(false)
     emitAlchemySignal(enabled ? 'success' : 'whoosh', {
       message: enabled ? 'צלילי האלכימיה הופעלו.' : 'הצלילים נשארו כבויים כרגע.',
     })

@@ -4,7 +4,6 @@ export default function DashboardWelcomeSheet({
   recommendedLab,
   onDismiss,
   onSelectPath,
-  onStart,
 }) {
   return (
     <section className="dashboard-welcome-sheet" aria-labelledby="dashboard-welcome-title">
@@ -44,18 +43,9 @@ export default function DashboardWelcomeSheet({
 
       <div className="dashboard-welcome-sheet__footer">
         <div className="dashboard-welcome-sheet__summary">
-          <span>נפתח קודם</span>
-          <strong>{recommendedLab?.titleHe ?? 'המסלול יתעדכן כאן'}</strong>
+          <span>המסלול שמחכה עכשיו</span>
+          <strong>{recommendedLab?.titleHe ?? 'ההמלצה תופיע כאן'}</strong>
         </div>
-
-        <button
-          type="button"
-          className="dashboard-primary-action"
-          onClick={onStart}
-          disabled={!recommendedLab?.route}
-        >
-          להתחיל במסלול המומלץ
-        </button>
       </div>
     </section>
   )

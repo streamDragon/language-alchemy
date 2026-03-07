@@ -97,7 +97,9 @@ export default function DashboardPage() {
   const activityTimestamp =
     recentHistory[0]?.createdAt ?? recentFavorites[0]?.createdAt ?? null
 
-  const showMemorySection = recentHistory.length > 0 || recentFavorites.length > 0
+  const showMemorySection =
+    dashboardMode === 'returning-user' &&
+    (recentHistory.length > 0 || recentFavorites.length > 0)
 
   return (
     <div className="page-stack dashboard-page">
@@ -109,7 +111,6 @@ export default function DashboardPage() {
             recommendedLab={primaryLab}
             onDismiss={dismissWelcomeSheet}
             onSelectPath={handleSelectWelcomePath}
-            onStart={handleStartRecommended}
           />
         )}
 
@@ -134,9 +135,7 @@ export default function DashboardPage() {
         />
 
         <RecommendedLabPanel
-          actionVariant={
-            showWelcomeSheet ? 'hidden' : dashboardMode === 'returning-user' ? 'secondary' : 'primary'
-          }
+          actionVariant={dashboardMode === 'returning-user' ? 'secondary' : 'primary'}
           goal={selectedGoal}
           lab={primaryLab}
           mode={dashboardMode}
