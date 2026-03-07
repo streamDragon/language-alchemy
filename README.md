@@ -42,6 +42,13 @@ It helps someone choose one useful next move in a few minutes:
 2. Adjust persona or goal if the conversation changed.
 3. Browse lab families only after the first decision.
 
+### Relations Lab
+
+1. Pick a context, archetype, and current emotion.
+2. Start a short drill with one guided recommended question.
+3. Ask one question at a time and see what changed in the loop.
+4. End with a concrete takeaway and an exportable session summary.
+
 ### Library
 
 - revisit saved sentences
@@ -80,6 +87,9 @@ npm run preview
 
 - `src/data/labManifest.js`
   Lab, family, persona, goal, and recommendation metadata.
+
+- `src/data/relationsLabData.js`
+  Relations scenarios, question families, simulation, and guided-question recommendation logic.
 
 - `src/labs/LibraryPage.jsx`
   Saved items and recent history browsing.

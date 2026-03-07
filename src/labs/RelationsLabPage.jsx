@@ -19,6 +19,7 @@ import {
 import { useOverlay } from '../components/overlay/useOverlay'
 import { useAppState } from '../state/appStateContext'
 import {
+  buildGuidedQuestionRecommendations,
   buildFinalSessionInsight,
   buildRelationsQuestionSetForScenario,
   createDefaultRelationsWizardSettings,
@@ -26,7 +27,6 @@ import {
   loadRelationsQuestionArchive,
   saveRelationsQuestionArchive,
   simulateQuestionTurn,
-  suggestSmartQuestion,
 } from '../data/relationsLabData'
 import { makeId } from '../utils/ids'
 import { emitAlchemySignal } from '../utils/alchemySignals'
@@ -118,12 +118,17 @@ export default function RelationsLabPage() {
     ? buildRelationsQuestionSetForScenario(session.scenario)
     : []
 
-  const smartSuggestion = session?.scenario
-    ? suggestSmartQuestion({ scenario: session.scenario, bars: session.bars })
+  const latestTurn = session?.turns.at(-1) ?? null
+  const questionGuidance = session?.scenario
+    ? buildGuidedQuestionRecommendations({
+        scenario: session.scenario,
+        bars: session.bars,
+        emotionBefore: emotionSelection,
+        latestTurn,
+      })
     : null
 
   const canAskQuestion = Boolean(session && emotionSelection.id)
-  const latestTurn = session?.turns.at(-1) ?? null
   const relationStateSummary = session ? describeCurrentRelationState(session) : ''
   const currentFinalInsight = session
     ? buildFinalSessionInsight({
@@ -134,7 +139,7 @@ export default function RelationsLabPage() {
     : ''
   const likedTurns = session?.turns.filter((turn) => turn.liked) ?? []
   const workedQuestion = getWorkedQuestion(session?.turns ?? [])
-  const mainStatusHint = buildCompactSystemHint(session, latestTurn, emotionSelection)
+  const mainStatusHint = buildCompactSystemHint(session, latestTurn)
 
   const handleChangeSetupField = (key, value) => {
     setSetupValues((current) => ({ ...current, [key]: value }))
@@ -171,6 +176,8 @@ export default function RelationsLabPage() {
       return
     }
 
+    const initialEmotion = normalizeEmotionSelection(emotionSelection)
+
     const scenario = {
       ...setupScenarioPreview,
       goalG: setupValues.softGoal.trim() || setupScenarioPreview.goalG,
@@ -193,9 +200,14 @@ export default function RelationsLabPage() {
     setOpenEmotionMenuId('')
     setHighlightedQuestionId('')
     setSelectedFamilyId(
-      suggestSmartQuestion({ scenario, bars: scenario.initialBars })?.familyId ?? 'between',
+      buildGuidedQuestionRecommendations({
+        scenario,
+        bars: scenario.initialBars,
+        emotionBefore: initialEmotion,
+        limit: 1,
+      })?.primary?.familyId ?? 'between',
     )
-    setStatusMessage('בחר/י שאלה אחת. אחריה תקבל/י תוצאה והסבר קצר למה היא עבדה.')
+    setStatusMessage('קח/י את ההמלצה המודרכת או בחר/י שאלה אחת ידנית. אחריה תופיע תוצאה ברורה.')
     dispatchFlow({ type: 'START_SESSION' })
     emitSignal('success', { message: 'Relations session started.' })
   }
@@ -262,16 +274,25 @@ export default function RelationsLabPage() {
     emitSignal('rise', { message: 'Relations metrics updated.' })
   }
 
-  const handleApplySmartSuggestion = () => {
-    if (!smartSuggestion) return
-    setSelectedFamilyId(smartSuggestion.familyId)
-    setHighlightedQuestionId(smartSuggestion.question.id)
-    setStatusMessage(`הצעה חכמה: ${smartSuggestion.renderedText}`)
+  const handlePreviewGuidedSuggestion = (suggestion) => {
+    if (!suggestion) return
+    setSelectedFamilyId(suggestion.familyId)
+    setHighlightedQuestionId(suggestion.question.id)
+    setStatusMessage(`המלצה מודרכת: ${suggestion.renderedText}`)
+  }
+
+  const handleUseGuidedSuggestion = (suggestion) => {
+    if (!suggestion) return
+    const family = questionFamilies.find((item) => item.id === suggestion.familyId)
+    if (!family) return
+    setSelectedFamilyId(family.id)
+    setHighlightedQuestionId(suggestion.question.id)
+    handleAskQuestion(family, suggestion.question)
   }
 
   const handleContinue = () => {
     dispatchFlow({ type: 'CONTINUE' })
-    setStatusMessage('המשך/י עם שאלה אחת נוספת או סיים/י לסיכום.')
+    setStatusMessage('אפשר לקחת את ההמלצה הבאה, לבחור ידנית שאלה אחת נוספת, או לסיים לסיכום.')
   }
 
   const handleToggleLikeTurn = (turnId) => {
@@ -461,12 +482,13 @@ export default function RelationsLabPage() {
           session={session}
           latestTurn={latestTurn}
           questionFamilies={questionFamilies}
+          questionGuidance={questionGuidance}
           selectedFamilyId={selectedFamilyId}
           onSelectFamily={setSelectedFamilyId}
           onAskQuestion={handleAskQuestion}
           canAskQuestion={canAskQuestion}
-          smartSuggestion={smartSuggestion}
-          onApplySmartSuggestion={handleApplySmartSuggestion}
+          onUseGuidedSuggestion={handleUseGuidedSuggestion}
+          onPreviewGuidedSuggestion={handlePreviewGuidedSuggestion}
           highlightedQuestionId={highlightedQuestionId}
           statusHint={mainStatusHint}
           currentEmotion={emotionSelection}

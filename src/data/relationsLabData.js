@@ -14,6 +14,7 @@ const hashString = (text) => {
 const copy = (value) => JSON.parse(JSON.stringify(value))
 
 export const RELATIONS_LAB_VERSION = 'Relations Lab / v2026.02.26.2'
+export const RELATIONS_RECOMMENDER_VERSION = 'heuristic-guidance-v1'
 export const RELATIONS_ARCHIVE_STORAGE_KEY = 'la.v1.relationsQuestionArchive'
 
 export const relationsContextOptions = [
@@ -114,6 +115,54 @@ const questionById = Object.fromEntries(
     family.questions.map((question) => [question.id, { ...question, familyId: family.id, familyLabelHe: family.labelHe }]),
   ),
 )
+
+const recommendationFocusCopyByMetric = {
+  openField: {
+    labelHe: 'לפתוח יותר מרווח',
+    summaryHe: 'כרגע עדיף לפתוח יותר מרווח לפני שמעמיקים עוד.',
+  },
+  resources: {
+    labelHe: 'לגייס יותר משאבים',
+    summaryHe: 'כרגע עדיף לבחור שאלה שמחזירה יותר משאבים וסבלנות.',
+  },
+  distress: {
+    labelHe: 'להוריד עומס',
+    summaryHe: 'כרגע עדיף להתחיל בשאלה שמורידה עומס לפני עוד עומק.',
+  },
+}
+
+const familyGuidanceProfiles = {
+  between: {
+    focusWeights: { openField: 0.75, resources: 0.3, distress: 0.25 },
+    emotionWeights: { anger: 2, sadness: 1, guilt: 1, confusion: 1 },
+    reasonHe: 'השאלות כאן ממפות את הקשר בין שני הכוחות במקום להשאיר אותם במאבק.',
+    emotionReasonHe: 'כשהרגש טעון, מיפוי של שני הצדדים נותן יותר אחיזה ופחות תגובתיות.',
+  },
+  directional: {
+    focusWeights: { openField: 0.7, resources: 0.25, distress: -0.2 },
+    emotionWeights: { confusion: 2, fear: 1, calm: 1 },
+    reasonHe: 'השאלות כאן עוזרות לראות איפה השרשרת מתחילה ואיפה אפשר להתערב.',
+    emotionReasonHe: 'כשיש בלבול, בירור הכיוון מחזיר סדר ומוריד ערפל.',
+  },
+  field: {
+    focusWeights: { openField: 1, resources: 0.55, distress: 0.95 },
+    emotionWeights: { fear: 2, shame: 2, anger: 1, guilt: 1 },
+    reasonHe: 'השאלות כאן מרככות דרך ההקשר, לא דרך עוד מאמץ.',
+    emotionReasonHe: 'כשהרגש מציף, שינוי הקשר או קצב נותן כניסה עדינה יותר.',
+  },
+  inside: {
+    focusWeights: { openField: 0.45, resources: 1, distress: 0.85 },
+    emotionWeights: { shame: 2, guilt: 2, sadness: 1, fear: 1 },
+    reasonHe: 'השאלות כאן מחזירות משאבים ומפחיתות פיצול פנימי.',
+    emotionReasonHe: 'כשהרגש מכביד, עבודה פנימית עדינה מייצרת יותר משאבים להמשך.',
+  },
+  meta: {
+    focusWeights: { openField: 0.95, resources: 0.3, distress: 0.2 },
+    emotionWeights: { confusion: 1, calm: 1, hope: 1 },
+    reasonHe: 'השאלות כאן משנות מסגור של הדפוס ולא רק את התוכן שלו.',
+    emotionReasonHe: 'כשהסיפור ננעל, מסגור חדש יכול לפתוח אפשרות שלא הופיעה קודם.',
+  },
+}
 
 const STYLE_LEADS = {
   rational: 'אם אני מפרק/ת את זה לוגית:',
@@ -413,17 +462,199 @@ export function scoreQuestionSuggestion(question, familyId, bars) {
   )
 }
 
-export function suggestSmartQuestion({ scenario, bars }) {
-  const all = relationsQuestionFamilies.flatMap((family) =>
-    family.questions.map((question) => ({
-      familyId: family.id,
-      familyLabelHe: family.labelHe,
-      question,
-      renderedText: formatRelationsQuestionText(question.textTemplate, scenario),
-      score: scoreQuestionSuggestion(question, family.id, bars),
-    })),
+function buildRecommendationMetricNeeds(bars) {
+  return {
+    openField: clamp(55 - Number(bars?.openField ?? 0), 0, 55),
+    resources: clamp(55 - Number(bars?.resources ?? 0), 0, 55),
+    distress: clamp(Number(bars?.distress ?? 0) - 45, 0, 55),
+  }
+}
+
+function getPrimaryRecommendationNeed(needs) {
+  const ordered = Object.entries(needs).sort((a, b) => b[1] - a[1])
+  const [metricKey, strength] = ordered[0] ?? ['openField', 0]
+  return { metricKey, strength }
+}
+
+function roundRecommendationValue(value) {
+  return Math.round(value * 10) / 10
+}
+
+function getEmotionRecommendationBonus(familyId, emotionBefore) {
+  if (!emotionBefore?.id) return 0
+  const profile = familyGuidanceProfiles[familyId]
+  if (!profile) return 0
+
+  const intensity = clamp(Number(emotionBefore.intensity ?? 3), 1, 5)
+  const weight = profile.emotionWeights?.[emotionBefore.id] ?? 0
+  return weight * (0.7 + intensity * 0.35)
+}
+
+function getRecommendationMomentumBonus(familyId, latestTurn) {
+  if (!latestTurn) return 0
+
+  const improvement =
+    Number(latestTurn.deltas?.openField ?? 0) +
+    Number(latestTurn.deltas?.resources ?? 0) -
+    Number(latestTurn.deltas?.distress ?? 0)
+
+  const sameFamily = latestTurn.familyId === familyId
+  const profile = familyGuidanceProfiles[familyId]
+  let bonus = 0
+
+  if (sameFamily && improvement >= 12) bonus += 2.5
+  if (sameFamily && improvement <= 0) bonus -= 2.5
+  if (sameFamily && Number(latestTurn.deltas?.distress ?? 0) > 0) bonus -= 2
+
+  if (!sameFamily && Number(latestTurn.deltas?.distress ?? 0) > 0) {
+    if ((profile?.focusWeights?.distress ?? 0) >= 0.8) bonus += 2
+    if ((profile?.focusWeights?.resources ?? 0) >= 0.8) bonus += 1
+  }
+
+  if (!sameFamily && Number(latestTurn.deltas?.openField ?? 0) <= 0) {
+    if ((profile?.focusWeights?.openField ?? 0) >= 0.9) bonus += 1.5
+  }
+
+  return bonus
+}
+
+function buildRecommendationReasons({
+  familyId,
+  latestTurn,
+  emotionBefore,
+  primaryNeed,
+}) {
+  const profile = familyGuidanceProfiles[familyId]
+  const focusCopy = recommendationFocusCopyByMetric[primaryNeed.metricKey]
+  const reasons = [
+    focusCopy?.summaryHe,
+    profile?.reasonHe,
+  ]
+
+  if (emotionBefore?.id && (profile?.emotionWeights?.[emotionBefore.id] ?? 0) > 0) {
+    reasons.push(profile.emotionReasonHe)
+  }
+
+  if (latestTurn?.familyId === familyId) {
+    const improvement =
+      Number(latestTurn.deltas?.openField ?? 0) +
+      Number(latestTurn.deltas?.resources ?? 0) -
+      Number(latestTurn.deltas?.distress ?? 0)
+
+    if (improvement >= 12) {
+      reasons.push('המשפחה הזו כבר הזיזה משהו בסבב האחרון, ולכן שווה להמשיך איתה עוד צעד.')
+    }
+    if (Number(latestTurn.deltas?.distress ?? 0) > 0) {
+      reasons.push('הסבב האחרון העלה עומס, ולכן כדאי לבחור עכשיו שאלה עדינה יותר.')
+    }
+  }
+
+  return reasons.filter(Boolean).slice(0, 3)
+}
+
+function pickDistinctFamilyRecommendations(items, limit, excludedFamilyIds = new Set()) {
+  const picked = []
+  const usedFamilyIds = new Set(excludedFamilyIds)
+
+  for (const item of items) {
+    if (usedFamilyIds.has(item.familyId)) continue
+    picked.push(item)
+    usedFamilyIds.add(item.familyId)
+    if (picked.length >= limit) break
+  }
+
+  return picked
+}
+
+export function buildGuidedQuestionRecommendations({
+  scenario,
+  bars,
+  emotionBefore = null,
+  latestTurn = null,
+  limit = 3,
+}) {
+  if (!scenario || !bars) return null
+
+  const needs = buildRecommendationMetricNeeds(bars)
+  const primaryNeed = getPrimaryRecommendationNeed(needs)
+  const focusCopy = recommendationFocusCopyByMetric[primaryNeed.metricKey]
+  const renderedFamilies = buildRelationsQuestionSetForScenario(scenario)
+
+  const ranked = renderedFamilies
+    .flatMap((family) =>
+      family.questions.map((question) => {
+        const profile = familyGuidanceProfiles[family.id] ?? familyGuidanceProfiles.between
+        const baseScore = scoreQuestionSuggestion(question, family.id, bars)
+        const metricFit =
+          (
+            (needs.openField * (profile.focusWeights.openField ?? 0)) +
+            (needs.resources * (profile.focusWeights.resources ?? 0)) +
+            (needs.distress * (profile.focusWeights.distress ?? 0))
+          ) * 0.12
+        const emotionFit = getEmotionRecommendationBonus(family.id, emotionBefore)
+        const momentumFit = getRecommendationMomentumBonus(family.id, latestTurn)
+        const archetypeFit =
+          scenario.archetypeId === 'stuck-identity' && family.id === 'meta'
+            ? 2.5
+            : 0
+        const score = baseScore + metricFit + emotionFit + momentumFit + archetypeFit
+
+        return {
+          familyId: family.id,
+          familyLabelHe: family.labelHe,
+          familyHelperHe: family.helperHe,
+          question,
+          renderedText: question.renderedText,
+          score: roundRecommendationValue(score),
+          whyHe: buildRecommendationReasons({
+            familyId: family.id,
+            latestTurn,
+            emotionBefore,
+            primaryNeed,
+          }),
+          debug: {
+            baseScore: roundRecommendationValue(baseScore),
+            metricFit: roundRecommendationValue(metricFit),
+            emotionFit: roundRecommendationValue(emotionFit),
+            momentumFit: roundRecommendationValue(momentumFit),
+            archetypeFit: roundRecommendationValue(archetypeFit),
+          },
+        }
+      }),
+    )
+    .sort((a, b) => b.score - a.score)
+
+  const primary = ranked[0] ?? null
+  const alternatives = primary
+    ? pickDistinctFamilyRecommendations(ranked.slice(1), Math.max(0, limit - 1), new Set([primary.familyId]))
+    : []
+
+  return {
+    engineId: RELATIONS_RECOMMENDER_VERSION,
+    primaryNeedKey: primaryNeed.metricKey,
+    focusLabelHe: focusCopy?.labelHe ?? recommendationFocusCopyByMetric.openField.labelHe,
+    summaryHe: focusCopy?.summaryHe ?? recommendationFocusCopyByMetric.openField.summaryHe,
+    primary,
+    alternatives,
+    ranked: ranked.slice(0, Math.max(limit + 2, 5)),
+  }
+}
+
+export function suggestSmartQuestion({
+  scenario,
+  bars,
+  emotionBefore = null,
+  latestTurn = null,
+}) {
+  return (
+    buildGuidedQuestionRecommendations({
+      scenario,
+      bars,
+      emotionBefore,
+      latestTurn,
+      limit: 1,
+    })?.primary ?? null
   )
-  return all.sort((a, b) => b.score - a.score)[0] ?? null
 }
 
 function relationStageFromBars(bars) {

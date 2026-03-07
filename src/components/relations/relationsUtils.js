@@ -164,12 +164,12 @@ export function getMetricItem(metricId) {
   return metricId ? RELATIONS_METRIC_BY_ID[metricId] ?? null : null
 }
 
-export function buildCompactSystemHint(session, latestTurn, emotionSelection) {
+export function buildCompactSystemHint(session, latestTurn) {
   if (!session) return ''
   if (!latestTurn) {
-    return `בחר/י שאלה אחת כדי לראות שינוי ראשון (${emotionSelection?.labelHe ?? 'בחר/י רגש קודם'}).`
+    return `בחר/י רגש, ואז קח/י את ההמלצה המודרכת או שאלה אחת ידנית כדי לראות שינוי ראשון.`
   }
-  return 'השאלה האחרונה עדכנה את המדדים ואת הרגש. עכשיו בחר/י שאלה אחת נוספת או עבר/י לסיכום.'
+  return 'השאלה האחרונה עדכנה את המדדים ואת הרגש. עכשיו קח/י את ההמלצה הבאה, בחר/י ידנית שאלה אחת נוספת, או עבר/י לסיכום.'
 }
 
 export function getWorkedQuestion(turns) {

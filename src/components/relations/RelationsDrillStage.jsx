@@ -1,4 +1,5 @@
 import { EmotionPickerPill, MetricsStrip, TurnDeltaBadges } from './relationsShared'
+import RelationsGuidancePanel from './RelationsGuidancePanel'
 import { getTurnOutcomeCopy } from './relationsUtils'
 
 function stageLabel(activeTurnStage) {
@@ -12,12 +13,13 @@ export default function RelationsDrillStage({
   session,
   latestTurn,
   questionFamilies,
+  questionGuidance,
   selectedFamilyId,
   onSelectFamily,
   onAskQuestion,
   canAskQuestion,
-  smartSuggestion,
-  onApplySmartSuggestion,
+  onUseGuidedSuggestion,
+  onPreviewGuidedSuggestion,
   highlightedQuestionId,
   statusHint,
   currentEmotion,
@@ -109,9 +111,16 @@ export default function RelationsDrillStage({
           <div className="section-head">
             <div>
               <h3>בחר/י שאלה אחת</h3>
-              <p>שלוש שאלות גלויות בלבד. בוחרים צעד אחד, לא מחפשים בלוח בקרה.</p>
+              <p>אפשר לקחת את ההמלצה המודרכת או לבחור ידנית צעד אחד מתוך המשפחה.</p>
             </div>
           </div>
+
+          <RelationsGuidancePanel
+            guidance={questionGuidance}
+            canAskQuestion={canAskQuestion}
+            onUsePrimary={onUseGuidedSuggestion}
+            onPreviewAlternative={onPreviewGuidedSuggestion}
+          />
 
           <div className="relations-v2-family-tabs" role="tablist" aria-label="משפחות שאלות">
             {questionFamilies.map((family) => (
@@ -149,16 +158,6 @@ export default function RelationsDrillStage({
 
           {!canAskQuestion && (
             <div className="relations-action-note">בחר/י רגש נוכחי כדי לפתוח את השאלות.</div>
-          )}
-
-          {smartSuggestion && (
-            <div className="relations-smart-note">
-              <p>אם צריך התחלה עדינה, אפשר להתחיל מכאן:</p>
-              <button type="button" className="relations-v2-smart" onClick={onApplySmartSuggestion}>
-                <span>הצעה לפתיחה</span>
-                <strong>{smartSuggestion.renderedText}</strong>
-              </button>
-            </div>
           )}
         </section>
 
