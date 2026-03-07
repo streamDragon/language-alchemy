@@ -7,6 +7,7 @@ export default function TopNav() {
   const navigate = useNavigate()
   const { runRandomAlchemist } = useAppState()
   const appVersion = packageJson.version
+  const showVersion = import.meta.env.DEV
   const topNavLabs = topNavLabIds.map((labId) => getLabManifest(labId)).filter(Boolean)
 
   const handleRandom = () => {
@@ -20,10 +21,14 @@ export default function TopNav() {
     <header className="top-nav">
       <div className="top-nav__brand">
         <div className="brand-mark">AL</div>
-        <div>
-          <div className="brand-title">Language Alchemy Lab</div>
-          <div className="brand-subtitle">שפה, השפעה, ויסות ודיוק אנושי</div>
-          <div className="brand-version" aria-label="Application version">v{appVersion}</div>
+        <div className="top-nav__brand-copy">
+          <div className="brand-title">Language Alchemy</div>
+          <div className="brand-subtitle">ניסוח, שאלה ותרגול לשיחה הבאה שלך</div>
+          {showVersion && (
+            <div className="brand-version" aria-label="Application version">
+              v{appVersion}
+            </div>
+          )}
         </div>
       </div>
 
@@ -49,7 +54,7 @@ export default function TopNav() {
       </nav>
 
       <button type="button" className="random-alchemist-button" onClick={handleRandom}>
-        תרגול אקראי
+        פתח/י לי משהו
       </button>
     </header>
   )
