@@ -15,6 +15,7 @@ import {
   loadStoredFavorites,
   loadStoredHistory,
   loadStoredPreferences,
+  DEFAULT_PREFERENCES,
   saveStoredDrafts,
   saveStoredFavorites,
   saveStoredHistory,
@@ -122,7 +123,7 @@ function createInitialState() {
     preferences:
       typeof window !== 'undefined'
         ? loadStoredPreferences()
-        : { lastVisitedLabId: 'phrasing' },
+        : DEFAULT_PREFERENCES,
   }
 }
 
@@ -161,6 +162,9 @@ export function AppStateProvider({ children }) {
       },
       setLastVisitedLab(labId) {
         dispatch({ type: 'SET_PREFERENCES', patch: { lastVisitedLabId: labId } })
+      },
+      setPreferences(patch) {
+        dispatch({ type: 'SET_PREFERENCES', patch })
       },
       saveFavorite({ labId, sentenceText, draftSnapshot, tags = [] }) {
         const favorite = {

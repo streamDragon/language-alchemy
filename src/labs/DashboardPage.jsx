@@ -9,77 +9,34 @@ import {
   recommendLabsForGateway,
 } from '../data/labManifest'
 import { getLabConfig } from '../data/labsConfig'
+import DashboardGateway from '../components/dashboard/DashboardGateway'
+import DashboardWelcomeSheet from '../components/dashboard/DashboardWelcomeSheet'
+import FamilyBrowser from '../components/dashboard/FamilyBrowser'
+import RecommendedLabPanel from '../components/dashboard/RecommendedLabPanel'
+import ReturningUserRail from '../components/dashboard/ReturningUserRail'
 import { useAppState } from '../state/appStateContext'
+import {
+  dashboardWelcomePaths,
+  DEFAULT_DASHBOARD_GOAL_ID,
+  DEFAULT_DASHBOARD_PERSONA_ID,
+  hasMeaningfulDashboardHistory,
+  timeLabel,
+} from '../components/dashboard/dashboardUtils'
 
-function timeLabel(value) {
-  try {
-    return new Date(value).toLocaleString('he-IL')
-  } catch {
-    return value
-  }
-}
-
-function labStatusLabel(status) {
-  if (status === 'stable') return 'מוכן'
-  if (status === 'beta') return 'בבדיקה'
-  if (status === 'experimental') return 'ניסוי'
-  return status
-}
-
-function ChoiceGroup({ label, options, selectedId, onSelect }) {
-  return (
-    <div className="gateway-choice-group">
-      <div className="gateway-choice-group__label">{label}</div>
-      <div className="gateway-choice-group__options" role="list">
-        {options.map((option) => (
-          <button
-            key={option.id}
-            type="button"
-            className={`gateway-choice ${selectedId === option.id ? 'is-active' : ''}`}
-            onClick={() => onSelect(option.id)}
-          >
-            <strong>{option.labelHe}</strong>
-            <span>{option.descriptionHe}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function LabBrowseCard({ lab }) {
-  return (
-    <article className="family-lab-card">
-      <div className="family-lab-card__top">
-        <div>
-          <h3>{lab.titleHe}</h3>
-          <p>{lab.promiseHe}</p>
-        </div>
-        <span className={`family-lab-card__status family-lab-card__status--${lab.status}`}>
-          {labStatusLabel(lab.status)}
-        </span>
-      </div>
-      <div className="family-lab-card__meta">
-        <span>{lab.audienceLabelHe}</span>
-        <span>{lab.sessionLengthMin} דקות</span>
-      </div>
-      <div className="family-lab-card__result">{lab.resultHe}</div>
-      <Link to={lab.route} className="inline-action">
-        {lab.quickStartLabel}
-      </Link>
-    </article>
-  )
+function getLabTitle(labId) {
+  return getLabManifest(labId)?.titleHe ?? getLabConfig(labId)?.titleHe ?? labId
 }
 
 export default function DashboardPage() {
   const navigate = useNavigate()
-  const { state } = useAppState()
-  const [personaId, setPersonaId] = useState('beginner')
-  const [goalId, setGoalId] = useState('speak-better')
+  const { state, setPreferences } = useAppState()
+  const preferences = state.preferences ?? {}
 
-  const recentFavorites = state.favorites.slice(0, 3)
-  const recentHistory = state.history.slice(0, 3)
-  const lastVisitedLab = getLabManifest(state.preferences?.lastVisitedLabId) ?? getLabManifest('relations')
+  const [personaId, setPersonaId] = useState(
+    preferences.dashboardLastPersonaId ?? DEFAULT_DASHBOARD_PERSONA_ID,
+  )
+  const [goalId, setGoalId] = useState(preferences.dashboardLastGoalId ?? DEFAULT_DASHBOARD_GOAL_ID)
+
   const familySections = useMemo(
     () => labFamilies.map((family) => ({ ...family, labs: getLabsByFamily(family.id) })),
     [],
@@ -90,238 +47,158 @@ export default function DashboardPage() {
   )
 
   const primaryLab = recommendations[0] ?? null
-  const secondaryLabs = recommendations.slice(1)
   const selectedPersona = personaOptions.find((item) => item.id === personaId)
   const selectedGoal = goalOptions.find((item) => item.id === goalId)
+  const recentHistory = state.history.slice(0, 3)
+  const recentFavorites = state.favorites.slice(0, 3)
+  const lastVisitedLab = getLabManifest(preferences.lastVisitedLabId) ?? getLabManifest('phrasing')
+  const hasMeaningfulHistory = hasMeaningfulDashboardHistory(state)
+  const dashboardMode = hasMeaningfulHistory ? 'returning-user' : 'first-visit'
+  const showWelcomeSheet =
+    dashboardMode === 'first-visit' && !preferences.dashboardWelcomeDismissed
+
+  const activeWelcomePathId =
+    dashboardWelcomePaths.find(
+      (path) => path.personaId === personaId && path.goalId === goalId,
+    )?.id ?? dashboardWelcomePaths[0].id
+
+  const handleSelectPersona = (nextPersonaId) => {
+    setPersonaId(nextPersonaId)
+    setPreferences({ dashboardLastPersonaId: nextPersonaId })
+  }
+
+  const handleSelectGoal = (nextGoalId) => {
+    setGoalId(nextGoalId)
+    setPreferences({ dashboardLastGoalId: nextGoalId })
+  }
+
+  const handleSelectWelcomePath = (pathId) => {
+    const selectedPath = dashboardWelcomePaths.find((path) => path.id === pathId)
+    if (!selectedPath) return
+    handleSelectPersona(selectedPath.personaId)
+    handleSelectGoal(selectedPath.goalId)
+  }
+
+  const dismissWelcomeSheet = () => {
+    if (preferences.dashboardWelcomeDismissed) return
+    setPreferences({ dashboardWelcomeDismissed: true })
+  }
+
+  const handleStartRecommended = () => {
+    if (!primaryLab?.route) return
+    if (showWelcomeSheet) dismissWelcomeSheet()
+    navigate(primaryLab.route)
+  }
+
+  const handleContinue = () => {
+    if (lastVisitedLab?.route) navigate(lastVisitedLab.route)
+  }
+
+  const activityTimestamp =
+    recentHistory[0]?.createdAt ?? recentFavorites[0]?.createdAt ?? null
+
+  const showMemorySection = recentHistory.length > 0 || recentFavorites.length > 0
 
   return (
     <div className="page-stack dashboard-page">
-      <section className="dashboard-hero">
-        <div className="dashboard-hero__copy">
-          <p className="dashboard-hero__eyebrow">Language Alchemy</p>
-          <h1>מעבדות לשפה, השפעה ודיוק אנושי</h1>
-          <p className="dashboard-hero__text">
-            ללמוד לנסח, לשאול, להרגיע, להוביל ולהבין מה באמת קורה בשיחה. המסך הזה נועד
-            לעזור לבחור מסלול התחלה ברור, לא להעמיס את כל העומק בבת אחת.
-          </p>
-        </div>
+      <section className={`dashboard-opening-slab dashboard-opening-slab--${dashboardMode}`}>
+        {showWelcomeSheet && (
+          <DashboardWelcomeSheet
+            pathOptions={dashboardWelcomePaths}
+            selectedPathId={activeWelcomePathId}
+            recommendedLab={primaryLab}
+            onDismiss={dismissWelcomeSheet}
+            onSelectPath={handleSelectWelcomePath}
+            onStart={handleStartRecommended}
+          />
+        )}
 
-        <div className="dashboard-hero__actions">
-          <button
-            type="button"
-            onClick={() => {
-              if (primaryLab?.route) navigate(primaryLab.route)
-            }}
-          >
-            {primaryLab?.quickStartLabel ?? 'התחל/י'}
-          </button>
-          {lastVisitedLab?.route && (
-            <Link to={lastVisitedLab.route} className="secondary-link-button">
-              המשך/י ב־{lastVisitedLab.titleHe}
+        {dashboardMode === 'returning-user' && (
+          <ReturningUserRail
+            lastActivityAt={activityTimestamp}
+            lastVisitedLab={lastVisitedLab}
+            onContinue={handleContinue}
+            recentFavorites={recentFavorites}
+            recentHistory={recentHistory}
+          />
+        )}
+
+        <DashboardGateway
+          goalId={goalId}
+          goalOptions={goalOptions}
+          mode={dashboardMode}
+          onSelectGoal={handleSelectGoal}
+          onSelectPersona={handleSelectPersona}
+          personaId={personaId}
+          personaOptions={personaOptions}
+        />
+
+        <RecommendedLabPanel
+          actionVariant={
+            showWelcomeSheet ? 'hidden' : dashboardMode === 'returning-user' ? 'secondary' : 'primary'
+          }
+          goal={selectedGoal}
+          lab={primaryLab}
+          mode={dashboardMode}
+          onStart={handleStartRecommended}
+          persona={selectedPersona}
+        />
+      </section>
+
+      <FamilyBrowser familySections={familySections} />
+
+      {showMemorySection && (
+        <section className="dashboard-memory-section">
+          <div className="section-head">
+            <div>
+              <p className="dashboard-hero__eyebrow">להיזכר מהר</p>
+              <h2>מה עבד לאחרונה</h2>
+              <p>היסטוריה ושמורים נשארים כאן למטה, אחרי שבחרת מה לפתוח עכשיו.</p>
+            </div>
+            <Link to="/library" className="inline-action">
+              לפתוח את הספרייה
             </Link>
-          )}
-        </div>
-      </section>
-
-      <section className="gateway-card">
-        <div className="gateway-card__head">
-          <div>
-            <p className="dashboard-hero__eyebrow">בחר/י מסלול התחלה</p>
-            <h2>מי את/ה ומה צריך עכשיו?</h2>
-            <p>
-              שתי בחירות קצרות ייתנו המלצה אחת ראשית ועוד שתי חלופות מתאימות. המטרה היא
-              להבין תוך כמה שניות מאיפה נכון להתחיל.
-            </p>
           </div>
-        </div>
 
-        <div className="gateway-grid">
-          <ChoiceGroup
-            label="מי את/ה?"
-            options={personaOptions}
-            selectedId={personaId}
-            onSelect={setPersonaId}
-          />
-          <ChoiceGroup
-            label="מה צריך עכשיו?"
-            options={goalOptions}
-            selectedId={goalId}
-            onSelect={setGoalId}
-          />
-        </div>
-      </section>
-
-      {primaryLab && (
-        <section className="recommendation-layout">
-          <article className="recommendation-card recommendation-card--primary">
-            <div className="recommendation-card__head">
-              <div>
-                <p className="dashboard-hero__eyebrow">מומלץ להתחיל כאן</p>
-                <h2>{primaryLab.titleHe}</h2>
-              </div>
-              <span className="recommendation-card__family">
-                {labFamilies.find((family) => family.id === primaryLab.family)?.badgeHe}
-              </span>
-            </div>
-
-            <p className="recommendation-card__promise">{primaryLab.promiseHe}</p>
-
-            <div className="recommendation-card__reason">
-              <strong>למה זה מתאים עכשיו?</strong>
-              <p>
-                בחרת <span>{selectedPersona?.labelHe}</span> עם צורך של{' '}
-                <span>{selectedGoal?.labelHe}</span>, וזה המסלול הכי קצר ל־{primaryLab.primaryOutcome}.
-              </p>
-            </div>
-
-            <div className="recommendation-card__meta">
-              <span>{primaryLab.audienceLabelHe}</span>
-              <span>{primaryLab.sessionLengthMin} דקות</span>
-              <span>{primaryLab.resultHe}</span>
-            </div>
-
-            <div className="recommendation-card__actions">
-              <button
-                type="button"
-                onClick={() => {
-                  if (primaryLab.route) navigate(primaryLab.route)
-                }}
-              >
-                {primaryLab.quickStartLabel}
-              </button>
-            </div>
-          </article>
-
-          <div className="recommendation-side">
-            <div className="recommendation-side__head">
-              <strong>עוד שני מסלולים מתאימים</strong>
-              <span>קלים יותר לעיון, אבל פחות מדויקים מההמלצה הראשית.</span>
-            </div>
-
-            {secondaryLabs.map((lab) => (
-              <article key={lab.id} className="recommendation-card recommendation-card--secondary">
-                <div className="recommendation-card__head">
-                  <div>
-                    <p className="dashboard-hero__eyebrow">אפשר גם</p>
-                    <h3>{lab.titleHe}</h3>
-                  </div>
-                  <span className="recommendation-card__family">
-                    {labFamilies.find((family) => family.id === lab.family)?.badgeHe}
-                  </span>
+          <div className="dashboard-memory-grid">
+            {recentHistory.length > 0 && (
+              <article className="panel-card panel-card--soft dashboard-memory-card">
+                <div className="panel-card__head">
+                  <h3>תרגולים אחרונים</h3>
                 </div>
-                <p className="recommendation-card__promise">{lab.promiseHe}</p>
-                <div className="recommendation-card__meta">
-                  <span>{lab.sessionLengthMin} דקות</span>
-                  <span>{lab.primaryOutcome}</span>
+
+                <div className="stack-list">
+                  {recentHistory.map((entry) => (
+                    <div key={entry.id} className="stack-list__item">
+                      <strong>{getLabTitle(entry.labId)}</strong>
+                      <p>{entry.summaryHe ?? entry.sentenceText ?? 'תרגול'}</p>
+                      <small>{timeLabel(entry.createdAt)}</small>
+                    </div>
+                  ))}
                 </div>
-                <Link to={lab.route} className="inline-action">
-                  {lab.quickStartLabel}
-                </Link>
               </article>
-            ))}
+            )}
+
+            {recentFavorites.length > 0 && (
+              <article className="panel-card panel-card--soft dashboard-memory-card">
+                <div className="panel-card__head">
+                  <h3>שמורים לחזרה מהירה</h3>
+                </div>
+
+                <div className="stack-list">
+                  {recentFavorites.map((favorite) => (
+                    <div key={favorite.id} className="stack-list__item">
+                      <strong>{favorite.titleHe}</strong>
+                      <p>{favorite.sentenceText}</p>
+                      <small>{timeLabel(favorite.createdAt)}</small>
+                    </div>
+                  ))}
+                </div>
+              </article>
+            )}
           </div>
         </section>
       )}
-
-      <section className="family-sections">
-        <div className="section-head">
-          <div>
-            <p className="dashboard-hero__eyebrow">או לעיין לפי משפחות</p>
-            <h2>לא כל מעבדה צריכה להתחרות על הקליק הראשון</h2>
-            <p>אם לא רוצים המלצה, אפשר לדפדף לפי סוג התרגול.</p>
-          </div>
-        </div>
-
-        <div className="family-section-list">
-          {familySections.map((family) => (
-            <section key={family.id} className="family-section">
-              <div className="family-section__head">
-                <div>
-                  <p className="dashboard-hero__eyebrow">{family.badgeHe}</p>
-                  <h3>{family.titleHe}</h3>
-                  <p>{family.descriptionHe}</p>
-                </div>
-              </div>
-
-              <div className="family-section__grid">
-                {family.labs.map((lab) => (
-                  <LabBrowseCard key={lab.id} lab={lab} />
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-      </section>
-
-      <section className="dashboard-quick-section">
-        <div className="section-head">
-          <div>
-            <p className="dashboard-hero__eyebrow">חזרה מהירה</p>
-            <h2>להמשיך בלי רעש מיותר</h2>
-            <p>חזרה למסלול האחרון, תרגולים אחרונים, ושאלות ששווה לשמור ליד.</p>
-          </div>
-        </div>
-
-        <div className="dashboard-quick-grid">
-          <article className="panel-card panel-card--soft">
-            <div className="panel-card__head">
-              <h2>המשך מאיפה שהפסקת</h2>
-              {lastVisitedLab?.route && <Link to={lastVisitedLab.route}>פתח/י</Link>}
-            </div>
-            {lastVisitedLab ? (
-              <div className="stack-list">
-                <div className="stack-list__item">
-                  <strong>{lastVisitedLab.titleHe}</strong>
-                  <p>{lastVisitedLab.promiseHe}</p>
-                  <small>{lastVisitedLab.resultHe}</small>
-                </div>
-              </div>
-            ) : (
-              <p className="muted-text">עדיין אין מעבדה אחרונה. אפשר להתחיל מההמלצה למעלה.</p>
-            )}
-          </article>
-
-          <article className="panel-card panel-card--soft">
-            <div className="panel-card__head">
-              <h2>תרגולים אחרונים</h2>
-              <Link to="/library">לספרייה</Link>
-            </div>
-            {recentHistory.length ? (
-              <div className="stack-list">
-                {recentHistory.map((entry) => (
-                  <div key={entry.id} className="stack-list__item">
-                    <strong>{getLabConfig(entry.labId)?.titleHe ?? entry.labId}</strong>
-                    <p>{entry.summaryHe ?? entry.sentenceText ?? 'תרגול'}</p>
-                    <small>{timeLabel(entry.createdAt)}</small>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="muted-text">עדיין אין היסטוריה. סשן ראשון יופיע כאן אוטומטית.</p>
-            )}
-          </article>
-
-          <article className="panel-card panel-card--soft">
-            <div className="panel-card__head">
-              <h2>השאלות שעבדו לי</h2>
-              <Link to="/library">לספרייה</Link>
-            </div>
-            {recentFavorites.length ? (
-              <div className="stack-list">
-                {recentFavorites.map((favorite) => (
-                  <div key={favorite.id} className="stack-list__item">
-                    <strong>{favorite.titleHe}</strong>
-                    <p>{favorite.sentenceText}</p>
-                    <small>{timeLabel(favorite.createdAt)}</small>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="muted-text">עדיין אין מועדפים. שמור/י ניסוחים או שאלות מתוך המעבדות.</p>
-            )}
-          </article>
-        </div>
-      </section>
     </div>
   )
 }

@@ -5,6 +5,13 @@ const KEYS = {
   preferences: 'la.v1.preferences',
 }
 
+export const DEFAULT_PREFERENCES = {
+  lastVisitedLabId: 'phrasing',
+  dashboardWelcomeDismissed: false,
+  dashboardLastPersonaId: 'beginner',
+  dashboardLastGoalId: 'speak-better',
+}
+
 function safeParse(raw, fallback) {
   if (!raw) return fallback
   try {
@@ -41,9 +48,11 @@ export function saveStoredHistory(history) {
 }
 
 export function loadStoredPreferences() {
-  return safeParse(localStorage.getItem(KEYS.preferences), {
-    lastVisitedLabId: 'phrasing',
-  })
+  const data = safeParse(localStorage.getItem(KEYS.preferences), DEFAULT_PREFERENCES)
+  return {
+    ...DEFAULT_PREFERENCES,
+    ...(data && typeof data === 'object' ? data : {}),
+  }
 }
 
 export function saveStoredPreferences(preferences) {
