@@ -746,7 +746,7 @@ export default function GlobalAlchemyAtmosphere() {
         <span className="alchemy-sound-toggle__icon" aria-hidden="true">
           {isSoundOn ? <Volume2 size={18} /> : <VolumeX size={18} />}
         </span>
-        <span className="alchemy-sound-toggle__text">{isSoundOn ? 'Magic On' : 'Magic Off'}</span>
+        <span className="alchemy-sound-toggle__text">{isSoundOn ? 'צליל פעיל' : 'צליל כבוי'}</span>
       </button>
 
       {showConsent && (
@@ -754,7 +754,7 @@ export default function GlobalAlchemyAtmosphere() {
           <div className="alchemy-sound-consent__card">
             <div className="alchemy-sound-consent__eyebrow">
               <Music2 size={16} aria-hidden="true" />
-              <span>Alchemy Sound Layer</span>
+              <span>שכבת צליל</span>
             </div>
             <h3>להפעיל צלילי אלכימיה קסומים?</h3>
             <p>
@@ -787,14 +787,14 @@ export default function GlobalAlchemyAtmosphere() {
       <aside
         className={`alchemy-companion mood-${companion.mood}`}
         aria-live="polite"
-        aria-label="Alchemist Companion"
+        aria-label="מלווה האלכימיה"
       >
         <div key={companion.pulseKey} className="alchemy-companion__orb" aria-hidden="true">
           {companionFaceForMood(companion.mood)}
         </div>
         <div className="alchemy-companion__bubble">
           <strong>
-            <Sparkles size={12} aria-hidden="true" /> Alchemist Companion
+            <Sparkles size={12} aria-hidden="true" /> מלווה האלכימיה
           </strong>
           <span>{companion.message}</span>
         </div>

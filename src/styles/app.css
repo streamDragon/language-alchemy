@@ -63,7 +63,7 @@
 }
 
 .app-shell--home .alchemy-companion {
-  opacity: 0.82;
+  opacity: 0.72;
 }
 
 .app-shell--home .alchemy-sound-toggle {
@@ -7570,6 +7570,10 @@ textarea {
   .dashboard-secondary-action,
   .dashboard-welcome-sheet__dismiss {
     width: 100%;
+  }
+
+  .app-shell--home .alchemy-companion {
+    display: none;
   }
 
   .relations-stage-banner {

@@ -115,6 +115,16 @@ export default function DashboardPage() {
 
   return (
     <div className="page-stack dashboard-page">
+      {dashboardMode === 'returning-user' && (
+        <ReturningUserRail
+          lastActivityAt={activityTimestamp}
+          lastVisitedLab={lastVisitedLab}
+          onContinue={handleContinue}
+          recentFavorites={recentFavorites}
+          recentHistory={recentHistory}
+        />
+      )}
+
       <section className={`dashboard-opening-slab dashboard-opening-slab--${dashboardMode}`}>
         {showWelcomeSheet && (
           <DashboardWelcomeSheet
@@ -145,16 +155,6 @@ export default function DashboardPage() {
           persona={selectedPersona}
         />
       </section>
-
-      {dashboardMode === 'returning-user' && (
-        <ReturningUserRail
-          lastActivityAt={activityTimestamp}
-          lastVisitedLab={lastVisitedLab}
-          onContinue={handleContinue}
-          recentFavorites={recentFavorites}
-          recentHistory={recentHistory}
-        />
-      )}
 
       <FamilyBrowser familySections={familySections} />
 
