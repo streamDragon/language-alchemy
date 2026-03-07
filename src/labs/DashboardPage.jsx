@@ -19,6 +19,9 @@ import {
   dashboardWelcomePaths,
   DEFAULT_DASHBOARD_GOAL_ID,
   DEFAULT_DASHBOARD_PERSONA_ID,
+  getHomeFamilySections,
+  getHomeGoalOptions,
+  getHomePersonaOptions,
   hasMeaningfulDashboardHistory,
   timeLabel,
 } from '../components/dashboard/dashboardUtils'
@@ -35,10 +38,14 @@ export default function DashboardPage() {
   const [personaId, setPersonaId] = useState(
     preferences.dashboardLastPersonaId ?? DEFAULT_DASHBOARD_PERSONA_ID,
   )
-  const [goalId, setGoalId] = useState(preferences.dashboardLastGoalId ?? DEFAULT_DASHBOARD_GOAL_ID)
+  const [goalId, setGoalId] = useState(
+    preferences.dashboardLastGoalId ?? DEFAULT_DASHBOARD_GOAL_ID,
+  )
 
+  const homePersonaOptions = useMemo(() => getHomePersonaOptions(personaOptions), [])
+  const homeGoalOptions = useMemo(() => getHomeGoalOptions(goalOptions), [])
   const familySections = useMemo(
-    () => labFamilies.map((family) => ({ ...family, labs: getLabsByFamily(family.id) })),
+    () => getHomeFamilySections(labFamilies, getLabsByFamily),
     [],
   )
   const recommendations = useMemo(
@@ -46,12 +53,17 @@ export default function DashboardPage() {
     [goalId, personaId],
   )
 
-  const primaryLab = recommendations[0] ?? null
-  const selectedPersona = personaOptions.find((item) => item.id === personaId)
-  const selectedGoal = goalOptions.find((item) => item.id === goalId)
   const recentHistory = state.history.slice(0, 3)
   const recentFavorites = state.favorites.slice(0, 3)
-  const lastVisitedLab = getLabManifest(preferences.lastVisitedLabId) ?? getLabManifest('phrasing')
+  const continueLabId =
+    (preferences.lastVisitedLabId && preferences.lastVisitedLabId !== 'phrasing'
+      ? preferences.lastVisitedLabId
+      : recentHistory[0]?.labId ?? recentFavorites[0]?.labId ?? preferences.lastVisitedLabId) ??
+    'phrasing'
+  const primaryLab = recommendations[0] ?? null
+  const selectedPersona = homePersonaOptions.find((item) => item.id === personaId)
+  const selectedGoal = homeGoalOptions.find((item) => item.id === goalId)
+  const lastVisitedLab = getLabManifest(continueLabId) ?? getLabManifest('phrasing')
   const hasMeaningfulHistory = hasMeaningfulDashboardHistory(state)
   const dashboardMode = hasMeaningfulHistory ? 'returning-user' : 'first-visit'
   const showWelcomeSheet =
@@ -114,24 +126,14 @@ export default function DashboardPage() {
           />
         )}
 
-        {dashboardMode === 'returning-user' && (
-          <ReturningUserRail
-            lastActivityAt={activityTimestamp}
-            lastVisitedLab={lastVisitedLab}
-            onContinue={handleContinue}
-            recentFavorites={recentFavorites}
-            recentHistory={recentHistory}
-          />
-        )}
-
         <DashboardGateway
           goalId={goalId}
-          goalOptions={goalOptions}
+          goalOptions={homeGoalOptions}
           mode={dashboardMode}
           onSelectGoal={handleSelectGoal}
           onSelectPersona={handleSelectPersona}
           personaId={personaId}
-          personaOptions={personaOptions}
+          personaOptions={homePersonaOptions}
         />
 
         <RecommendedLabPanel
@@ -144,15 +146,25 @@ export default function DashboardPage() {
         />
       </section>
 
+      {dashboardMode === 'returning-user' && (
+        <ReturningUserRail
+          lastActivityAt={activityTimestamp}
+          lastVisitedLab={lastVisitedLab}
+          onContinue={handleContinue}
+          recentFavorites={recentFavorites}
+          recentHistory={recentHistory}
+        />
+      )}
+
       <FamilyBrowser familySections={familySections} />
 
       {showMemorySection && (
         <section className="dashboard-memory-section">
           <div className="section-head">
             <div>
-              <p className="dashboard-hero__eyebrow">להיזכר מהר</p>
-              <h2>מה עבד לאחרונה</h2>
-              <p>היסטוריה ושמורים נשארים כאן למטה, אחרי שבחרת מה לפתוח עכשיו.</p>
+              <p className="dashboard-hero__eyebrow">אחר כך</p>
+              <h2>לחזור למה ששמרת</h2>
+              <p>תרגולים אחרונים ומשפטים ששמרת.</p>
             </div>
             <Link to="/library" className="inline-action">
               לפתוח את הספרייה

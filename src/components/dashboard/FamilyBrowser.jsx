@@ -16,7 +16,6 @@ function LabBrowseCard({ lab }) {
       </div>
 
       <div className="family-lab-card__meta">
-        <span>{lab.audienceLabelHe}</span>
         <span>{lab.sessionLengthMin} דקות</span>
       </div>
 
@@ -34,9 +33,9 @@ export default function FamilyBrowser({ familySections }) {
     <section className="family-browser" aria-labelledby="family-browser-title">
       <div className="section-head">
         <div>
-          <p className="dashboard-hero__eyebrow">אחרי שבוחרים פתיחה</p>
-          <h2 id="family-browser-title">אפשר גם לעיין לפי סוג העבודה</h2>
-          <p>מי שרוצה לדפדף ידנית ימצא כאן את כל המשפחות: מיומנות, אבחון והשפעה.</p>
+          <p className="dashboard-hero__eyebrow">עוד מסלולים</p>
+          <h2 id="family-browser-title">אפשר לבחור גם לפי סוג העזרה</h2>
+          <p>מיומנות, אבחון או הובלת שיחה.</p>
         </div>
       </div>
 

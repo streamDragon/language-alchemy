@@ -1,13 +1,12 @@
 function ChoiceGroup({ label, options, selectedId, onSelect }) {
   return (
-    <div className="gateway-choice-group">
-      <div className="gateway-choice-group__label">{label}</div>
-      <div className="gateway-choice-group__options" role="list">
+    <fieldset className="gateway-choice-group">
+      <legend className="gateway-choice-group__label">{label}</legend>
+      <div className="gateway-choice-group__options">
         {options.map((option) => (
           <button
             key={option.id}
             type="button"
-            role="listitem"
             aria-pressed={selectedId === option.id}
             className={`gateway-choice ${selectedId === option.id ? 'is-active' : ''}`}
             onClick={() => onSelect(option.id)}
@@ -17,20 +16,20 @@ function ChoiceGroup({ label, options, selectedId, onSelect }) {
           </button>
         ))}
       </div>
-    </div>
+    </fieldset>
   )
 }
 
 const gatewayCopy = {
   'first-visit': {
-    eyebrow: 'Language Alchemy',
-    title: 'למצוא את המשפט, השאלה או התרגול הנכון לשיחה שלך עכשיו.',
-    text: 'שתי בחירות קצרות יכוונו אותך למסלול פתיחה ברור. לא צריך ללמוד את כל המוצר כדי לדעת מאיפה להתחיל.',
+    eyebrow: 'שיחה אחת קדימה',
+    title: 'ניסוח, שאלה או תרגול לשיחה הקרובה.',
+    text: 'בוחרים מי את/ה ומה צריך עכשיו. ההמלצה מתעדכנת מיד.',
   },
   'returning-user': {
-    eyebrow: 'כיוון חדש אם צריך',
-    title: 'אפשר להמשיך ישר, ואפשר גם לכוונן מחדש את המסלול.',
-    text: 'עדכנו מי את/ה ומה נדרש עכשיו, וההמלצה משתנה מיד בתוך אותו מסך.',
+    eyebrow: 'לפתוח משהו חדש',
+    title: 'אפשר להמשיך ישר, או לבחור מסלול אחר לשיחה הנוכחית.',
+    text: 'שני צעדים קצרים משנים את ההמלצה.',
   },
 }
 
@@ -55,14 +54,14 @@ export default function DashboardGateway({
 
       <div className="dashboard-gateway__groups">
         <ChoiceGroup
-          label="מי אני"
+          label="מי את/ה היום"
           options={personaOptions}
           selectedId={personaId}
           onSelect={onSelectPersona}
         />
 
         <ChoiceGroup
-          label="מה אני צריך/ה עכשיו"
+          label="מה צריך עכשיו"
           options={goalOptions}
           selectedId={goalId}
           onSelect={onSelectGoal}

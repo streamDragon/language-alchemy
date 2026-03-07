@@ -9,12 +9,9 @@ export default function DashboardWelcomeSheet({
     <section className="dashboard-welcome-sheet" aria-labelledby="dashboard-welcome-title">
       <div className="dashboard-welcome-sheet__head">
         <div>
-          <p className="dashboard-hero__eyebrow">פתיחה קצרה</p>
-          <h2 id="dashboard-welcome-title">מאיפה נכון להתחיל עכשיו?</h2>
-          <p>
-            בחר/י ניסוח פתיחה אחד. ההמלצה מתעדכנת מיד, בלי לעבור בין מסכים ובלי
-            לנסות להבין את כל המערכת מראש.
-          </p>
+          <p className="dashboard-hero__eyebrow">פתיחה מהירה</p>
+          <h2 id="dashboard-welcome-title">מאיפה נכון להתחיל?</h2>
+          <p>בחר/י כיוון פתיחה. ההמלצה מתעדכנת מיד.</p>
         </div>
 
         <button
@@ -22,16 +19,17 @@ export default function DashboardWelcomeSheet({
           className="dashboard-welcome-sheet__dismiss"
           onClick={onDismiss}
         >
-          להמשיך בלי זה
+          לא עכשיו
         </button>
       </div>
 
-      <div className="dashboard-welcome-sheet__paths" role="list">
+      <div className="dashboard-welcome-sheet__paths" role="list" aria-label="מסלולי פתיחה">
         {pathOptions.map((path) => (
           <button
             key={path.id}
             type="button"
             role="listitem"
+            aria-pressed={selectedPathId === path.id}
             className={`dashboard-path-card ${selectedPathId === path.id ? 'is-active' : ''}`}
             onClick={() => onSelectPath(path.id)}
           >
@@ -43,7 +41,7 @@ export default function DashboardWelcomeSheet({
 
       <div className="dashboard-welcome-sheet__footer">
         <div className="dashboard-welcome-sheet__summary">
-          <span>המסלול שמחכה עכשיו</span>
+          <span>נפתח עכשיו</span>
           <strong>{recommendedLab?.titleHe ?? 'ההמלצה תופיע כאן'}</strong>
         </div>
       </div>

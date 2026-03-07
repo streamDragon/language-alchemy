@@ -15,13 +15,14 @@ export default function RecommendedLabPanel({
   return (
     <section
       className="recommended-lab-panel"
+      data-action-variant={actionVariant}
       data-family={lab.family}
       aria-labelledby="recommended-lab-title"
     >
       <div className="recommended-lab-panel__head">
         <div>
           <p className="dashboard-hero__eyebrow">
-            {mode === 'returning-user' ? 'אם משנים כיוון עכשיו' : 'מה לפתוח קודם'}
+            {mode === 'returning-user' ? 'כיוון נוסף' : 'התחלה מומלצת'}
           </p>
           <h2 id="recommended-lab-title">{lab.titleHe}</h2>
         </div>
@@ -32,39 +33,36 @@ export default function RecommendedLabPanel({
       <p className="recommended-lab-panel__promise">{lab.promiseHe}</p>
 
       <div className="recommended-lab-panel__reason">
-        <strong>{mode === 'returning-user' ? 'למה זה הכיוון הבא' : 'למה זה מתאים עכשיו'}</strong>
+        <strong>למה עכשיו</strong>
         <p>
-          עבור <span>{persona?.labelHe}</span> שצריך/ה עכשיו <span>{goal?.labelHe}</span>, זה
-          המסלול הכי ישיר ל-{lab.primaryOutcome}.
+          בחרת <span>{persona?.labelHe}</span> ו-<span>{goal?.labelHe}</span>. זה המסלול הכי
+          קצר ל-{lab.primaryOutcome}.
         </p>
       </div>
 
       <div className="recommended-lab-panel__result">
-        <strong>מה יוצא מזה</strong>
+        <strong>מה מקבלים בכמה דקות</strong>
         <p>{lab.resultHe}</p>
       </div>
 
       <div className="recommended-lab-panel__meta">
-        <span>{lab.audienceLabelHe}</span>
         <span>{lab.sessionLengthMin} דקות</span>
-        <span>{family?.titleHe ?? lab.family}</span>
+        <span>{lab.primaryOutcome}</span>
       </div>
 
-      {actionVariant === 'primary' && (
-        <button type="button" className="dashboard-primary-action" onClick={onStart}>
-          {lab.quickStartLabel}
-        </button>
-      )}
+      <div className="recommended-lab-panel__actions">
+        {actionVariant === 'primary' && (
+          <button type="button" className="dashboard-primary-action" onClick={onStart}>
+            {lab.quickStartLabel}
+          </button>
+        )}
 
-      {actionVariant === 'secondary' && (
-        <button type="button" className="dashboard-secondary-action" onClick={onStart}>
-          לפתוח את המסלול הזה במקום
-        </button>
-      )}
-
-      <p className="recommended-lab-panel__footnote">
-        רוצים לעיין בעוד אפשרויות? משפחות המעבדות מחכות למטה אחרי הבחירה הראשונה.
-      </p>
+        {actionVariant === 'secondary' && (
+          <button type="button" className="dashboard-secondary-action" onClick={onStart}>
+            לבחור במסלול הזה
+          </button>
+        )}
+      </div>
     </section>
   )
 }

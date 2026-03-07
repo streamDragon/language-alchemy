@@ -9,16 +9,16 @@ export default function ReturningUserRail({
 }) {
   if (!lastVisitedLab) return null
 
-  const summary =
-    recentHistory[0]?.summaryHe ??
-    recentHistory[0]?.sentenceText ??
-    lastVisitedLab.promiseHe
+  const hasRecentActivity = recentHistory.length > 0 || recentFavorites.length > 0
+  const summary = hasRecentActivity
+    ? recentHistory[0]?.summaryHe ?? recentHistory[0]?.sentenceText ?? lastVisitedLab.promiseHe
+    : 'המסלול האחרון שלך עדיין מוכן כאן.'
 
   return (
     <section className="returning-user-rail" aria-labelledby="returning-user-title">
       <div className="returning-user-rail__copy">
-        <p className="dashboard-hero__eyebrow">להמשיך בלי להתחיל מחדש</p>
-        <h2 id="returning-user-title">לחזור ישר ל-{lastVisitedLab.titleHe}</h2>
+        <p className="dashboard-hero__eyebrow">להמשיך ישר</p>
+        <h2 id="returning-user-title">להמשיך עם {lastVisitedLab.titleHe}</h2>
         <p>{summary}</p>
 
         <div className="returning-user-rail__meta">
@@ -42,7 +42,7 @@ export default function ReturningUserRail({
         )}
 
         <button type="button" className="dashboard-primary-action" onClick={onContinue}>
-          להמשיך מאיפה שהפסקתי
+          להמשיך מאיפה שעצרתי
         </button>
       </div>
     </section>
