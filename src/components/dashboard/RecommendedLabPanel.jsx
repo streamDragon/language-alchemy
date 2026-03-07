@@ -32,18 +32,14 @@ export default function RecommendedLabPanel({
 
       <p className="recommended-lab-panel__promise">{lab.promiseHe}</p>
 
-      <div className="recommended-lab-panel__reason">
-        <strong>למה עכשיו</strong>
-        <p>
-          בחרת <span>{persona?.labelHe}</span> ו-<span>{goal?.labelHe}</span>. זה המסלול הכי
-          קצר ל-{lab.primaryOutcome}.
-        </p>
-      </div>
-
-      <div className="recommended-lab-panel__result">
-        <strong>מה מקבלים בכמה דקות</strong>
+      <div className="recommended-lab-panel__summary">
+        <strong>מה יוצא מזה</strong>
         <p>{lab.resultHe}</p>
       </div>
+
+      <p className="recommended-lab-panel__match">
+        נבחר כי בחרת <span>{persona?.labelHe}</span> ו-<span>{goal?.labelHe}</span>.
+      </p>
 
       <div className="recommended-lab-panel__meta">
         <span>{lab.sessionLengthMin} דקות</span>

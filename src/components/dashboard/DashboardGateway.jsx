@@ -1,35 +1,41 @@
-function ChoiceGroup({ label, options, selectedId, onSelect }) {
+function ChoiceGroup({ label, options, selectedId, onSelect, compact = false }) {
+  const selectedOption = options.find((option) => option.id === selectedId) ?? null
+
   return (
     <fieldset className="gateway-choice-group">
       <legend className="gateway-choice-group__label">{label}</legend>
-      <div className="gateway-choice-group__options">
+      <div className={`gateway-choice-group__options ${compact ? 'is-compact' : ''}`}>
         {options.map((option) => (
           <button
             key={option.id}
             type="button"
             aria-pressed={selectedId === option.id}
-            className={`gateway-choice ${selectedId === option.id ? 'is-active' : ''}`}
+            className={`gateway-choice ${compact ? 'gateway-choice--compact' : ''} ${selectedId === option.id ? 'is-active' : ''}`}
             onClick={() => onSelect(option.id)}
           >
             <strong>{option.labelHe}</strong>
-            <span>{option.descriptionHe}</span>
+            {!compact && <span>{option.descriptionHe}</span>}
           </button>
         ))}
       </div>
+
+      {compact && selectedOption?.descriptionHe && (
+        <p className="gateway-choice-group__summary">{selectedOption.descriptionHe}</p>
+      )}
     </fieldset>
   )
 }
 
 const gatewayCopy = {
   'first-visit': {
-    eyebrow: 'שיחה אחת קדימה',
-    title: 'ניסוח, שאלה או תרגול לשיחה הקרובה.',
-    text: 'בוחרים מי את/ה ומה צריך עכשיו. ההמלצה מתעדכנת מיד.',
+    eyebrow: 'פתיחה קצרה',
+    title: 'מי את/ה היום ומה צריך עכשיו?',
+    text: 'בוחרים שני דברים ופותחים מסלול אחד.',
   },
   'returning-user': {
-    eyebrow: 'לפתוח משהו חדש',
-    title: 'אפשר להמשיך ישר, או לבחור מסלול אחר לשיחה הנוכחית.',
-    text: 'שני צעדים קצרים משנים את ההמלצה.',
+    eyebrow: 'פתיחה חדשה',
+    title: 'מי את/ה היום ומה צריך עכשיו?',
+    text: 'ההמלצה מתעדכנת מיד.',
   },
 }
 
@@ -54,6 +60,7 @@ export default function DashboardGateway({
 
       <div className="dashboard-gateway__groups">
         <ChoiceGroup
+          compact
           label="מי את/ה היום"
           options={personaOptions}
           selectedId={personaId}
@@ -61,6 +68,7 @@ export default function DashboardGateway({
         />
 
         <ChoiceGroup
+          compact
           label="מה צריך עכשיו"
           options={goalOptions}
           selectedId={goalId}
